@@ -1,0 +1,64 @@
+package com.nector.auth.entity;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "user_roles")
+public class UserRole {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(name = "role_id", nullable = false)
+    private UUID roleId;
+
+    @Column(name = "company_id", nullable = false)
+    private UUID companyId;
+
+    @Column(name = "branch_id")
+    private UUID branchId;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean active = true;
+
+    private LocalDateTime revokedAt;
+    private UUID revokedBy;
+    
+    private LocalDateTime assignedAt;    
+    private UUID assignedBy;
+
+    private LocalDateTime createdAt;
+    private UUID createdBy;
+
+    private LocalDateTime updatedAt;
+    private UUID updatedBy;
+
+    private LocalDateTime deletedAt;
+    private UUID deletedBy;
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        assignedAt = now;
+        active = true;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}
