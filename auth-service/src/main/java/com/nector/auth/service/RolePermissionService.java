@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import com.nector.auth.dto.request.RolePermissionAssignRequest;
 import com.nector.auth.dto.request.RolePermissionRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.response.PermissionResponse;
 import com.nector.auth.dto.response.RolePermissionResponse;
 
 import jakarta.validation.Valid;
@@ -20,5 +21,7 @@ public interface RolePermissionService {
 			Authentication authentication);
 
 	ApiResponse<List<RolePermissionResponse>> getPermissionsByRole(UUID roleId);
+
+	ApiResponse<List<RolePermissionResponse>> getRolePermissionsByPermissionId(UUID permissionId);
 
 }

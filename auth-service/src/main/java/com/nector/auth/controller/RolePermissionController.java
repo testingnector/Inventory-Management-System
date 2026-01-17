@@ -54,5 +54,12 @@ public class RolePermissionController {
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
+	
+	@GetMapping("/permission/{permissionId}")
+	public ResponseEntity<ApiResponse<List<RolePermissionResponse>>> getPermissionsByPermissionId(@PathVariable UUID permissionId) {
+		
+		ApiResponse<List<RolePermissionResponse>> response = rolePermissionService.getRolePermissionsByPermissionId(permissionId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
 
 }

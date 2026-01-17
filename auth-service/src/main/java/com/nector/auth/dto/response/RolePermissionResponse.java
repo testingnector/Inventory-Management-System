@@ -1,10 +1,8 @@
 package com.nector.auth.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
-
-import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.Data;
 
 @Data
 public class RolePermissionResponse {
@@ -20,10 +18,5 @@ public class RolePermissionResponse {
     private String permissionName;
     private String moduleName;
 
-    // Mapping info
     private Boolean active;
-    private LocalDateTime assignedAt;
-    private String assignedBy;   
-    private LocalDateTime revokedAt;
-    private String revokedBy;
 }

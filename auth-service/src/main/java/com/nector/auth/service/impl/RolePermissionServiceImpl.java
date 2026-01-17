@@ -3,6 +3,7 @@ package com.nector.auth.service.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,10 +38,11 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	private final RoleRepository roleRepository;
 	private final UserRepository userRepository;
 	private final PermissionRepository permissionRepository;
-	
+
 	private UUID getLoggedInUserId(Authentication auth) {
 		String email = auth.getName(); // JWT sub = email
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		return user.getId();
 	}
 
@@ -48,8 +50,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	@Override
 	public ApiResponse<List<RolePermissionResponse>> assignPermission(RolePermissionAssignRequest request,
 			Authentication authentication) {
-		
-		Role role = roleRepository.findById(request.getRoleId()).orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+		Role role = roleRepository.findById(request.getRoleId())
+				.orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
 		UUID assignedBy = getLoggedInUserId(authentication);
 
@@ -83,7 +86,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		response.setMessage("Permission assigned successfully");
 		response.setHttpStatus(HttpStatus.CREATED.name());
 		response.setHttpStatusCode(HttpStatus.CREATED.value());
-		
+
 		return response;
 
 	}
@@ -133,17 +136,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		Role role = roleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException("Role not found!"));
 
 		List<UUID> permissionIds = new ArrayList<>();
-		List<UUID> userIds = new ArrayList<>();
 
 		for (RolePermission rp : rolePermissions) {
 			permissionIds.add(rp.getPermissionId());
-
-			if (rp.getAssignedBy() != null) {
-				userIds.add(rp.getAssignedBy());
-			}
-			if (rp.getRevokedBy() != null) {
-				userIds.add(rp.getRevokedBy());
-			}
 		}
 
 		List<Permission> permissions = permissionRepository.findAllById(permissionIds);
@@ -152,15 +147,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			permissionMap.put(permission.getId(), permission);
 		}
 
-		List<User> users = userRepository.findAllById(userIds);
-		Map<UUID, User> userMap = new HashMap<>();
-		for (User user : users) {
-			userMap.put(user.getId(), user);
-		}
-
 		List<RolePermissionResponse> finalResponseList = new ArrayList<>();
 		for (RolePermission rp : rolePermissions) {
-			RolePermissionResponse response = mapToResponse(rp, role, permissionMap, userMap);
+			RolePermissionResponse response = mapToResponseWithRole(rp, role, permissionMap);
 			finalResponseList.add(response);
 		}
 
@@ -169,8 +158,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
 	}
 
-	private RolePermissionResponse mapToResponse(RolePermission rp, Role role, Map<UUID, Permission> permissionMap,
-			Map<UUID, User> userMap) {
+	private RolePermissionResponse mapToResponseWithRole(RolePermission rp, Role role,
+			Map<UUID, Permission> permissionMap) {
 
 		RolePermissionResponse rolePermissionResponse = new RolePermissionResponse();
 
@@ -185,24 +174,61 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		rolePermissionResponse.setModuleName(permission.getModuleName());
 
 		rolePermissionResponse.setActive(rp.getActive());
-		rolePermissionResponse.setAssignedAt(rp.getAssignedAt());
-		rolePermissionResponse.setRevokedAt(rp.getRevokedAt());
-
-		if (rp.getAssignedBy() != null) {
-			User assignedUser = userMap.get(rp.getAssignedBy());
-			if (assignedUser != null) {
-				rolePermissionResponse.setAssignedBy(assignedUser.getEmail());
-			}
-		}
-
-		if (rp.getRevokedBy() != null) {
-			User revokedUser = userMap.get(rp.getRevokedBy());
-			if (revokedUser != null) {
-				rolePermissionResponse.setRevokedBy(revokedUser.getEmail());
-			}
-		}
 
 		return rolePermissionResponse;
 	}
 
+//	==================================================================================
+
+	@Override
+	public ApiResponse<List<RolePermissionResponse>> getRolePermissionsByPermissionId(UUID permissionId) {
+
+		List<RolePermission> rolePermissions = rolePermissionRepository.findByPermissionId(permissionId);
+
+		if (rolePermissions.isEmpty()) {
+			throw new ResourceNotFoundException("No role-permissions found for this permission");
+		}
+
+		Permission permission = permissionRepository.findById(permissionId).orElseThrow(
+				() -> new ResourceNotFoundException("Permission is not found for this permission id" + permissionId));
+
+		List<UUID> roleIds = new ArrayList<>();
+		for (RolePermission rp : rolePermissions) {
+			roleIds.add(rp.getRoleId());
+		}
+
+		List<Role> roles = roleRepository.findAllById(roleIds);
+		Map<UUID, Role> roleMap = new HashMap<>();
+		for (Role role : roles) {
+			roleMap.put(role.getId(), role);
+		}
+		
+		List<RolePermissionResponse> finalResponseList = new ArrayList<>();
+		for (RolePermission rp : rolePermissions) {
+			RolePermissionResponse response = mapToResponseWithPermission(rp, permission, roleMap);
+			finalResponseList.add(response);
+		}
+		return new ApiResponse<List<RolePermissionResponse>>(true, "Role permissions fetched successfully",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), finalResponseList);
+	}
+
+	private RolePermissionResponse mapToResponseWithPermission(RolePermission rp, Permission permission, Map<UUID, Role> roleMap) {
+
+		RolePermissionResponse rolePermissionResponse = new RolePermissionResponse();
+		
+		rolePermissionResponse.setPermissionId(permission.getId());
+		rolePermissionResponse.setPermissionCode(permission.getPermissionCode());
+		rolePermissionResponse.setPermissionName(permission.getPermissionName());
+		rolePermissionResponse.setModuleName(permission.getModuleName());
+		
+		Role role = roleMap.get(rp.getRoleId());
+		rolePermissionResponse.setRoleId(role.getId());
+		rolePermissionResponse.setRoleCode(role.getRoleCode());
+		rolePermissionResponse.setRoleName(role.getRoleName());
+		
+		rolePermissionResponse.setActive(rp.getActive());
+		
+		return rolePermissionResponse;
+		
+	}
 }
