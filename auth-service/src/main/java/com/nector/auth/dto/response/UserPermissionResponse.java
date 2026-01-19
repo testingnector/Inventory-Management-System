@@ -13,9 +13,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserPermissionResponse{
 
-    private UUID id;
     private UUID userId;
+    private String name;
+    private String email;
+    private String mobileNumber;
+    
     private UUID permissionId;
+    private String permissionCode;
+    private String permissionName;
+    private String description;
+    private String moduleName;
+
     private Boolean allowed;
     private Boolean active;
     private LocalDateTime assignedAt;

@@ -41,7 +41,7 @@ public class UserRole {
     private UUID assignedBy;
 
     private LocalDateTime createdAt;
-    private UUID createdBy;
+    private UUID createdBy; 
 
     private LocalDateTime updatedAt;
     private UUID updatedBy;

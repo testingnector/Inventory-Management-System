@@ -48,8 +48,15 @@ public class UserPermissionController {
 	}
 
 	@GetMapping("/user/{userId}")
-	public ResponseEntity<ApiResponse<UserPermissionResponse>> getUserPermissions(@PathVariable UUID userId) {
-		ApiResponse<UserPermissionResponse> response = userPermissionService.getPermissionsByUserId(userId);
+	public ResponseEntity<ApiResponse<List<UserPermissionResponse>>> getUserPermissionsByUser(@PathVariable UUID userId) {
+		ApiResponse<List<UserPermissionResponse>> response = userPermissionService.getUserPermissionsByUserId(userId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+		
+	}
+	
+	@GetMapping("/permission/{permissionId}")
+	public ResponseEntity<ApiResponse<List<UserPermissionResponse>>> getUserPermissionsByPermission(@PathVariable UUID permissionId) {
+		ApiResponse<List<UserPermissionResponse>> response = userPermissionService.getUserPermissionsByPermissionId(permissionId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 		
 	}

@@ -51,14 +51,17 @@ public class UserPermission {
 
     private LocalDateTime revokedAt;
     private UUID revokedBy;
-
+ 
     private LocalDateTime createdAt;
     private UUID createdBy;
 
     private LocalDateTime updatedAt;
     private UUID updatedBy;
-
+    
     private Boolean active = true;
+    
+    private LocalDateTime deletedAt;
+    private UUID deletedBy;
 
     @PrePersist
     public void prePersist() {

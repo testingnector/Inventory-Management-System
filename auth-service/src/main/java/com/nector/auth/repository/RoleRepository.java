@@ -18,4 +18,5 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
 	boolean existsByRoleCode(String roleCode);
 
 	List<Role> findByDeletedAtIsNull();
+
 }
