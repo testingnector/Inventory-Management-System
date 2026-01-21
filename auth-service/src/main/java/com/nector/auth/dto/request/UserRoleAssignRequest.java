@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class AssignRoleRequest {
+public class UserRoleAssignRequest {
 
     @NotNull(message = "User id is mandatory")
     private UUID userId;

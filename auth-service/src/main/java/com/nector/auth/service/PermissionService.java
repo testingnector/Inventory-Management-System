@@ -8,22 +8,22 @@ import org.springframework.security.core.Authentication;
 import com.nector.auth.dto.request.PermissionCreateRequest;
 import com.nector.auth.dto.request.PermissionUpdateRequest;
 import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.PermissionResponse;
+import com.nector.auth.dto.response.PermissionResponses;
 
 import jakarta.validation.Valid;
 
 public interface PermissionService {
 
-	ApiResponse<PermissionResponse> createPermission(@Valid PermissionCreateRequest request,
+	ApiResponse<PermissionResponses> createPermission(@Valid PermissionCreateRequest request,
 			Authentication authentication);
 
-	ApiResponse<PermissionResponse> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
+	ApiResponse<PermissionResponses> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
 			Authentication authentication);
 
 	ApiResponse<List<Object>> deletePermission(UUID permissionId, Authentication authentication);
 
-	ApiResponse<List<PermissionResponse>> fetchAllPermission();
+	ApiResponse<List<PermissionResponses>> fetchAllPermission();
 
-	ApiResponse<PermissionResponse> getSinglePermission(UUID permissionId);
+	ApiResponse<PermissionResponses> getSinglePermission(UUID permissionId);
 
 }

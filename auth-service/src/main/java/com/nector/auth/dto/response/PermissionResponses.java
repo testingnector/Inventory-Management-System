@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class PermissionResponse {
+public class PermissionResponses {
 
     private UUID id;
     private String permissionCode;

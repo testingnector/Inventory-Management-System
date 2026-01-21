@@ -3,18 +3,24 @@ package com.nector.auth.service.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.nector.auth.dto.request.UserPermissionRequest;
+import com.nector.auth.dto.request.UserPermissionAssignRequest;
 import com.nector.auth.dto.request.UserPermissionRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.UserPermissionResponse;
+import com.nector.auth.dto.response.user_permission.PermissionUserResponse;
+import com.nector.auth.dto.response.user_permission.PermissionUsersGroupResponse;
+import com.nector.auth.dto.response.user_permission.UserPermissionGroupResponse;
+import com.nector.auth.dto.response.user_permission.UserPermissionResponse;
 import com.nector.auth.entity.Permission;
 import com.nector.auth.entity.RolePermission;
 import com.nector.auth.entity.User;
@@ -52,7 +58,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UserPermissionResponse> assignOrUpdate(@Valid UserPermissionRequest request,
+	public ApiResponse<UserPermissionGroupResponse> assignOrUpdate(@Valid UserPermissionAssignRequest request,
 			Authentication authentication) {
 
 		User user = userRepository.findByIdAndDeletedAtIsNull(request.getUserId())
@@ -85,15 +91,15 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		userPermission.setRevokedAt(null);
 		userPermission.setRevokedBy(null);
 
-		UserPermission saved = userPermissionRepository.save(userPermission);
+		UserPermission savedUserPermission = userPermissionRepository.save(userPermission);
 
 		return new ApiResponse<>(true, "Permission assigned to user successfully", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), mapToResponse(saved, user, permission));
+				HttpStatus.OK.value(), mapToResponse(savedUserPermission, user, permission));
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<UserPermissionResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request,
+	public ApiResponse<UserPermissionGroupResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request,
 			Authentication authentication) {
 
 		User user = userRepository.findByIdAndDeletedAtIsNull(request.getUserId())
@@ -117,214 +123,387 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 				HttpStatus.OK.value(), mapToResponse(saved, user, permission));
 	}
 
-	private UserPermissionResponse mapToResponse(UserPermission up, User user, Permission permission) {
+	private UserPermissionGroupResponse mapToResponse(UserPermission up, User user, Permission permission) {
 
+//		--------USER--------
+		UserPermissionGroupResponse upgr = new UserPermissionGroupResponse();
+		upgr.setUserId(user.getId());
+		upgr.setName(user.getName());
+		upgr.setEmail(user.getEmail());
+		upgr.setMobileNumber(user.getMobileNumber());
+		upgr.setActive(user.getActive());
+
+//		--------PERMISSION--------
 		UserPermissionResponse upr = new UserPermissionResponse();
-
-		upr.setUserId(user.getId());
-		upr.setName(user.getName());
-		upr.setEmail(user.getEmail());
-		upr.setMobileNumber(user.getMobileNumber());
-
 		upr.setPermissionId(permission.getId());
 		upr.setPermissionCode(permission.getPermissionCode());
 		upr.setPermissionName(permission.getPermissionName());
-		upr.setDescription(permission.getDescription());
+		upr.setPermissionDescription(permission.getDescription());
 		upr.setModuleName(permission.getModuleName());
+		upr.setPermissionActive(permission.getActive());
 
 		upr.setAllowed(up.getAllowed());
-		upr.setActive(up.getActive());
+		upr.setAssignedActive(up.getActive());
 		upr.setAssignedAt(up.getAssignedAt());
 
-		return upr;
+		List<UserPermissionResponse> uprList = List.of(upr);
+		upgr.setPermissions(uprList);
+
+		return upgr;
 	}
 
 //	=================================================================================
 	@Override
 	@Transactional
-	public ApiResponse<List<UserPermissionResponse>> getUserPermissionsByUserId(UUID userId) {
+	public ApiResponse<UserPermissionGroupResponse> getUserPermissionsByUserId(UUID userId) {
 
-		// 1️⃣ USER (not deleted)
-		User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+		User user = userRepository.findByIdAndActiveTrueAndDeletedAtIsNull(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found for id " + userId));
 
-		// 2️⃣ USER-SPECIFIC permissions (not deleted)
 		List<UserPermission> userPermissions = userPermissionRepository.findByUserIdAndDeletedAtIsNull(userId);
 
-		// 3️⃣ USER ROLES (active + not deleted)
 		List<UserRole> userRoles = userRoleRepository.findByUserIdAndActiveTrueAndDeletedAtIsNull(userId);
 		List<UUID> roleIds = userRoles.stream().map(UserRole::getRoleId).toList();
 
-
-		// 4️⃣ ROLE PERMISSIONS (active + not deleted)
 		List<RolePermission> rolePermissions = roleIds.isEmpty() ? List.of()
 				: rolePermissionRepository.findByRoleIdInAndActiveTrueAndDeletedAtIsNull(roleIds);
 
-		// 🔑 permissionId → response
-		Map<UUID, UserPermissionResponse> permissionMap = new HashMap<>();
+		Set<UUID> permissionIds = new HashSet<>();
+		rolePermissions.forEach(rp -> permissionIds.add(rp.getPermissionId()));
+		userPermissions.forEach(up -> permissionIds.add(up.getPermissionId()));
 
-		// 5️⃣ ROLE DEFAULT PERMISSIONS
+		List<Permission> permissions = permissionRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(permissionIds);
+		Map<UUID, Permission> permissionMap = new HashMap<>();
+		for (Permission permission : permissions) {
+			permissionMap.put(permission.getId(), permission);
+		}
+
+		Map<UUID, UserPermissionResponse> uprMap = new HashMap<>();
+
 		for (RolePermission rp : rolePermissions) {
-
-			Permission permission = permissionRepository.findByIdAndDeletedAtIsNull(rp.getPermissionId()).orElse(null);
-
-			if (permission == null)
+			Permission permission = permissionMap.get(rp.getPermissionId());
+			if (permission == null) {
 				continue;
+			}
 
 			UserPermissionResponse upr = new UserPermissionResponse();
-
-			upr.setUserId(user.getId());
-			upr.setName(user.getName());
-			upr.setEmail(user.getEmail());
-			upr.setMobileNumber(user.getMobileNumber());
 
 			upr.setPermissionId(permission.getId());
 			upr.setPermissionCode(permission.getPermissionCode());
 			upr.setPermissionName(permission.getPermissionName());
-			upr.setDescription(permission.getDescription());
+			upr.setPermissionDescription(permission.getDescription());
 			upr.setModuleName(permission.getModuleName());
+			upr.setPermissionActive(permission.getActive());
 
-			upr.setAllowed(true); // ROLE = default allow
-			upr.setActive(true);
+			upr.setAllowed(rp.getAllowed()); // ROLE default allow
+			upr.setAssignedActive(rp.getActive());
 			upr.setAssignedAt(rp.getAssignedAt());
 
-			permissionMap.put(permission.getId(), upr);
+			uprMap.put(permission.getId(), upr);
 		}
 
-		// 6️⃣ USER OVERRIDE (ALLOW / DENY / REVOKE)
 		for (UserPermission up : userPermissions) {
 
-			// ⛔ safety
-			if (up.getDeletedAt() != null)
+			Permission permission = permissionMap.get(up.getPermissionId());
+			if (permission == null) {
 				continue;
-
-			Permission permission = permissionRepository.findByIdAndDeletedAtIsNull(up.getPermissionId()).orElse(null);
-
-			if (permission == null)
-				continue;
+			}
 
 			UserPermissionResponse upr = new UserPermissionResponse();
-
-			upr.setUserId(user.getId());
-			upr.setName(user.getName());
-			upr.setEmail(user.getEmail());
-			upr.setMobileNumber(user.getMobileNumber());
 
 			upr.setPermissionId(permission.getId());
 			upr.setPermissionCode(permission.getPermissionCode());
 			upr.setPermissionName(permission.getPermissionName());
-			upr.setDescription(permission.getDescription());
+			upr.setPermissionDescription(permission.getDescription());
 			upr.setModuleName(permission.getModuleName());
+			upr.setPermissionActive(permission.getActive());
 
-			upr.setAllowed(up.getAllowed()); // 🔥 override allow / deny
-			upr.setActive(up.getActive()); // 🔥 revoke respected
+			upr.setAllowed(up.getAllowed());
+			upr.setAssignedActive(up.getActive());
 			upr.setAssignedAt(up.getAssignedAt());
 
-			// 🔥 USER ALWAYS OVERRIDES ROLE
-			permissionMap.put(permission.getId(), upr);
+			uprMap.put(permission.getId(), upr);
 		}
 
-		// 7️⃣ FINAL LIST
-		if (permissionMap.isEmpty()) {
-			throw new ResourceNotFoundException("No permission found for user");
-		}
+		UserPermissionGroupResponse response = new UserPermissionGroupResponse();
+		response.setUserId(user.getId());
+		response.setName(user.getName());
+		response.setEmail(user.getEmail());
+		response.setMobileNumber(user.getMobileNumber());
+		response.setActive(user.getActive());
+		response.setPermissions(new ArrayList<>(uprMap.values()));
 
 		return new ApiResponse<>(true, "User Permission fetch successfully", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), new ArrayList<>(permissionMap.values()));
+				HttpStatus.OK.value(), response);
+
 	}
 
 	@Override
 	@Transactional
-	public ApiResponse<List<UserPermissionResponse>> getUserPermissionsByPermissionId(UUID permissionId) {
+	public ApiResponse<PermissionUsersGroupResponse> getUserPermissionsByPermissionId(UUID permissionId) {
 
-		// 1️⃣ Permission must exist & not deleted
-		Permission permission = permissionRepository.findByIdAndDeletedAtIsNull(permissionId)
+		Permission permission = permissionRepository.findByIdAndDeletedAtIsNullAndActiveTrue(permissionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Permission not found for id " + permissionId));
 
-		// 2️⃣ USER-SPECIFIC permissions (not deleted)
 		List<UserPermission> userPermissions = userPermissionRepository
 				.findByPermissionIdAndDeletedAtIsNull(permissionId);
 
-		// 3️⃣ ROLE IDs having this permission (ACTIVE + NOT DELETED)
 		List<RolePermission> rolePermissions = rolePermissionRepository
 				.findByPermissionIdAndActiveTrueAndDeletedAtIsNull(permissionId);
 		List<UUID> roleIds = rolePermissions.stream().map(RolePermission::getRoleId).toList();
 
-		// 4️⃣ USERS having those roles (ACTIVE + NOT DELETED)
 		List<UserRole> userRoles = roleIds.isEmpty() ? List.of()
 				: userRoleRepository.findByRoleIdInAndActiveTrueAndDeletedAtIsNull(roleIds);
 
-		// 🔑 userId → response (USER overrides ROLE)
-		Map<UUID, UserPermissionResponse> responseMap = new HashMap<>();
+		Set<UUID> userIds = new HashSet<>();
+		userRoles.forEach(ur -> userIds.add(ur.getUserId()));
+		userPermissions.forEach(up -> userIds.add(up.getUserId()));
 
-		// 5️⃣ ROLE DEFAULT USERS
-		for (UserRole ur : userRoles) {
-
-			User user = userRepository.findByIdAndDeletedAtIsNull(ur.getUserId()).orElse(null);
-
-			if (user == null)
-				continue;
-
-			UserPermissionResponse upr = new UserPermissionResponse();
-
-			upr.setUserId(user.getId());
-			upr.setName(user.getName());
-			upr.setEmail(user.getEmail());
-			upr.setMobileNumber(user.getMobileNumber());
-
-			upr.setPermissionId(permission.getId());
-			upr.setPermissionCode(permission.getPermissionCode());
-			upr.setPermissionName(permission.getPermissionName());
-			upr.setDescription(permission.getDescription());
-			upr.setModuleName(permission.getModuleName());
-
-			upr.setAllowed(true); // ROLE DEFAULT = ALLOW
-			upr.setActive(true);
-			upr.setAssignedAt(ur.getAssignedAt());
-
-			responseMap.put(user.getId(), upr);
-		}
-
-		// 6️⃣ USER OVERRIDE (ALLOW / DENY / REVOKE)
-		for (UserPermission up : userPermissions) {
-
-			// ⛔ Skip deleted records (extra safety)
-			if (up.getDeletedAt() != null)
-				continue;
-
-			User user = userRepository.findByIdAndDeletedAtIsNull(up.getUserId()).orElse(null);
-
-			if (user == null)
-				continue;
-
-			UserPermissionResponse upr = new UserPermissionResponse();
-
-			upr.setUserId(user.getId());
-			upr.setName(user.getName());
-			upr.setEmail(user.getEmail());
-			upr.setMobileNumber(user.getMobileNumber());
-
-			upr.setPermissionId(permission.getId());
-			upr.setPermissionCode(permission.getPermissionCode());
-			upr.setPermissionName(permission.getPermissionName());
-			upr.setDescription(permission.getDescription());
-			upr.setModuleName(permission.getModuleName());
-
-			upr.setAllowed(up.getAllowed()); // 🔥 override allow / deny
-			upr.setActive(up.getActive()); // 🔥 revoke respected
-			upr.setAssignedAt(up.getAssignedAt());
-
-			// 🔥 USER ALWAYS OVERRIDES ROLE
-			responseMap.put(user.getId(), upr);
-		}
-
-		// 7️⃣ Final response
-		if (responseMap.isEmpty()) {
+		if (userIds.isEmpty()) {
 			throw new ResourceNotFoundException("No users found for permission id " + permissionId);
 		}
 
-		return new ApiResponse<>(true, "User Permission fetch successfully", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), new ArrayList<>(responseMap.values()));
+		Map<UUID, User> userMap = userRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(userIds).stream()
+				.collect(Collectors.toMap(User::getId, u -> u));
+
+		Map<UUID, PermissionUserResponse> purMap = new HashMap<>();
+
+		for (UserRole ur : userRoles) {
+
+			User user = userMap.get(ur.getUserId());
+			if (user == null)
+				continue;
+
+			PermissionUserResponse pur = new PermissionUserResponse();
+
+			pur.setUserId(user.getId());
+			pur.setName(user.getName());
+			pur.setEmail(user.getEmail());
+			pur.setMobileNumber(user.getMobileNumber());
+			pur.setUserIsActive(user.getActive());
+
+			pur.setAllowed(true); // ROLE default
+			pur.setAssignedActive(ur.getActive());
+			pur.setAssignedAt(ur.getAssignedAt());
+
+			purMap.put(user.getId(), pur);
+		}
+
+		for (UserPermission up : userPermissions) {
+
+			User user = userMap.get(up.getUserId());
+			if (user == null)
+				continue;
+
+			PermissionUserResponse pur = new PermissionUserResponse();
+
+			pur.setUserId(user.getId());
+			pur.setName(user.getName());
+			pur.setEmail(user.getEmail());
+			pur.setMobileNumber(user.getMobileNumber());
+			pur.setUserIsActive(user.getActive());
+			
+			pur.setAllowed(up.getAllowed());
+			pur.setAssignedActive(up.getActive());
+			pur.setAssignedAt(up.getAssignedAt());
+
+			purMap.put(user.getId(), pur);
+		}
+
+		// 9️⃣ FINAL RESPONSE
+		PermissionUsersGroupResponse response = new PermissionUsersGroupResponse();
+
+		response.setPermissionId(permission.getId());
+		response.setPermissionCode(permission.getPermissionCode());
+		response.setPermissionName(permission.getPermissionName());
+		response.setPermissionDescription(permission.getDescription());
+		response.setModuleName(permission.getModuleName());
+		response.setActive(permission.getActive());
+		response.setUsers(new ArrayList<>(purMap.values()));
+
+		return new ApiResponse<>(true, "Users fetched successfully for permission", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), response);
+	}
+
+	@Override
+	@Transactional
+	public ApiResponse<List<UserPermissionGroupResponse>> getAllUserPermissions() {
+
+		// 1. Fetch users
+		List<User> users = userRepository.findByDeletedAtIsNull();
+		if (users.isEmpty()) {
+			throw new ResourceNotFoundException("No users found");
+		}
+
+		// 2. Fetch related data
+		List<UserPermission> userPermissions = userPermissionRepository.findByDeletedAtIsNull();
+
+		List<UserRole> userRoles = userRoleRepository.findByUserIdInAndActiveTrueAndDeletedAtIsNull(getUserIds(users));
+
+		List<RolePermission> rolePermissions = rolePermissionRepository
+				.findByRoleIdInAndActiveTrueAndDeletedAtIsNull(getRoleIds(userRoles));
+
+		List<Permission> permissions = permissionRepository
+				.findByIdInAndDeletedAtIsNull(getPermissionIds(rolePermissions, userPermissions));
+
+		// 3. Permission lookup map
+		Map<UUID, Permission> permissionMap = new HashMap<UUID, Permission>();
+		for (Permission p : permissions) {
+			permissionMap.put(p.getId(), p);
+		}
+
+		/*
+		 * MAIN STRUCTURE UserId -> (PermissionId -> PermissionResponse)
+		 */
+		Map<UUID, Map<UUID, UserPermissionResponse>> userPermissionMap = new HashMap<UUID, Map<UUID, UserPermissionResponse>>();
+
+		// ======================================================
+		// 4. ROLE BASED PERMISSIONS (default allowed = true)
+		// ======================================================
+		for (UserRole ur : userRoles) {
+
+			User user = findUserById(users, ur.getUserId());
+			if (user == null)
+				continue;
+
+			Map<UUID, UserPermissionResponse> permissionResponseMap = userPermissionMap.get(user.getId());
+
+			if (permissionResponseMap == null) {
+				permissionResponseMap = new HashMap<UUID, UserPermissionResponse>();
+				userPermissionMap.put(user.getId(), permissionResponseMap);
+			}
+
+			for (RolePermission rp : rolePermissions) {
+
+				if (!rp.getRoleId().equals(ur.getRoleId()))
+					continue;
+
+				Permission perm = permissionMap.get(rp.getPermissionId());
+				if (perm == null)
+					continue;
+
+				// avoid duplicate
+				if (permissionResponseMap.containsKey(perm.getId()))
+					continue;
+
+				UserPermissionResponse upr = new UserPermissionResponse();
+				upr.setPermissionId(perm.getId());
+				upr.setPermissionCode(perm.getPermissionCode());
+				upr.setPermissionName(perm.getPermissionName());
+				upr.setPermissionDescription(perm.getDescription());
+				upr.setModuleName(perm.getModuleName());
+				upr.setPermissionActive(perm.getActive());
+
+				upr.setAllowed(rp.getAllowed());
+				upr.setAssignedActive(rp.getActive());
+				upr.setAssignedAt(rp.getAssignedAt());
+
+				permissionResponseMap.put(perm.getId(), upr);
+			}
+		}
+
+		// ======================================================
+		// 5. USER SPECIFIC OVERRIDE (ROLE PERMISSION REPLACED)
+		// ======================================================
+		for (UserPermission up : userPermissions) {
+
+			User user = findUserById(users, up.getUserId());
+			if (user == null)
+				continue;
+
+			Permission perm = permissionMap.get(up.getPermissionId());
+			if (perm == null)
+				continue;
+
+			Map<UUID, UserPermissionResponse> permissionResponseMap = userPermissionMap.get(user.getId());
+
+			if (permissionResponseMap == null) {
+				permissionResponseMap = new HashMap<UUID, UserPermissionResponse>();
+				userPermissionMap.put(user.getId(), permissionResponseMap);
+			}
+
+			UserPermissionResponse upr = new UserPermissionResponse();
+			upr.setPermissionId(perm.getId());
+			upr.setPermissionCode(perm.getPermissionCode());
+			upr.setPermissionName(perm.getPermissionName());
+			upr.setPermissionDescription(perm.getDescription());
+			upr.setModuleName(perm.getModuleName());
+			upr.setPermissionActive(perm.getActive());
+
+			upr.setAllowed(up.getAllowed());
+			upr.setAssignedActive(up.getActive());
+			upr.setAssignedAt(up.getAssignedAt());
+
+			// override happens here
+			permissionResponseMap.put(perm.getId(), upr);
+		}
+
+		// ======================================================
+		// 6. GROUP BY USER (FINAL RESPONSE)
+		// ======================================================
+		List<UserPermissionGroupResponse> response = new ArrayList<UserPermissionGroupResponse>();
+
+		for (UUID userId : userPermissionMap.keySet()) {
+
+			User user = findUserById(users, userId);
+			if (user == null)
+				continue;
+
+			UserPermissionGroupResponse ugr = new UserPermissionGroupResponse();
+
+			ugr.setUserId(user.getId());
+			ugr.setName(user.getName());
+			ugr.setEmail(user.getEmail());
+			ugr.setMobileNumber(user.getMobileNumber());
+			ugr.setActive(user.getActive());
+
+			List<UserPermissionResponse> permissionList = new ArrayList<UserPermissionResponse>(
+					userPermissionMap.get(userId).values());
+
+			ugr.setPermissions(permissionList);
+			response.add(ugr);
+		}
+
+		// ======================================================
+		// 7. RETURN
+		// ======================================================
+		return new ApiResponse<List<UserPermissionGroupResponse>>(true, "User Permission fetch successfully",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), response);
+	}
+
+	private List<UUID> getUserIds(List<User> users) {
+		List<UUID> ids = new ArrayList<UUID>();
+		for (User u : users)
+			ids.add(u.getId());
+		return ids;
+	}
+
+	private List<UUID> getRoleIds(List<UserRole> userRoles) {
+		List<UUID> ids = new ArrayList<UUID>();
+		for (UserRole ur : userRoles)
+			ids.add(ur.getRoleId());
+		return ids;
+	}
+
+	private List<UUID> getPermissionIds(List<RolePermission> rolePermissions, List<UserPermission> userPermissions) {
+		List<UUID> ids = new ArrayList<UUID>();
+		for (RolePermission rp : rolePermissions) {
+			if (!ids.contains(rp.getPermissionId()))
+				ids.add(rp.getPermissionId());
+		}
+		for (UserPermission up : userPermissions) {
+			if (!ids.contains(up.getPermissionId()))
+				ids.add(up.getPermissionId());
+		}
+		return ids;
+	}
+
+	private User findUserById(List<User> users, UUID id) {
+		for (User u : users) {
+			if (u.getId().equals(id))
+				return u;
+		}
+		return null;
 	}
 
 }

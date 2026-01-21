@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class RolePermissionResponse {
+public class RolePermissionResponses {
 
     // Role info
 	private UUID roleId;

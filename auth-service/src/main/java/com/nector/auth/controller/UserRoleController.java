@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nector.auth.dto.request.AssignRoleRequest;
-import com.nector.auth.dto.request.RoleRevokeRequest;
+import com.nector.auth.dto.request.UserRoleAssignRequest;
+import com.nector.auth.dto.request.UserRoleRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
 import com.nector.auth.dto.response.UserRoleResponse;
 import com.nector.auth.service.UserRoleService;
@@ -30,7 +30,7 @@ public class UserRoleController {
 	// 🔹 ASSIGN ROLE
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@PostMapping("/assign")
-	public ResponseEntity<ApiResponse<UserRoleResponse>> assignRole(@Valid @RequestBody AssignRoleRequest request,
+	public ResponseEntity<ApiResponse<UserRoleResponse>> assignRole(@Valid @RequestBody UserRoleAssignRequest request,
 			Authentication authentication) {
 
 		ApiResponse<UserRoleResponse> response = userRoleService.assignRole(request, authentication);
@@ -40,7 +40,7 @@ public class UserRoleController {
 	// 🔹 REVOKE ROLE
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@PostMapping("/revoke")
-	public ResponseEntity<ApiResponse<UserRoleResponse>> revokeRole(@Valid @RequestBody RoleRevokeRequest request,
+	public ResponseEntity<ApiResponse<UserRoleResponse>> revokeRole(@Valid @RequestBody UserRoleRevokeRequest request,
 			Authentication authentication) {
 
 		ApiResponse<UserRoleResponse> response = userRoleService.revokeRole(request, authentication);

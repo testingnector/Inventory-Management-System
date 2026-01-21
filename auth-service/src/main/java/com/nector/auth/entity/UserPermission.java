@@ -46,6 +46,8 @@ public class UserPermission {
     @Column(name = "is_allowed", nullable = false)
     private Boolean allowed;
 
+    private Boolean active = true;
+
     private LocalDateTime assignedAt;
     private UUID assignedBy;
 
@@ -57,8 +59,6 @@ public class UserPermission {
 
     private LocalDateTime updatedAt;
     private UUID updatedBy;
-    
-    private Boolean active = true;
     
     private LocalDateTime deletedAt;
     private UUID deletedBy;

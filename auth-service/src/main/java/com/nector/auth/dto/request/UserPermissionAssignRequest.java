@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserPermissionRequest {
+public class UserPermissionAssignRequest {
 
 	@NotNull(message = "User id is mandatory")
 	private UUID userId;

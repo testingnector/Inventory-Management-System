@@ -5,21 +5,25 @@ import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 
-import com.nector.auth.dto.request.UserPermissionRequest;
+import com.nector.auth.dto.request.UserPermissionAssignRequest;
 import com.nector.auth.dto.request.UserPermissionRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.UserPermissionResponse;
+import com.nector.auth.dto.response.user_permission.PermissionUsersGroupResponse;
+import com.nector.auth.dto.response.user_permission.UserPermissionGroupResponse;
+import com.nector.auth.dto.response.user_permission.UserPermissionResponse;
 
 import jakarta.validation.Valid;
 
 public interface UserPermissionService {
 
-	ApiResponse<UserPermissionResponse> assignOrUpdate(@Valid UserPermissionRequest userPermissionRequest, Authentication authentication);
+	ApiResponse<UserPermissionGroupResponse> assignOrUpdate(@Valid UserPermissionAssignRequest userPermissionAssignRequest, Authentication authentication);
 
-	ApiResponse<UserPermissionResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request, Authentication authentication);
+	ApiResponse<UserPermissionGroupResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request, Authentication authentication);
 
-	ApiResponse<List<UserPermissionResponse>> getUserPermissionsByUserId(UUID userId);
+	ApiResponse<UserPermissionGroupResponse> getUserPermissionsByUserId(UUID userId);
 
-	ApiResponse<List<UserPermissionResponse>> getUserPermissionsByPermissionId(UUID permissionId);
+	ApiResponse<PermissionUsersGroupResponse>  getUserPermissionsByPermissionId(UUID permissionId);
+
+	ApiResponse<List<UserPermissionGroupResponse>> getAllUserPermissions();
 
 }

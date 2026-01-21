@@ -32,4 +32,10 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
 
 	List<UserPermission> findByPermissionIdAndDeletedAtIsNull(UUID permissionId);
 
+	List<UserPermission> findByDeletedAtIsNull();
+
+	List<UserPermission> findByUserIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> userIds);
+
+	List<UserPermission> findByUserIdAndActiveTrueAndDeletedAtIsNull(UUID userId);
+
 }

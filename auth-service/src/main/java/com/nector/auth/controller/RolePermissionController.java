@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nector.auth.dto.request.RolePermissionAssignRequest;
 import com.nector.auth.dto.request.RolePermissionRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.RolePermissionResponse;
+import com.nector.auth.dto.response.role_permission.PermissionRoleGroupResponse;
+import com.nector.auth.dto.response.role_permission.RolePermissionGroupResponse;
+import com.nector.auth.dto.response.role_permission.RolePermissionResponse;
 import com.nector.auth.service.RolePermissionService;
 
 import jakarta.validation.Valid;
@@ -30,35 +32,42 @@ public class RolePermissionController {
 	private final RolePermissionService rolePermissionService;
 
 	@PostMapping("/assign")
-	public ResponseEntity<ApiResponse<List<RolePermissionResponse>>> assignPermissionToRole(
+	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> assignPermissionToRole(
 			@RequestBody RolePermissionAssignRequest rolePermissionAssignRequest, Authentication authentication) {
 
-		ApiResponse<List<RolePermissionResponse>> response = rolePermissionService
+		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService
 				.assignPermission(rolePermissionAssignRequest, authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/revoke")
-	public ResponseEntity<ApiResponse<RolePermissionResponse>> revokePermission(
+	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> revokePermission(
 			@Valid @RequestBody RolePermissionRevokeRequest request, Authentication authentication) {
 
-		ApiResponse<RolePermissionResponse> response = rolePermissionService.revokePermission(request, authentication);
+		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService.revokePermission(request, authentication);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/role/{roleId}")
-	public ResponseEntity<ApiResponse<List<RolePermissionResponse>>> getPermissionsByRoleId(@PathVariable UUID roleId) {
+	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> getPermissionsByRoleId(@PathVariable UUID roleId) {
 
-		ApiResponse<List<RolePermissionResponse>> response = rolePermissionService.getPermissionsByRole(roleId);
+		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService.getPermissionsByRole(roleId);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@GetMapping("/permission/{permissionId}")
-	public ResponseEntity<ApiResponse<List<RolePermissionResponse>>> getPermissionsByPermissionId(@PathVariable UUID permissionId) {
+	public ResponseEntity<ApiResponse<PermissionRoleGroupResponse>> getPermissionsByPermissionId(@PathVariable UUID permissionId) {
 		
-		ApiResponse<List<RolePermissionResponse>> response = rolePermissionService.getRolePermissionsByPermissionId(permissionId);
+		ApiResponse<PermissionRoleGroupResponse> response = rolePermissionService.getRolePermissionsByPermissionId(permissionId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+	
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<RolePermissionGroupResponse>>> getAllRolePermissions() {
+		
+		ApiResponse<List<RolePermissionGroupResponse>> response = rolePermissionService.getAllRolePermissions();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 

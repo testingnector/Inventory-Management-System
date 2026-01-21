@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.nector.auth.dto.request.PermissionCreateRequest;
 import com.nector.auth.dto.request.PermissionUpdateRequest;
 import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.PermissionResponse;
+import com.nector.auth.dto.response.PermissionResponses;
 import com.nector.auth.entity.Permission;
 import com.nector.auth.entity.User;
 import com.nector.auth.repository.PermissionRepository;
@@ -41,7 +41,7 @@ public class PermissionServiceImpl implements PermissionService{
 	
 	@Transactional
 	@Override
-	public ApiResponse<PermissionResponse> createPermission(@Valid PermissionCreateRequest request,
+	public ApiResponse<PermissionResponses> createPermission(@Valid PermissionCreateRequest request,
 			Authentication authentication) {
 		
 		if (permissionRepository.existsByPermissionCode(request.getPermissionCode())) {
@@ -66,7 +66,7 @@ public class PermissionServiceImpl implements PermissionService{
 
 	@Transactional
 	@Override
-	public ApiResponse<PermissionResponse> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
+	public ApiResponse<PermissionResponses> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
 			Authentication authentication) {
 
 		Permission permission = permissionRepository.findById(permissionId)
@@ -113,7 +113,7 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 	
 	@Override
-	public ApiResponse<List<PermissionResponse>> fetchAllPermission() {
+	public ApiResponse<List<PermissionResponses>> fetchAllPermission() {
 		
 		List<Permission> permissions = permissionRepository.findByDeletedAtIsNull();
 		return new ApiResponse<>(true, "Permissions fetch successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), toResponseList(permissions));
@@ -121,7 +121,7 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 
 	@Override
-	public ApiResponse<PermissionResponse> getSinglePermission(UUID permissionId) {
+	public ApiResponse<PermissionResponses> getSinglePermission(UUID permissionId) {
 		
 		Permission permission = permissionRepository.findById(permissionId)
 				.orElseThrow(() -> new RuntimeException("Permission not found"));
@@ -134,8 +134,8 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 
 //	------------------------------------------------------------------------
-	public PermissionResponse toResponse(Permission permission) {
-		return PermissionResponse.builder()
+	public PermissionResponses toResponse(Permission permission) {
+		return PermissionResponses.builder()
 				.id(permission.getId())
 				.permissionCode(permission.getPermissionCode())
 				.permissionName(permission.getPermissionName())
@@ -147,12 +147,12 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 
 
-	public List<PermissionResponse> toResponseList(List<Permission> permissions) {
+	public List<PermissionResponses> toResponseList(List<Permission> permissions) {
 		
-		List<PermissionResponse> response = new ArrayList<>();
+		List<PermissionResponses> response = new ArrayList<>();
 		
 		for (Permission permission : permissions) {
-			PermissionResponse permissionResponse = PermissionResponse.builder()
+			PermissionResponses permissionResponses = PermissionResponses.builder()
 					.id(permission.getId())
 					.permissionCode(permission.getPermissionCode())
 					.permissionName(permission.getPermissionName())
@@ -162,7 +162,7 @@ public class PermissionServiceImpl implements PermissionService{
 					.createdAt(permission.getCreatedAt())
 					.build();
 			
-			response.add(permissionResponse);
+			response.add(permissionResponses);
 		}
 		return response;
 	}

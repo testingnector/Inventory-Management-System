@@ -2,7 +2,6 @@ package com.nector.auth.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nector.auth.client.OrgServiceClient;
-import com.nector.auth.dto.request.AssignRoleRequest;
-import com.nector.auth.dto.request.RoleRevokeRequest;
+import com.nector.auth.dto.request.UserRoleAssignRequest;
+import com.nector.auth.dto.request.UserRoleRevokeRequest;
 import com.nector.auth.dto.response.ApiResponse;
 import com.nector.auth.dto.response.UserRoleResponse;
 import com.nector.auth.entity.Role;
@@ -55,7 +54,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UserRoleResponse> assignRole(AssignRoleRequest request, Authentication authentication) {
+	public ApiResponse<UserRoleResponse> assignRole(UserRoleAssignRequest request, Authentication authentication) {
 
 		UUID loggedInUserId = getLoggedInUserId(authentication);
 
@@ -152,7 +151,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UserRoleResponse> revokeRole(RoleRevokeRequest request, Authentication authentication) {
+	public ApiResponse<UserRoleResponse> revokeRole(UserRoleRevokeRequest request, Authentication authentication) {
 
 		UUID loggedInUserId = getLoggedInUserId(authentication);
 

@@ -36,6 +36,9 @@ public class RolePermission {
     @Column(name = "permission_id", nullable = false)
     private UUID permissionId;
     
+    @Column(name = "is_allowed", nullable = false)
+    private Boolean allowed;
+    
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
 

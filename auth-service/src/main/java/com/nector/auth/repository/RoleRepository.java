@@ -19,4 +19,8 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
 
 	List<Role> findByDeletedAtIsNull();
 
+	List<Role> findByIdInAndDeletedAtIsNull(List<UUID> roleIds);
+
+	List<Role> findByDeletedAtIsNullAndActiveTrue();
+
 }
