@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import lombok.Data;
 
+@JsonPropertyOrder({"permissionId", "permissionCode", "permissionName", "permissionDescription", "moduleName", "active", "roles"})
 @Data
 public class PermissionRoleGroupResponse {
 

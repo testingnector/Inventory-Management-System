@@ -3,8 +3,11 @@ package com.nector.auth.dto.response.role_permission;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import lombok.Data;
 
+@JsonPropertyOrder({"roleId", "roleCode", "roleName", "roleDescription", "systemRole", "roleIsActive", "allowed", "assignedActive", "assignedAt"})
 @Data
 public class PermissionRoleResponse {
 

@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nector.orgservice.dto.request.CompanyCreateRequest;
 import com.nector.orgservice.dto.request.CompanyUpdateRequest;
+import com.nector.orgservice.dto.request.external.CompanyIdsRequest;
 import com.nector.orgservice.dto.response.ApiResponse;
 import com.nector.orgservice.dto.response.CompanyResponse;
+import com.nector.orgservice.dto.response.external.CompanyBasicResponse;
 import com.nector.orgservice.service.CompanyService;
 
 import jakarta.validation.Valid;
@@ -76,14 +78,31 @@ public class CompanyController {
 		ApiResponse<CompanyResponse> response = companyService.getCompanyById(companyId);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
+	
+//	---------------------FOR EXTERNAL SERVICE CALLING-------------------
 
 	// Exists by ID
 	@GetMapping("/exists/{id}")
 	public ResponseEntity<ApiResponse<Boolean>> existsByCompanyId(@PathVariable("id") UUID companyId) {
 		ApiResponse<Boolean> response = companyService.existsCompanyById(companyId);
-		System.out.println(response);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
+	
+	@GetMapping("/basic/{id}")
+	public ResponseEntity<ApiResponse<CompanyBasicResponse>> getCompanyBasic(@PathVariable("id") UUID companyId) {
+	    ApiResponse<CompanyBasicResponse> response = companyService.getCompanyBasicById(companyId);
+	    System.out.println(response.toString());
+	    return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
+	}
+
+	@PostMapping("/basic")
+	public ResponseEntity<ApiResponse<List<CompanyBasicResponse>>> getCompanyBasicByCompanyIds(@Valid @RequestBody CompanyIdsRequest request) {
+		ApiResponse<List<CompanyBasicResponse>> response = companyService.getCompanyBasicByCompanyIds(request);
+		System.out.println(response.toString());
+		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
+	}
+
+	
 	
 	
 }

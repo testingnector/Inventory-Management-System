@@ -5,8 +5,10 @@ import java.util.UUID;
 
 import com.nector.orgservice.dto.request.CompanyCreateRequest;
 import com.nector.orgservice.dto.request.CompanyUpdateRequest;
+import com.nector.orgservice.dto.request.external.CompanyIdsRequest;
 import com.nector.orgservice.dto.response.ApiResponse;
 import com.nector.orgservice.dto.response.CompanyResponse;
+import com.nector.orgservice.dto.response.external.CompanyBasicResponse;
 
 import jakarta.validation.Valid;
 
@@ -23,5 +25,9 @@ public interface CompanyService {
 	ApiResponse<CompanyResponse> getCompanyById(UUID companyId);
 
 	ApiResponse<Boolean> existsCompanyById(UUID companyId);
+
+	ApiResponse<CompanyBasicResponse> getCompanyBasicById(UUID companyId);
+
+	ApiResponse<List<CompanyBasicResponse>> getCompanyBasicByCompanyIds(@Valid CompanyIdsRequest request);
 
 }

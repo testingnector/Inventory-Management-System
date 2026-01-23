@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.nector.auth.entity.User;
 import com.nector.auth.entity.UserRole;
 
 @Repository
@@ -33,5 +34,15 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UUID>{
 	List<UserRole> findByUserIdAndActiveTrueAndDeletedAtIsNull(UUID userId);
 
 	List<UserRole> findByUserIdInAndActiveTrueAndDeletedAtIsNull(List<UUID> userIds);
+
+	List<UserRole> findByUserIdAndCompanyIdAndDeletedAtIsNull(UUID userId, UUID companyId);
+
+	List<UserRole> findByRoleIdAndDeletedAtIsNull(UUID roleId);
+
+	List<UserRole> findByUserIdAndDeletedAtIsNull(UUID userId);
+
+	Optional<UserRole> findByIdAndActiveTrueAndDeletedAtIsNull(UUID userRoleId);
+
+	List<UserRole> findByUserIdInAndDeletedAtNull(List<UUID> userIds);
 
 }

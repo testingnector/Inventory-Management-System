@@ -1,5 +1,7 @@
 package com.nector.orgservice.repository;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +17,9 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
 	boolean existsByPanNumber(String panNumber);
 
 	boolean existsByGstNumber(String gstNumber);
+
+	Optional<Company> findByIdAndDeletedAtIsNullAndActiveTrue(UUID companyId);
+
+	List<Company> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> companyIds);
 
 }

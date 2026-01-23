@@ -11,13 +11,17 @@ import org.springframework.stereotype.Service;
 
 import com.nector.orgservice.dto.request.CompanyCreateRequest;
 import com.nector.orgservice.dto.request.CompanyUpdateRequest;
+import com.nector.orgservice.dto.request.external.CompanyIdsRequest;
 import com.nector.orgservice.dto.response.ApiResponse;
 import com.nector.orgservice.dto.response.CompanyResponse;
+import com.nector.orgservice.dto.response.external.CompanyBasicResponse;
 import com.nector.orgservice.entity.Company;
+import com.nector.orgservice.exception.ResourceNotFoundException;
 import com.nector.orgservice.repository.CompanyRepository;
 import com.nector.orgservice.service.CompanyService;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -59,8 +63,8 @@ public class CompanyServiceImpl implements CompanyService {
 
 		Company saveCompany = companyRepository.save(company);
 
-		return new ApiResponse<>(true, "Company create successfully...", HttpStatus.CREATED.name(), HttpStatus.CREATED.value(),
-				toResponse(saveCompany));
+		return new ApiResponse<>(true, "Company create successfully...", HttpStatus.CREATED.name(),
+				HttpStatus.CREATED.value(), toResponse(saveCompany));
 
 	}
 
@@ -134,38 +138,42 @@ public class CompanyServiceImpl implements CompanyService {
 		company.setActive(false);
 		company.setDeletedAt(LocalDateTime.now());
 		companyRepository.save(company);
-		return new ApiResponse<>(true, "Company deleted successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), Collections.emptyList());
+		return new ApiResponse<>(true, "Company deleted successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				Collections.emptyList());
 	}
 
 	@Override
 	public ApiResponse<List<CompanyResponse>> getAllCompanies() {
-		
+
 		List<Company> companies = companyRepository.findAll();
 		if (companies.isEmpty()) {
-			return new ApiResponse<>(true, "Companies not exists!", HttpStatus.OK.name(), HttpStatus.OK.value(), toResponseList(companies));
+			return new ApiResponse<>(true, "Companies not exists!", HttpStatus.OK.name(), HttpStatus.OK.value(),
+					toResponseList(companies));
 		}
-		return new ApiResponse<>(true, "Companies fetched successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), toResponseList(companies));
+		return new ApiResponse<>(true, "Companies fetched successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				toResponseList(companies));
 	}
 
 	@Override
 	public ApiResponse<CompanyResponse> getCompanyById(UUID companyId) {
 		Company company = companyRepository.findById(companyId)
 				.orElseThrow(() -> new IllegalArgumentException("Company not found"));
-		return new ApiResponse<>(true, "Company data fetch successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), toResponse(company));
+		return new ApiResponse<>(true, "Company data fetch successfully...", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), toResponse(company));
 	}
-	
+
 	@Override
 	public ApiResponse<Boolean> existsCompanyById(UUID companyId) {
-		
+
 		Boolean status = companyRepository.existsById(companyId);
 		if (status) {
 			return new ApiResponse<>(true, "Company is exists", HttpStatus.OK.name(), HttpStatus.OK.value(), status);
-		}
-		else {
-			return new ApiResponse<>(true, "Company is not exists", HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(), status);
+		} else {
+			return new ApiResponse<>(true, "Company is not exists", HttpStatus.NOT_FOUND.name(),
+					HttpStatus.NOT_FOUND.value(), status);
 		}
 	}
-	
+
 //	------------------------------------------------------------------------------------
 
 	private CompanyResponse toResponse(Company company) {
@@ -192,11 +200,11 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	private List<CompanyResponse> toResponseList(List<Company> companies) {
-		
+
 		List<CompanyResponse> companyListResponse = new ArrayList<>();
-		
+
 		for (Company company : companies) {
-			
+
 			CompanyResponse companyResponse = new CompanyResponse();
 
 			companyResponse.setId(company.getId());
@@ -214,11 +222,48 @@ public class CompanyServiceImpl implements CompanyService {
 			companyResponse.setCity(company.getCity());
 			companyResponse.setPincode(company.getPincode());
 			companyResponse.setIsActive(company.getActive());
-			
+
 			companyListResponse.add(companyResponse);
 		}
-		
+
 		return companyListResponse;
+	}
+
+	@Override
+	public ApiResponse<CompanyBasicResponse> getCompanyBasicById(UUID companyId) {
+		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
+				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+
+		CompanyBasicResponse basicResponse = new CompanyBasicResponse();
+		basicResponse.setCompanyId(company.getId());
+		basicResponse.setCompanyCode(company.getCompanyCode());
+		basicResponse.setCompanyName(company.getCompanyName());
+		basicResponse.setActive(company.getActive());
+
+		return new ApiResponse<>(true, "Company data fetch sucessfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), basicResponse);
+	}
+
+	@Override
+	public ApiResponse<List<CompanyBasicResponse>> getCompanyBasicByCompanyIds(@Valid CompanyIdsRequest request) {
+
+		List<Company> companies = companyRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(request.getCompanyIds());
+		if (companies.isEmpty()) {
+			throw new ResourceNotFoundException("Company not found!");
+		}
+		
+		List<CompanyBasicResponse> companiesBasicResponse = new ArrayList<>(); 
+		for (Company company : companies) {
+			
+			CompanyBasicResponse basicResponse = new CompanyBasicResponse();
+			basicResponse.setCompanyId(company.getId());
+			basicResponse.setCompanyCode(company.getCompanyCode());
+			basicResponse.setCompanyName(company.getCompanyName());
+			basicResponse.setActive(company.getActive());
+			
+			companiesBasicResponse.add(basicResponse);
+		}
+		
+		return new ApiResponse<>(true, "Companies data fetch sucessfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), companiesBasicResponse);
 	}
 
 }
