@@ -10,10 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.nector.auth.dto.request.PermissionCreateRequest;
-import com.nector.auth.dto.request.PermissionUpdateRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.PermissionResponses;
+import com.nector.auth.dto.request.internal.PermissionCreateRequest;
+import com.nector.auth.dto.request.internal.PermissionUpdateRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.PermissionResponse;
 import com.nector.auth.entity.Permission;
 import com.nector.auth.entity.User;
 import com.nector.auth.repository.PermissionRepository;
@@ -41,7 +41,7 @@ public class PermissionServiceImpl implements PermissionService{
 	
 	@Transactional
 	@Override
-	public ApiResponse<PermissionResponses> createPermission(@Valid PermissionCreateRequest request,
+	public ApiResponse<PermissionResponse> createPermission(@Valid PermissionCreateRequest request,
 			Authentication authentication) {
 		
 		if (permissionRepository.existsByPermissionCode(request.getPermissionCode())) {
@@ -66,7 +66,7 @@ public class PermissionServiceImpl implements PermissionService{
 
 	@Transactional
 	@Override
-	public ApiResponse<PermissionResponses> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
+	public ApiResponse<PermissionResponse> updatePermission(UUID permissionId, @Valid PermissionUpdateRequest request,
 			Authentication authentication) {
 
 		Permission permission = permissionRepository.findById(permissionId)
@@ -113,7 +113,7 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 	
 	@Override
-	public ApiResponse<List<PermissionResponses>> fetchAllPermission() {
+	public ApiResponse<List<PermissionResponse>> fetchAllPermission() {
 		
 		List<Permission> permissions = permissionRepository.findByDeletedAtIsNull();
 		return new ApiResponse<>(true, "Permissions fetch successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), toResponseList(permissions));
@@ -121,7 +121,7 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 
 	@Override
-	public ApiResponse<PermissionResponses> getSinglePermission(UUID permissionId) {
+	public ApiResponse<PermissionResponse> getSinglePermission(UUID permissionId) {
 		
 		Permission permission = permissionRepository.findById(permissionId)
 				.orElseThrow(() -> new RuntimeException("Permission not found"));
@@ -134,31 +134,31 @@ public class PermissionServiceImpl implements PermissionService{
 	}
 
 //	------------------------------------------------------------------------
-	public PermissionResponses toResponse(Permission permission) {
-		return PermissionResponses.builder()
-				.id(permission.getId())
+	public PermissionResponse toResponse(Permission permission) {
+		return PermissionResponse.builder()
+				.permissionId(permission.getId())
 				.permissionCode(permission.getPermissionCode())
 				.permissionName(permission.getPermissionName())
 				.description(permission.getDescription())
 				.moduleName(permission.getModuleName())
-				.isActive(permission.getActive())
+				.active(permission.getActive())
 				.createdAt(permission.getCreatedAt())
 				.build();
 	}
 
 
-	public List<PermissionResponses> toResponseList(List<Permission> permissions) {
+	public List<PermissionResponse> toResponseList(List<Permission> permissions) {
 		
-		List<PermissionResponses> response = new ArrayList<>();
+		List<PermissionResponse> response = new ArrayList<>();
 		
 		for (Permission permission : permissions) {
-			PermissionResponses permissionResponses = PermissionResponses.builder()
-					.id(permission.getId())
+			PermissionResponse permissionResponses = PermissionResponse.builder()
+					.permissionId(permission.getId())
 					.permissionCode(permission.getPermissionCode())
 					.permissionName(permission.getPermissionName())
 					.description(permission.getDescription())
 					.moduleName(permission.getModuleName())
-					.isActive(permission.getActive())
+					.active(permission.getActive())
 					.createdAt(permission.getCreatedAt())
 					.build();
 			

@@ -30,6 +30,7 @@ public class SecurityConfig {
 
 						// allow internal org-service feign call
 						.requestMatchers("/companies/**").permitAll()
+						.requestMatchers("/$inter@nal&/**").permitAll()
 
 						// Public endpoints
 						.requestMatchers("/auth/**").permitAll()

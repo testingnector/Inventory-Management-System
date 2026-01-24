@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nector.auth.dto.request.PermissionCreateRequest;
-import com.nector.auth.dto.request.PermissionUpdateRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.PermissionResponses;
+import com.nector.auth.dto.request.internal.PermissionCreateRequest;
+import com.nector.auth.dto.request.internal.PermissionUpdateRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.PermissionResponse;
 import com.nector.auth.service.PermissionService;
 
 import jakarta.validation.Valid;
@@ -33,19 +33,19 @@ public class PermissionController {
 
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PostMapping("/insert")
-	public ResponseEntity<ApiResponse<PermissionResponses>> createPermission(
+	public ResponseEntity<ApiResponse<PermissionResponse>> createPermission(
 			@Valid @RequestBody PermissionCreateRequest request, Authentication authentication) {
 
-		ApiResponse<PermissionResponses> response = permissionService.createPermission(request, authentication);
+		ApiResponse<PermissionResponse> response = permissionService.createPermission(request, authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	@PutMapping("/update/{permissionId}")
-	public ResponseEntity<ApiResponse<PermissionResponses>> updatePermission(@PathVariable UUID permissionId,
+	public ResponseEntity<ApiResponse<PermissionResponse>> updatePermission(@PathVariable UUID permissionId,
 			@Valid @RequestBody PermissionUpdateRequest request, Authentication authentication) {
 
-		ApiResponse<PermissionResponses> response = permissionService.updatePermission(permissionId, request,
+		ApiResponse<PermissionResponse> response = permissionService.updatePermission(permissionId, request,
 				authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -62,17 +62,17 @@ public class PermissionController {
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<PermissionResponses>>> getAllPermission() {
+	public ResponseEntity<ApiResponse<List<PermissionResponse>>> getAllPermission() {
 		
-		ApiResponse<List<PermissionResponses>> response = permissionService.fetchAllPermission();
+		ApiResponse<List<PermissionResponse>> response = permissionService.fetchAllPermission();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@GetMapping("/{permissionId}")
-	public ResponseEntity<ApiResponse<PermissionResponses>> getSinglePermission(@PathVariable UUID permissionId) {
+	public ResponseEntity<ApiResponse<PermissionResponse>> getSinglePermission(@PathVariable UUID permissionId) {
 		
-		ApiResponse<PermissionResponses> response = permissionService.getSinglePermission(permissionId);
+		ApiResponse<PermissionResponse> response = permissionService.getSinglePermission(permissionId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 }

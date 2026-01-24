@@ -1,5 +1,7 @@
 package com.nector.orgservice.exception;
 
+import java.util.Collections;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,5 +25,12 @@ public class GlobalExceptionHandler {
 
 		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(), exception.getData());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+	
+	@ExceptionHandler(AuthServiceException.class)
+	public ResponseEntity<ApiResponse<Object>> handleAuthServiceException(AuthServiceException exception) {
+
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), exception.getHttpStatus().name(), exception.getHttpStatus().value(), Collections.emptyList());
+		return ResponseEntity.status(exception.getHttpStatus()).body(response);
 	}
 }

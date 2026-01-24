@@ -17,7 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.response.internal.ApiResponse;
 import com.nector.auth.security.CustomUserDetails;
 
 import io.jsonwebtoken.Claims;

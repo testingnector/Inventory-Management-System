@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.nector.auth.dto.request.external.CompanyBasicResponse;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.external.CompanyIdsRequest;
+import com.nector.auth.dto.request.external.CompanyIdsRequestDto;
+import com.nector.auth.dto.response.external.CompanyResponseExternalDto;
+import com.nector.auth.dto.response.internal.ApiResponse;
 
 import jakarta.validation.Valid;
 
@@ -22,10 +22,10 @@ public interface OrgServiceClient {
 	@GetMapping("/companies/exists/{id}")
 	public ResponseEntity<ApiResponse<Boolean>> existsByCompanyId(@PathVariable("id") UUID companyId);
 	
-	@GetMapping("/companies/basic/{id}")
-	public ResponseEntity<ApiResponse<CompanyBasicResponse>> getCompanyBasic(@PathVariable("id") UUID companyId);
+	@GetMapping("/detail/{id}")
+	public ResponseEntity<ApiResponse<CompanyResponseExternalDto>> getCompanyBasic(@PathVariable("id") UUID companyId);
 	
-	@PostMapping("/companies/basic")
-	public ResponseEntity<ApiResponse<List<CompanyBasicResponse>>> getCompanyBasicByCompanyIds(@Valid @RequestBody CompanyIdsRequest request);
+	@PostMapping("/details")
+	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(@Valid @RequestBody CompanyIdsRequestDto request);
 }
 

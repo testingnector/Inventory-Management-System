@@ -5,13 +5,14 @@ import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 
-import com.nector.auth.dto.request.UserRoleAssignRequest;
-import com.nector.auth.dto.request.UserRoleRevokeRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.user_role.RoleCompaniesUsersResponseDto1;
-import com.nector.auth.dto.response.user_role.UserCompaniesRolesResponseDto1;
-import com.nector.auth.dto.response.user_role.UserCompanyRolesResponseDto1;
-import com.nector.auth.dto.response.user_role.UsersCompaniesRolesResponseDto1;
+import com.nector.auth.dto.request.internal.UserRoleAssignRequest;
+import com.nector.auth.dto.request.internal.UserRoleRevokeRequest;
+import com.nector.auth.dto.response.external.CompanyUsersResponseExternalDto;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto1;
+import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto1;
+import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto1;
+import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto1;
 
 import jakarta.validation.Valid;
 
@@ -28,6 +29,8 @@ public interface UserRoleService {
 	ApiResponse<UserCompaniesRolesResponseDto1> getUserRolesByUserId(UUID userId);
 	
 	ApiResponse<UserCompanyRolesResponseDto1> getUserRolesByUserIdAndCompanyId(UUID userId, UUID companyId);
+
+	ApiResponse<List<CompanyUsersResponseExternalDto>> getAllUsersByCompanyId(UUID companyId);
 
 
 

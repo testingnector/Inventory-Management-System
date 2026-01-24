@@ -45,4 +45,6 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UUID>{
 
 	List<UserRole> findByUserIdInAndDeletedAtNull(List<UUID> userIds);
 
+	List<UserRole> getActiveUsersWithActiveRolesByCompanyId(UUID companyId);
+
 }

@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nector.auth.dto.request.RoleCreateRequest;
-import com.nector.auth.dto.request.RoleUpdateRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.RoleResponse;
+import com.nector.auth.dto.request.internal.RoleCreateRequest;
+import com.nector.auth.dto.request.internal.RoleUpdateRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.RoleResponse;
 import com.nector.auth.service.RoleService;
 
 import jakarta.validation.Valid;

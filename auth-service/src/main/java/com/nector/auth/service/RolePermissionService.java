@@ -5,26 +5,25 @@ import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 
-import com.nector.auth.dto.request.RolePermissionAssignRequest;
-import com.nector.auth.dto.request.RolePermissionRevokeRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.role_permission.PermissionRoleGroupResponse;
-import com.nector.auth.dto.response.role_permission.RolePermissionGroupResponse;
-import com.nector.auth.dto.response.role_permission.RolePermissionResponse;
+import com.nector.auth.dto.request.internal.RolePermissionAssignRequest;
+import com.nector.auth.dto.request.internal.RolePermissionRevokeRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.PermissionRolesResponseDto1;
+import com.nector.auth.dto.response.internal.RolePermissionsResponseDto1;
 
 import jakarta.validation.Valid;
 
 public interface RolePermissionService {
 
-	ApiResponse<RolePermissionGroupResponse> assignPermission(RolePermissionAssignRequest rolePermissionAssignRequest, Authentication authentication);
+	ApiResponse<RolePermissionsResponseDto1> assignPermission(RolePermissionAssignRequest rolePermissionAssignRequest, Authentication authentication);
 
-	ApiResponse<RolePermissionGroupResponse> revokePermission(@Valid RolePermissionRevokeRequest request,
+	ApiResponse<RolePermissionsResponseDto1> revokePermission(@Valid RolePermissionRevokeRequest request,
 			Authentication authentication);
 
-	ApiResponse<RolePermissionGroupResponse> getPermissionsByRole(UUID roleId);
+	ApiResponse<RolePermissionsResponseDto1> getPermissionsByRole(UUID roleId);
 
-	ApiResponse<PermissionRoleGroupResponse> getRolePermissionsByPermissionId(UUID permissionId);
+	ApiResponse<PermissionRolesResponseDto1> getRolePermissionsByPermissionId(UUID permissionId);
 
-	ApiResponse<List<RolePermissionGroupResponse>> getAllRolePermissions();
+	ApiResponse<List<RolePermissionsResponseDto1>> getAllRolePermissions();
 
 }

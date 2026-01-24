@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nector.auth.dto.request.RolePermissionAssignRequest;
-import com.nector.auth.dto.request.RolePermissionRevokeRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.role_permission.PermissionRoleGroupResponse;
-import com.nector.auth.dto.response.role_permission.RolePermissionGroupResponse;
-import com.nector.auth.dto.response.role_permission.RolePermissionResponse;
+import com.nector.auth.dto.request.internal.RolePermissionAssignRequest;
+import com.nector.auth.dto.request.internal.RolePermissionRevokeRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.PermissionRolesResponseDto1;
+import com.nector.auth.dto.response.internal.RolePermissionsResponseDto1;
 import com.nector.auth.service.RolePermissionService;
 
 import jakarta.validation.Valid;
@@ -32,42 +31,42 @@ public class RolePermissionController {
 	private final RolePermissionService rolePermissionService;
 
 	@PostMapping("/assign")
-	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> assignPermissionToRole(
+	public ResponseEntity<ApiResponse<RolePermissionsResponseDto1>> assignPermissionToRole(
 			@RequestBody RolePermissionAssignRequest rolePermissionAssignRequest, Authentication authentication) {
 
-		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService
+		ApiResponse<RolePermissionsResponseDto1> response = rolePermissionService
 				.assignPermission(rolePermissionAssignRequest, authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/revoke")
-	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> revokePermission(
+	public ResponseEntity<ApiResponse<RolePermissionsResponseDto1>> revokePermission(
 			@Valid @RequestBody RolePermissionRevokeRequest request, Authentication authentication) {
 
-		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService.revokePermission(request, authentication);
+		ApiResponse<RolePermissionsResponseDto1> response = rolePermissionService.revokePermission(request, authentication);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/role/{roleId}")
-	public ResponseEntity<ApiResponse<RolePermissionGroupResponse>> getPermissionsByRoleId(@PathVariable UUID roleId) {
+	public ResponseEntity<ApiResponse<RolePermissionsResponseDto1>> getPermissionsByRoleId(@PathVariable UUID roleId) {
 
-		ApiResponse<RolePermissionGroupResponse> response = rolePermissionService.getPermissionsByRole(roleId);
+		ApiResponse<RolePermissionsResponseDto1> response = rolePermissionService.getPermissionsByRole(roleId);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@GetMapping("/permission/{permissionId}")
-	public ResponseEntity<ApiResponse<PermissionRoleGroupResponse>> getPermissionsByPermissionId(@PathVariable UUID permissionId) {
+	public ResponseEntity<ApiResponse<PermissionRolesResponseDto1>> getPermissionsByPermissionId(@PathVariable UUID permissionId) {
 		
-		ApiResponse<PermissionRoleGroupResponse> response = rolePermissionService.getRolePermissionsByPermissionId(permissionId);
+		ApiResponse<PermissionRolesResponseDto1> response = rolePermissionService.getRolePermissionsByPermissionId(permissionId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<RolePermissionGroupResponse>>> getAllRolePermissions() {
+	public ResponseEntity<ApiResponse<List<RolePermissionsResponseDto1>>> getAllRolePermissions() {
 		
-		ApiResponse<List<RolePermissionGroupResponse>> response = rolePermissionService.getAllRolePermissions();
+		ApiResponse<List<RolePermissionsResponseDto1>> response = rolePermissionService.getAllRolePermissions();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 

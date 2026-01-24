@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -13,10 +12,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nector.auth.dto.request.RoleCreateRequest;
-import com.nector.auth.dto.request.RoleUpdateRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.RoleResponse;
+import com.nector.auth.dto.request.internal.RoleCreateRequest;
+import com.nector.auth.dto.request.internal.RoleUpdateRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.RoleResponse;
 import com.nector.auth.entity.Role;
 import com.nector.auth.entity.User;
 import com.nector.auth.exception.DuplicateResourceException;

@@ -9,17 +9,23 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.nector.orgservice.client.AuthServiceClient;
 import com.nector.orgservice.dto.request.CompanyCreateRequest;
 import com.nector.orgservice.dto.request.CompanyUpdateRequest;
-import com.nector.orgservice.dto.request.external.CompanyIdsRequest;
+import com.nector.orgservice.dto.request.external.CompanyIdsRequestDto;
 import com.nector.orgservice.dto.response.ApiResponse;
 import com.nector.orgservice.dto.response.CompanyResponse;
-import com.nector.orgservice.dto.response.external.CompanyBasicResponse;
+import com.nector.orgservice.dto.response.external.CompanyResponseExternalDto;
+import com.nector.orgservice.dto.response.external.CompanyUsersResponseExternalDto;
+import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto1;
+import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto2;
 import com.nector.orgservice.entity.Company;
+import com.nector.orgservice.exception.AuthServiceException;
 import com.nector.orgservice.exception.ResourceNotFoundException;
 import com.nector.orgservice.repository.CompanyRepository;
 import com.nector.orgservice.service.CompanyService;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class CompanyServiceImpl implements CompanyService {
 
 	private final CompanyRepository companyRepository;
+	private final AuthServiceClient authServiceClient;
 
 	@Transactional
 	@Override
@@ -230,40 +237,86 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public ApiResponse<CompanyBasicResponse> getCompanyBasicById(UUID companyId) {
+	public ApiResponse<CompanyResponseExternalDto> getCompanyBasicById(UUID companyId) {
 		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
-		CompanyBasicResponse basicResponse = new CompanyBasicResponse();
+		CompanyResponseExternalDto basicResponse = new CompanyResponseExternalDto();
 		basicResponse.setCompanyId(company.getId());
 		basicResponse.setCompanyCode(company.getCompanyCode());
 		basicResponse.setCompanyName(company.getCompanyName());
 		basicResponse.setActive(company.getActive());
 
-		return new ApiResponse<>(true, "Company data fetch sucessfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), basicResponse);
+		return new ApiResponse<>(true, "Company data fetch sucessfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				basicResponse);
 	}
 
 	@Override
-	public ApiResponse<List<CompanyBasicResponse>> getCompanyBasicByCompanyIds(@Valid CompanyIdsRequest request) {
+	public ApiResponse<List<CompanyResponseExternalDto>> getCompaniesDetailsByCompanyIds(@Valid CompanyIdsRequestDto request) {
 
 		List<Company> companies = companyRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(request.getCompanyIds());
 		if (companies.isEmpty()) {
 			throw new ResourceNotFoundException("Company not found!");
 		}
-		
-		List<CompanyBasicResponse> companiesBasicResponse = new ArrayList<>(); 
+
+		List<CompanyResponseExternalDto> companiesBasicResponse = new ArrayList<>();
 		for (Company company : companies) {
-			
-			CompanyBasicResponse basicResponse = new CompanyBasicResponse();
+
+			CompanyResponseExternalDto basicResponse = new CompanyResponseExternalDto();
 			basicResponse.setCompanyId(company.getId());
 			basicResponse.setCompanyCode(company.getCompanyCode());
 			basicResponse.setCompanyName(company.getCompanyName());
 			basicResponse.setActive(company.getActive());
-			
+
 			companiesBasicResponse.add(basicResponse);
 		}
+
+		return new ApiResponse<>(true, "Companies data fetch sucessfully...", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), companiesBasicResponse);
+	}
+
+	@Override
+	public ApiResponse<?> getAllUsersByCompanyId(UUID companyId) {
+
+		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
+				.orElseThrow(() -> new ResourceNotFoundException("Company not found or inactive!"));
 		
-		return new ApiResponse<>(true, "Companies data fetch sucessfully...", HttpStatus.OK.name(), HttpStatus.OK.value(), companiesBasicResponse);
+		List<CompanyUsersResponseDto2> companyUsersResponseDto2s = new ArrayList<>();
+		try {
+			List<CompanyUsersResponseExternalDto> companyUsersResponseExternalDtos = authServiceClient.getAllUsersByCompanyId(companyId).getBody().getData();
+			if (companyUsersResponseExternalDtos.isEmpty()) {
+				return new ApiResponse<>(true, "No users for this company!", HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(),
+						Collections.emptyList());
+			}
+			for (CompanyUsersResponseExternalDto cured : companyUsersResponseExternalDtos) {
+				
+				CompanyUsersResponseDto2 curd = new CompanyUsersResponseDto2();
+				curd.setUserId(cured.getUserId());
+				curd.setName(cured.getName());
+				curd.setEmail(cured.getEmail());
+				curd.setMobileNumber(cured.getMobileNumber());
+				curd.setUserIsActive(cured.getActive());
+				companyUsersResponseDto2s.add(curd);
+			}
+
+		} catch (FeignException e) {
+			HttpStatus status = HttpStatus.resolve(e.status());
+			String message = (status == HttpStatus.INTERNAL_SERVER_ERROR) ? "Something went wrong!"
+					: "Error while communicating with Authentication Service";
+
+			throw new AuthServiceException(message, status, e);
+		}
+		
+		CompanyUsersResponseDto1 curd = new CompanyUsersResponseDto1();
+		curd.setCompanyId(company.getId());
+		curd.setCompanyCode(company.getCompanyCode());
+		curd.setCompanyName(company.getCompanyName());
+		curd.setActive(company.getActive());
+		curd.setUsers(companyUsersResponseDto2s);
+ 		
+		return new ApiResponse<>(true, "Companies data fetch sucessfully...", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), curd);
+		
 	}
 
 }

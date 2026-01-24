@@ -1,7 +1,6 @@
 package com.nector.auth.service.impl;
 
 import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,7 +8,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.response.internal.ApiResponse;
 import com.nector.auth.service.EmailService;
 
 @Service

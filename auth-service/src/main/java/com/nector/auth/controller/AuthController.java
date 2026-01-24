@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nector.auth.dto.request.LoginRequest;
-import com.nector.auth.dto.request.VerifyOtpRequest;
-import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.request.internal.LoginRequest;
+import com.nector.auth.dto.request.internal.VerifyOtpRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
 import com.nector.auth.entity.UserSession;
 import com.nector.auth.repository.UserSessionRepository;
 import com.nector.auth.security.CustomUserDetails;

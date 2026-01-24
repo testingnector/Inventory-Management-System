@@ -5,25 +5,24 @@ import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 
-import com.nector.auth.dto.request.UserPermissionAssignRequest;
-import com.nector.auth.dto.request.UserPermissionRevokeRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.user_permission.PermissionUsersGroupResponse;
-import com.nector.auth.dto.response.user_permission.UserPermissionGroupResponse;
-import com.nector.auth.dto.response.user_permission.UserPermissionResponse;
+import com.nector.auth.dto.request.internal.UserPermissionAssignRequest;
+import com.nector.auth.dto.request.internal.UserPermissionRevokeRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.PermissionUsersResponseDto1;
+import com.nector.auth.dto.response.internal.UserPermissionsResponseDto1;
 
 import jakarta.validation.Valid;
 
 public interface UserPermissionService {
 
-	ApiResponse<UserPermissionGroupResponse> assignOrUpdate(@Valid UserPermissionAssignRequest userPermissionAssignRequest, Authentication authentication);
+	ApiResponse<UserPermissionsResponseDto1> assignOrUpdate(@Valid UserPermissionAssignRequest userPermissionAssignRequest, Authentication authentication);
 
-	ApiResponse<UserPermissionGroupResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request, Authentication authentication);
+	ApiResponse<UserPermissionsResponseDto1> revokeUserPermission(@Valid UserPermissionRevokeRequest request, Authentication authentication);
 
-	ApiResponse<UserPermissionGroupResponse> getUserPermissionsByUserId(UUID userId);
+	ApiResponse<UserPermissionsResponseDto1> getUserPermissionsByUserId(UUID userId);
 
-	ApiResponse<PermissionUsersGroupResponse>  getUserPermissionsByPermissionId(UUID permissionId);
+	ApiResponse<PermissionUsersResponseDto1>  getUserPermissionsByPermissionId(UUID permissionId);
 
-	ApiResponse<List<UserPermissionGroupResponse>> getAllUserPermissions();
+	ApiResponse<List<UserPermissionsResponseDto1>> getAllUserPermissions();
 
 }

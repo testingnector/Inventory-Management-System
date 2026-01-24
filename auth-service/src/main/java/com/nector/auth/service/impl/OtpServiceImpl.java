@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.response.internal.ApiResponse;
 import com.nector.auth.entity.OtpVerification;
 import com.nector.auth.repository.OtpRepository;
 import com.nector.auth.service.OtpService;

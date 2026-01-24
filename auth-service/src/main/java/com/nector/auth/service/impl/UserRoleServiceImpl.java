@@ -2,9 +2,12 @@ package com.nector.auth.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,24 +20,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nector.auth.client.OrgServiceClient;
-import com.nector.auth.dto.request.UserRoleAssignRequest;
-import com.nector.auth.dto.request.UserRoleRevokeRequest;
-import com.nector.auth.dto.request.external.CompanyBasicResponse;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.external.CompanyIdsRequest;
-import com.nector.auth.dto.response.user_role.CompanyResponseDto;
-import com.nector.auth.dto.response.user_role.RoleCompaniesUsersResponseDto1;
-import com.nector.auth.dto.response.user_role.RoleCompaniesUsersResponseDto2;
-import com.nector.auth.dto.response.user_role.RoleCompaniesUsersResponseDto3;
-import com.nector.auth.dto.response.user_role.UserCompaniesRolesResponseDto1;
-import com.nector.auth.dto.response.user_role.UserCompaniesRolesResponseDto2;
-import com.nector.auth.dto.response.user_role.UserCompaniesRolesResponseDto3;
-import com.nector.auth.dto.response.user_role.UserCompanyRolesResponseDto1;
-import com.nector.auth.dto.response.user_role.UserCompanyRolesResponseDto2;
-import com.nector.auth.dto.response.user_role.UserCompanyRolesResponseDto3;
-import com.nector.auth.dto.response.user_role.UsersCompaniesRolesResponseDto1;
-import com.nector.auth.dto.response.user_role.UsersCompaniesRolesResponseDto2;
-import com.nector.auth.dto.response.user_role.UsersCompaniesRolesResponseDto3;
+import com.nector.auth.dto.request.external.CompanyIdsRequestDto;
+import com.nector.auth.dto.request.internal.UserRoleAssignRequest;
+import com.nector.auth.dto.request.internal.UserRoleRevokeRequest;
+import com.nector.auth.dto.response.external.CompanyResponseExternalDto;
+import com.nector.auth.dto.response.external.CompanyUsersResponseExternalDto;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.CompanyResponseInternalDto;
+import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto1;
+import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto2;
+import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto3;
+import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto1;
+import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto2;
+import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto3;
+import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto1;
+import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto2;
+import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto3;
+import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto1;
+import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto2;
+import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto3;
 import com.nector.auth.entity.Role;
 import com.nector.auth.entity.User;
 import com.nector.auth.entity.UserRole;
@@ -71,7 +75,8 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UsersCompaniesRolesResponseDto1> assignRole(UserRoleAssignRequest request, Authentication authentication) {
+	public ApiResponse<UsersCompaniesRolesResponseDto1> assignRole(UserRoleAssignRequest request,
+			Authentication authentication) {
 
 		UUID loggedInUserId = getLoggedInUserId(authentication);
 
@@ -118,7 +123,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 		UserRole userRole;
 
-		CompanyResponseDto crd = new CompanyResponseDto();
+		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 
 		if (revokedRole != null) {
 
@@ -131,13 +136,13 @@ public class UserRoleServiceImpl implements UserRoleService {
 			revokedRole.setRevokedBy(null);
 
 			try {
-				ResponseEntity<ApiResponse<CompanyBasicResponse>> companyBasicResponseEntity = orgServiceClient
-						.getCompanyBasic(request.getCompanyId());
-				CompanyBasicResponse companyBasicResponse = companyBasicResponseEntity.getBody().getData();
-				crd.setCompanyId(companyBasicResponse.getCompanyId());
-				crd.setCompanyCode(companyBasicResponse.getCompanyCode());
-				crd.setCompanyName(companyBasicResponse.getCompanyName());
-				crd.setActive(companyBasicResponse.getActive());
+				CompanyResponseExternalDto companyResponseExternalDto = orgServiceClient
+						.getCompanyBasic(request.getCompanyId()).getBody().getData();
+				
+				crid.setCompanyId(companyResponseExternalDto.getCompanyId());
+				crid.setCompanyCode(companyResponseExternalDto.getCompanyCode());
+				crid.setCompanyName(companyResponseExternalDto.getCompanyName());
+				crid.setActive(companyResponseExternalDto.getActive());
 
 			} catch (FeignException e) {
 				HttpStatus status = HttpStatus.resolve(e.status());
@@ -158,13 +163,13 @@ public class UserRoleServiceImpl implements UserRoleService {
 			userRole.setRoleId(request.getRoleId());
 
 			try {
-				ResponseEntity<ApiResponse<CompanyBasicResponse>> companyBasicResponseEntity = orgServiceClient
-						.getCompanyBasic(request.getCompanyId());
-				CompanyBasicResponse companyBasicResponse = companyBasicResponseEntity.getBody().getData();
-				crd.setCompanyId(companyBasicResponse.getCompanyId());
-				crd.setCompanyCode(companyBasicResponse.getCompanyCode());
-				crd.setCompanyName(companyBasicResponse.getCompanyName());
-				crd.setActive(companyBasicResponse.getActive());
+				CompanyResponseExternalDto companyResponseExternalDto = orgServiceClient
+						.getCompanyBasic(request.getCompanyId()).getBody().getData();
+				
+				crid.setCompanyId(companyResponseExternalDto.getCompanyId());
+				crid.setCompanyCode(companyResponseExternalDto.getCompanyCode());
+				crid.setCompanyName(companyResponseExternalDto.getCompanyName());
+				crid.setActive(companyResponseExternalDto.getActive());
 
 			} catch (FeignException e) {
 				HttpStatus status = HttpStatus.resolve(e.status());
@@ -197,10 +202,10 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 		// -------- COMPANY --------
 		UsersCompaniesRolesResponseDto2 companyResp = new UsersCompaniesRolesResponseDto2();
-		companyResp.setCompanyId(crd.getCompanyId());
-		companyResp.setCompanyCode(crd.getCompanyCode());
-		companyResp.setCompanyName(crd.getCompanyName());
-		companyResp.setActive(crd.getActive());
+		companyResp.setCompanyId(crid.getCompanyId());
+		companyResp.setCompanyCode(crid.getCompanyCode());
+		companyResp.setCompanyName(crid.getCompanyName());
+		companyResp.setActive(crid.getActive());
 
 		// -------- ROLE --------
 		UsersCompaniesRolesResponseDto3 roleResp = new UsersCompaniesRolesResponseDto3();
@@ -220,14 +225,15 @@ public class UserRoleServiceImpl implements UserRoleService {
 		userResp.getCompanies().add(companyResp);
 
 		// wrap in response
-		return new ApiResponse<UsersCompaniesRolesResponseDto1>(true, "Role assigned successfully", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), userResp);
+		return new ApiResponse<UsersCompaniesRolesResponseDto1>(true, "Role assigned successfully",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), userResp);
 
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<UsersCompaniesRolesResponseDto1> revokeRole(UserRoleRevokeRequest request, Authentication authentication) {
+	public ApiResponse<UsersCompaniesRolesResponseDto1> revokeRole(UserRoleRevokeRequest request,
+			Authentication authentication) {
 
 		UUID loggedInUserId = getLoggedInUserId(authentication);
 
@@ -268,15 +274,15 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 		UserRole revokedUserRole = userRoleRepository.save(userRole);
 
-		CompanyResponseDto crd = new CompanyResponseDto();
+		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 		try {
-			ResponseEntity<ApiResponse<CompanyBasicResponse>> companyBasicResponseEntity = orgServiceClient
-					.getCompanyBasic(userRole.getCompanyId());
-			CompanyBasicResponse companyBasicResponse = companyBasicResponseEntity.getBody().getData();
-			crd.setCompanyId(companyBasicResponse.getCompanyId());
-			crd.setCompanyCode(companyBasicResponse.getCompanyCode());
-			crd.setCompanyName(companyBasicResponse.getCompanyName());
-			crd.setActive(companyBasicResponse.getActive());
+			CompanyResponseExternalDto companyResponseExternalDto = orgServiceClient
+					.getCompanyBasic(userRole.getCompanyId()).getBody().getData();
+			
+			crid.setCompanyId(companyResponseExternalDto.getCompanyId());
+			crid.setCompanyCode(companyResponseExternalDto.getCompanyCode());
+			crid.setCompanyName(companyResponseExternalDto.getCompanyName());
+			crid.setActive(companyResponseExternalDto.getActive());
 
 		} catch (FeignException e) {
 			HttpStatus status = HttpStatus.resolve(e.status());
@@ -297,10 +303,10 @@ public class UserRoleServiceImpl implements UserRoleService {
 
 		// -------- COMPANY --------
 		UsersCompaniesRolesResponseDto2 companyResp = new UsersCompaniesRolesResponseDto2();
-		companyResp.setCompanyId(crd.getCompanyId());
-		companyResp.setCompanyCode(crd.getCompanyCode());
-		companyResp.setCompanyName(crd.getCompanyName());
-		companyResp.setActive(crd.getActive());
+		companyResp.setCompanyId(crid.getCompanyId());
+		companyResp.setCompanyCode(crid.getCompanyCode());
+		companyResp.setCompanyName(crid.getCompanyName());
+		companyResp.setActive(crid.getActive());
 
 		// -------- ROLE --------
 		UsersCompaniesRolesResponseDto3 roleResp = new UsersCompaniesRolesResponseDto3();
@@ -369,14 +375,14 @@ public class UserRoleServiceImpl implements UserRoleService {
 				roleIds.add(userRole.getRoleId());
 		}
 
-		List<CompanyBasicResponse> companyBasicResponses = new ArrayList<CompanyBasicResponse>();
+		List<CompanyResponseExternalDto> companyResponseExternalDtos = new ArrayList<CompanyResponseExternalDto>();
 		if (!companyIds.isEmpty()) {
 			try {
-				CompanyIdsRequest cir = new CompanyIdsRequest();
-				cir.setCompanyIds(companyIds);
-				List<CompanyBasicResponse> temp = orgServiceClient.getCompanyBasicByCompanyIds(cir).getBody().getData();
+				CompanyIdsRequestDto cird = new CompanyIdsRequestDto();
+				cird.setCompanyIds(companyIds);
+				List<CompanyResponseExternalDto> temp = orgServiceClient.getCompaniesDetailsByCompanyIds(cird).getBody().getData();
 				if (temp != null) {
-					companyBasicResponses = temp;
+					companyResponseExternalDtos = temp;
 				}
 			} catch (FeignException e) {
 				HttpStatus status = HttpStatus.resolve(e.status());
@@ -387,9 +393,9 @@ public class UserRoleServiceImpl implements UserRoleService {
 			}
 		}
 
-		Map<UUID, CompanyBasicResponse> companyMap = new HashMap<UUID, CompanyBasicResponse>();
-		for (CompanyBasicResponse cbr : companyBasicResponses) {
-			companyMap.put(cbr.getCompanyId(), cbr);
+		Map<UUID, CompanyResponseExternalDto> companyMap = new HashMap<UUID, CompanyResponseExternalDto>();
+		for (CompanyResponseExternalDto cred : companyResponseExternalDtos) {
+			companyMap.put(cred.getCompanyId(), cred);
 		}
 
 		List<Role> roles = new ArrayList<Role>();
@@ -425,7 +431,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 				continue;
 			}
 
-			CompanyBasicResponse company = companyMap.get(userRole.getCompanyId());
+			CompanyResponseExternalDto company = companyMap.get(userRole.getCompanyId());
 			Role role = roleMap.get(userRole.getRoleId());
 
 			if (company == null || role == null) {
@@ -513,19 +519,19 @@ public class UserRoleServiceImpl implements UserRoleService {
 		}
 
 		// -------- COMPANIES --------
-		CompanyIdsRequest cir = new CompanyIdsRequest();
+		CompanyIdsRequestDto cir = new CompanyIdsRequestDto();
 		cir.setCompanyIds(companyIds);
 
-		List<CompanyBasicResponse> companies;
+		List<CompanyResponseExternalDto> companies;
 		try {
-			companies = orgServiceClient.getCompanyBasicByCompanyIds(cir).getBody().getData();
+			companies = orgServiceClient.getCompaniesDetailsByCompanyIds(cir).getBody().getData();
 		} catch (FeignException e) {
 			HttpStatus status = HttpStatus.resolve(e.status());
 			throw new OrgServiceException("Error while communicating with Organization Service", status, e);
 		}
 
-		Map<UUID, CompanyBasicResponse> companyMap = new HashMap<>();
-		for (CompanyBasicResponse c : companies) {
+		Map<UUID, CompanyResponseExternalDto> companyMap = new HashMap<>();
+		for (CompanyResponseExternalDto c : companies) {
 			companyMap.put(c.getCompanyId(), c);
 		}
 
@@ -535,7 +541,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 		for (UserRole ur : userRoles) {
 
 			User user = userMap.get(ur.getUserId());
-			CompanyBasicResponse company = companyMap.get(ur.getCompanyId());
+			CompanyResponseExternalDto company = companyMap.get(ur.getCompanyId());
 
 			if (user == null || company == null) {
 				continue;
@@ -610,19 +616,19 @@ public class UserRoleServiceImpl implements UserRoleService {
 		}
 
 		// ---------- COMPANIES ----------
-		CompanyIdsRequest cir = new CompanyIdsRequest();
+		CompanyIdsRequestDto cir = new CompanyIdsRequestDto();
 		cir.setCompanyIds(companyIds);
 
-		List<CompanyBasicResponse> companies;
+		List<CompanyResponseExternalDto> companies;
 		try {
-			companies = orgServiceClient.getCompanyBasicByCompanyIds(cir).getBody().getData();
+			companies = orgServiceClient.getCompaniesDetailsByCompanyIds(cir).getBody().getData();
 		} catch (FeignException e) {
 			HttpStatus status = HttpStatus.resolve(e.status());
 			throw new OrgServiceException("Error while communicating with Organization Service", status, e);
 		}
 
 		Map<UUID, UserCompaniesRolesResponseDto2> companyMap = new HashMap<>();
-		for (CompanyBasicResponse c : companies) {
+		for (CompanyResponseExternalDto c : companies) {
 			UserCompaniesRolesResponseDto2 crd = new UserCompaniesRolesResponseDto2();
 			crd.setCompanyId(c.getCompanyId());
 			crd.setCompanyCode(c.getCompanyCode());
@@ -664,69 +670,101 @@ public class UserRoleServiceImpl implements UserRoleService {
 	@Override
 	public ApiResponse<UserCompanyRolesResponseDto1> getUserRolesByUserIdAndCompanyId(UUID userId, UUID companyId) {
 
-	    // 🔹 Validate User
-	    User user = userRepository.findByIdAndActiveTrueAndDeletedAtIsNull(userId)
-	            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		// 🔹 Validate User
+		User user = userRepository.findByIdAndActiveTrueAndDeletedAtIsNull(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-	    // 🔹 Validate Company via org service
-	    CompanyBasicResponse companyBasic;
-	    try {
-	        ResponseEntity<ApiResponse<CompanyBasicResponse>> companyResponse = orgServiceClient.getCompanyBasic(companyId);
-	        companyBasic = companyResponse.getBody().getData();
-	    } catch (FeignException e) {
-	        HttpStatus status = HttpStatus.resolve(e.status());
-	        String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!" 
-	                : "Error while communicating with Organization Service";
-	        throw new OrgServiceException(message, status, e);
-	    }
+		// 🔹 Validate Company via org service
+		CompanyResponseExternalDto companyBasic;
+		try {
+			ResponseEntity<ApiResponse<CompanyResponseExternalDto>> companyResponse = orgServiceClient
+					.getCompanyBasic(companyId);
+			companyBasic = companyResponse.getBody().getData();
+		} catch (FeignException e) {
+			HttpStatus status = HttpStatus.resolve(e.status());
+			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
+					: "Error while communicating with Organization Service";
+			throw new OrgServiceException(message, status, e);
+		}
 
-	    // 🔹 Fetch User Roles for this company
-	    List<UserRole> userRoles = userRoleRepository.findByUserIdAndCompanyIdAndDeletedAtIsNull(userId, companyId);
-	    List<UUID> roleIds = userRoles.stream().map(UserRole::getRoleId).toList();
+		// 🔹 Fetch User Roles for this company
+		List<UserRole> userRoles = userRoleRepository.findByUserIdAndCompanyIdAndDeletedAtIsNull(userId, companyId);
+		List<UUID> roleIds = userRoles.stream().map(UserRole::getRoleId).toList();
 
-	    List<Role> roles = roleRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(roleIds);
-	    Map<UUID, Role> roleMap = roles.stream().collect(Collectors.toMap(Role::getId, r -> r));
+		List<Role> roles = roleRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(roleIds);
+		Map<UUID, Role> roleMap = roles.stream().collect(Collectors.toMap(Role::getId, r -> r));
 
-	    // ---------- BUILD RESPONSE ----------
-	    UserCompanyRolesResponseDto1 response = new UserCompanyRolesResponseDto1();
-	    response.setUserId(user.getId());
-	    response.setName(user.getName());
-	    response.setEmail(user.getEmail());
-	    response.setMobileNumber(user.getMobileNumber());
-	    response.setActive(user.getActive());
+		// ---------- BUILD RESPONSE ----------
+		UserCompanyRolesResponseDto1 response = new UserCompanyRolesResponseDto1();
+		response.setUserId(user.getId());
+		response.setName(user.getName());
+		response.setEmail(user.getEmail());
+		response.setMobileNumber(user.getMobileNumber());
+		response.setActive(user.getActive());
 
-	    // Company info
-	    UserCompanyRolesResponseDto2 companyDto = new UserCompanyRolesResponseDto2();
-	    companyDto.setCompanyId(companyBasic.getCompanyId());
-	    companyDto.setCompanyCode(companyBasic.getCompanyCode());
-	    companyDto.setCompanyName(companyBasic.getCompanyName());
-	    companyDto.setActive(companyBasic.getActive());
+		// Company info
+		UserCompanyRolesResponseDto2 companyDto = new UserCompanyRolesResponseDto2();
+		companyDto.setCompanyId(companyBasic.getCompanyId());
+		companyDto.setCompanyCode(companyBasic.getCompanyCode());
+		companyDto.setCompanyName(companyBasic.getCompanyName());
+		companyDto.setActive(companyBasic.getActive());
 
-	    // Roles assigned to this user in this company
-	    for (UserRole ur : userRoles) {
-	        Role role = roleMap.get(ur.getRoleId());
-	        if (role == null) continue;
+		// Roles assigned to this user in this company
+		for (UserRole ur : userRoles) {
+			Role role = roleMap.get(ur.getRoleId());
+			if (role == null)
+				continue;
 
-	        UserCompanyRolesResponseDto3 roleDto = new UserCompanyRolesResponseDto3();
-	        roleDto.setRoleId(role.getId());
-	        roleDto.setRoleCode(role.getRoleCode());
-	        roleDto.setRoleName(role.getRoleName());
-	        roleDto.setRoleIsActive(role.getActive());
-	        roleDto.setUserRoleId(ur.getId());
-	        roleDto.setAssignedIsActive(ur.getActive());
-	        roleDto.setAssignedAt(ur.getCreatedAt());
-	        roleDto.setRevokedAt(ur.getDeletedAt());
+			UserCompanyRolesResponseDto3 roleDto = new UserCompanyRolesResponseDto3();
+			roleDto.setRoleId(role.getId());
+			roleDto.setRoleCode(role.getRoleCode());
+			roleDto.setRoleName(role.getRoleName());
+			roleDto.setRoleIsActive(role.getActive());
+			roleDto.setUserRoleId(ur.getId());
+			roleDto.setAssignedIsActive(ur.getActive());
+			roleDto.setAssignedAt(ur.getCreatedAt());
+			roleDto.setRevokedAt(ur.getDeletedAt());
 
-	        companyDto.getRoles().add(roleDto);
-	    }
+			companyDto.getRoles().add(roleDto);
+		}
 
-	    // 🔹 Attach company to user
-	    response.setCompany(companyDto);
+		// 🔹 Attach company to user
+		response.setCompany(companyDto);
 
-	    String message = userRoles.isEmpty() ? "User has no roles for this company" : "User roles fetched successfully";
+		String message = userRoles.isEmpty() ? "User has no roles for this company" : "User roles fetched successfully";
 
-	    return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), response);
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), response);
 	}
 
+	@Override
+	public ApiResponse<List<CompanyUsersResponseExternalDto>> getAllUsersByCompanyId(UUID companyId) {
+
+		List<UserRole> userRoles = userRoleRepository.getActiveUsersWithActiveRolesByCompanyId(companyId);
+
+		Set<UUID> userIds = new HashSet<>();
+		for (UserRole userRole : userRoles) {
+			userIds.add(userRole.getUserId());
+		}
+		if (userIds.isEmpty()) {
+			return new ApiResponse<>(true, "No users registered for this company", HttpStatus.OK.name(),
+					HttpStatus.OK.value(), Collections.emptyList());
+		}
+
+		List<User> users = userRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(userIds);
+		List<CompanyUsersResponseExternalDto> companyUsersResponseDto1s = new ArrayList<>();
+		for (User user : users) {
+			CompanyUsersResponseExternalDto curd = new CompanyUsersResponseExternalDto();
+			curd.setUserId(user.getId());
+			curd.setName(user.getName());
+			curd.setEmail(user.getEmail());
+			curd.setMobileNumber(user.getMobileNumber());
+			curd.setActive(user.getActive());
+
+			companyUsersResponseDto1s.add(curd);
+		}
+
+		String message = companyUsersResponseDto1s.isEmpty() ? "No users registered" : "Users fetched successfully";
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), companyUsersResponseDto1s);
+	}
 
 }

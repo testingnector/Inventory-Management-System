@@ -5,10 +5,10 @@ import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 
-import com.nector.auth.dto.request.RoleCreateRequest;
-import com.nector.auth.dto.request.RoleUpdateRequest;
-import com.nector.auth.dto.response.ApiResponse;
-import com.nector.auth.dto.response.RoleResponse;
+import com.nector.auth.dto.request.internal.RoleCreateRequest;
+import com.nector.auth.dto.request.internal.RoleUpdateRequest;
+import com.nector.auth.dto.response.internal.ApiResponse;
+import com.nector.auth.dto.response.internal.RoleResponse;
 
 import jakarta.validation.Valid;
 

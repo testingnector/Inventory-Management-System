@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.nector.auth.dto.response.RoleResponse;
 import com.nector.auth.entity.Role;
 
 public interface RoleRepository extends JpaRepository<Role, UUID> {

@@ -1,6 +1,6 @@
 package com.nector.auth.service;
 
-import com.nector.auth.dto.response.ApiResponse;
+import com.nector.auth.dto.response.internal.ApiResponse;
 
 public interface EmailService {
 
