@@ -22,10 +22,10 @@ public interface OrgServiceClient {
 	@GetMapping("/companies/exists/{id}")
 	public ResponseEntity<ApiResponse<Boolean>> existsByCompanyId(@PathVariable("id") UUID companyId);
 	
-	@GetMapping("/detail/{id}")
+	@GetMapping("/companies/detail/{id}")
 	public ResponseEntity<ApiResponse<CompanyResponseExternalDto>> getCompanyBasic(@PathVariable("id") UUID companyId);
 	
-	@PostMapping("/details")
-	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(@Valid @RequestBody CompanyIdsRequestDto request);
+	@PostMapping("/companies/details")
+	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(@RequestBody CompanyIdsRequestDto request);
 }
 

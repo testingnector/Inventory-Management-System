@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.nector.orgservice.dto.response.ApiResponse;
 import com.nector.orgservice.dto.response.external.CompanyUsersResponseExternalDto;
+import com.nector.orgservice.dto.response.internal.ApiResponse;
 
 @FeignClient(name = "AUTH-SERVICE")
 public interface AuthServiceClient {

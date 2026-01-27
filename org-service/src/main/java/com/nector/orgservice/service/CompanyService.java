@@ -3,12 +3,12 @@ package com.nector.orgservice.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.nector.orgservice.dto.request.CompanyCreateRequest;
-import com.nector.orgservice.dto.request.CompanyUpdateRequest;
 import com.nector.orgservice.dto.request.external.CompanyIdsRequestDto;
-import com.nector.orgservice.dto.response.ApiResponse;
-import com.nector.orgservice.dto.response.CompanyResponse;
+import com.nector.orgservice.dto.request.internal.CompanyCreateRequest;
+import com.nector.orgservice.dto.request.internal.CompanyUpdateRequest;
 import com.nector.orgservice.dto.response.external.CompanyResponseExternalDto;
+import com.nector.orgservice.dto.response.internal.ApiResponse;
+import com.nector.orgservice.dto.response.internal.CompanyResponse;
 
 import jakarta.validation.Valid;
 

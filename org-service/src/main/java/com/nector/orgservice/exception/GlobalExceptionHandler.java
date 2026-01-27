@@ -1,17 +1,38 @@
 package com.nector.orgservice.exception;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.nector.orgservice.dto.response.ApiResponse;
+import com.nector.orgservice.dto.response.internal.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+	// ---------------- Validation errors ----------------
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationErrors(
+			MethodArgumentNotValidException exception) {
+
+		Map<String, String> errors = new HashMap<>();
+		exception.getBindingResult().getAllErrors().forEach(error -> {
+			String fieldName = ((FieldError) error).getField();
+			String message = error.getDefaultMessage();
+			errors.put(fieldName, message);
+		});
+
+		ApiResponse<Map<String, String>> response = new ApiResponse<>(false, "Validation failed!",
+				HttpStatus.BAD_REQUEST.name(), HttpStatus.BAD_REQUEST.value(), errors);
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
 	
 	@ExceptionHandler(DuplicateResourceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleDuplicateResourceException(DuplicateResourceException exception) {

@@ -10,13 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.nector.orgservice.client.AuthServiceClient;
-import com.nector.orgservice.dto.request.CompanyCreateRequest;
-import com.nector.orgservice.dto.request.CompanyUpdateRequest;
 import com.nector.orgservice.dto.request.external.CompanyIdsRequestDto;
-import com.nector.orgservice.dto.response.ApiResponse;
-import com.nector.orgservice.dto.response.CompanyResponse;
+import com.nector.orgservice.dto.request.internal.CompanyCreateRequest;
+import com.nector.orgservice.dto.request.internal.CompanyUpdateRequest;
 import com.nector.orgservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.orgservice.dto.response.external.CompanyUsersResponseExternalDto;
+import com.nector.orgservice.dto.response.internal.ApiResponse;
+import com.nector.orgservice.dto.response.internal.CompanyResponse;
 import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto1;
 import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto2;
 import com.nector.orgservice.entity.Company;

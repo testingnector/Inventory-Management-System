@@ -1,4 +1,4 @@
-package com.nector.orgservice.dto.response;
+package com.nector.orgservice.dto.response.internal;
 
 import java.util.UUID;
 
