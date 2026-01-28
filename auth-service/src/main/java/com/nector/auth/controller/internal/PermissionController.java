@@ -1,4 +1,4 @@
-package com.nector.auth.controller;
+package com.nector.auth.controller.internal;
 
 import java.util.List;
 import java.util.UUID;

@@ -22,5 +22,13 @@ public interface BranchRepository extends JpaRepository<Branch, UUID> {
 	List<Branch> findByCompanyIdAndDeletedAtIsNull(UUID companyId);
 
 	List<Branch> findByCompanyIdAndDeletedAtIsNullAndActiveTrue(UUID companyId);
+
+	Optional<Branch> findByIdAndDeletedAtIsNull(UUID branchId);
+
+	Optional<Branch> findByBranchCodeAndDeletedAtIsNullAndActiveTrue(String branchCode);
+
+	Optional<Branch> findByCompanyIdAndHeadOfficeTrueAndDeletedAtIsNullAndActiveTrue(UUID companyId);
+
+	Optional<Branch> findByCompanyIdAndHeadOfficeTrueAndDeletedAtIsNull(UUID companyId);
 }
 

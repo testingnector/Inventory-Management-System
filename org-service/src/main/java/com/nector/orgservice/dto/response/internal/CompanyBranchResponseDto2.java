@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@JsonPropertyOrder({"branchId", "branchCode", "branchName", "city", "active", "createdAt"})
+@JsonPropertyOrder({"branchId", "branchCode", "branchName", "city", "address", "active", "headOffice", "createdAt"})
 @Data
 public class CompanyBranchResponseDto2 {
 
@@ -17,7 +17,9 @@ public class CompanyBranchResponseDto2 {
     private String branchCode;
     private String branchName;
     private String city;
+    private String address;
     private Boolean active;
+    private Boolean headOffice;
     
 	private LocalDateTime createdAt;
         

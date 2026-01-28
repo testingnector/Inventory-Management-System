@@ -54,4 +54,11 @@ public class GlobalExceptionHandler {
 		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), exception.getHttpStatus().name(), exception.getHttpStatus().value(), Collections.emptyList());
 		return ResponseEntity.status(exception.getHttpStatus()).body(response);
 	}
+	
+	@ExceptionHandler(InactiveResourceException.class)
+	public ResponseEntity<ApiResponse<Object>> handleInactiveResourceException(InactiveResourceException exception) {
+
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.FORBIDDEN.name(), HttpStatus.FORBIDDEN.value(), exception.getData());
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
 }

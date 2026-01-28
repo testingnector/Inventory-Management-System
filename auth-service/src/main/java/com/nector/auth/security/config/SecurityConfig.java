@@ -9,8 +9,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.nector.auth.security.filters.ExternalServiceAuthFilter;
 import com.nector.auth.security.jwt.JwtAuthenticationFilter;
 
 @Configuration
@@ -18,6 +18,9 @@ public class SecurityConfig {
 
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+	
+	@Autowired
+	private ExternalServiceAuthFilter externalServiceAuthFilter;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,10 +30,11 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
 				.authorizeHttpRequests(auth -> auth
+						
+			            .requestMatchers("/external/**").permitAll()
 
 						// allow internal org-service feign call
 						.requestMatchers("/companies/**").permitAll()
-//						.requestMatchers("/$inter@nal&/**").permitAll()
 
 						// Public endpoints
 						.requestMatchers("/auth/**").permitAll()
@@ -56,9 +60,10 @@ public class SecurityConfig {
 						// Catch-all for everything else
 						.anyRequest().authenticated());
 
-		// Add JWT filter
-		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+		// Add JWT and INTERNAL SERVICE filter
+//	    http.addFilterBefore(externalServiceAuthFilter, JwtAuthenticationFilter.class);
+//	    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+	    
 		return http.build();
 	}
 

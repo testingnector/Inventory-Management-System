@@ -1,4 +1,4 @@
-package com.nector.auth.controller;
+package com.nector.auth.controller.internal;
 
 import java.util.List;
 import java.util.UUID;
@@ -88,13 +88,4 @@ public class UserRoleController {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
-	@GetMapping("/{companyId}/users")
-	public ResponseEntity<ApiResponse<List<CompanyUsersResponseExternalDto>>> getAllUsersByCompanyId(@PathVariable("companyId") UUID companyId) {
-		ApiResponse<List<CompanyUsersResponseExternalDto>> response = userRoleService.getAllUsersByCompanyId(companyId);
-		System.out.println(response.toString());
-		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
-	}
-	
-	
-
 }

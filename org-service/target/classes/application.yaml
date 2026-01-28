@@ -1,0 +1,3 @@
+external:
+  services:
+    auth-service-token: ORG_SERVICE_SECRET_123

@@ -8,12 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.nector.orgservice.config.FeignConfig;
 import com.nector.orgservice.dto.response.external.CompanyUsersResponseExternalDto;
 import com.nector.orgservice.dto.response.internal.ApiResponse;
 
-@FeignClient(name = "AUTH-SERVICE")
+@FeignClient(name = "AUTH-SERVICE", configuration = FeignConfig.class)
 public interface AuthServiceClient {
 
-	@GetMapping("/$inter@nal&/user-roles/{companyId}/users")
+	@GetMapping("/external/user-roles/{companyId}/users")
 	public ResponseEntity<ApiResponse<List<CompanyUsersResponseExternalDto>>> getAllUsersByCompanyId(@PathVariable("companyId") UUID companyId);
 }

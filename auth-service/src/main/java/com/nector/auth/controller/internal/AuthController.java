@@ -1,4 +1,4 @@
-package com.nector.auth.controller;
+package com.nector.auth.controller.internal;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
