@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nector.orgservice.client.AuthServiceClient;
 import com.nector.orgservice.dto.request.external.CompanyIdsRequestDto;
@@ -26,7 +27,6 @@ import com.nector.orgservice.repository.CompanyRepository;
 import com.nector.orgservice.service.CompanyService;
 
 import feign.FeignException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -128,6 +128,10 @@ public class CompanyServiceImpl implements CompanyService {
 		if (request.getCountry() != null) {
 			company.setCountry(request.getCountry());
 		}
+		
+		if (request.getActive() != null) {
+			company.setActive(request.getActive());
+		}
 
 		// Always set the updater
 		company.setUpdatedBy(updatedBy);
@@ -139,11 +143,12 @@ public class CompanyServiceImpl implements CompanyService {
 
 	@Transactional
 	@Override
-	public ApiResponse<List<Object>> deleteCompany(UUID companyId) {
+	public ApiResponse<List<Object>> deleteCompany(UUID companyId, UUID deletedBy) {
 		Company company = companyRepository.findById(companyId)
 				.orElseThrow(() -> new IllegalArgumentException("Company not found"));
 		company.setActive(false);
 		company.setDeletedAt(LocalDateTime.now());
+		company.setDeletedBy(deletedBy);
 		companyRepository.save(company);
 		return new ApiResponse<>(true, "Company deleted successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
 				Collections.emptyList());
@@ -187,7 +192,7 @@ public class CompanyServiceImpl implements CompanyService {
 
 		CompanyResponse companyResponse = new CompanyResponse();
 
-		companyResponse.setId(company.getId());
+		companyResponse.setCompanyId(company.getId());
 		companyResponse.setCompanyCode(company.getCompanyCode());
 		companyResponse.setCompanyName(company.getCompanyName());
 		companyResponse.setLegalName(company.getLegalName());
@@ -201,7 +206,7 @@ public class CompanyServiceImpl implements CompanyService {
 		companyResponse.setState(company.getState());
 		companyResponse.setCity(company.getCity());
 		companyResponse.setPincode(company.getPincode());
-		companyResponse.setIsActive(company.getActive());
+		companyResponse.setActive(company.getActive());
 
 		return companyResponse;
 	}
@@ -214,7 +219,7 @@ public class CompanyServiceImpl implements CompanyService {
 
 			CompanyResponse companyResponse = new CompanyResponse();
 
-			companyResponse.setId(company.getId());
+			companyResponse.setCompanyId(company.getId());
 			companyResponse.setCompanyCode(company.getCompanyCode());
 			companyResponse.setCompanyName(company.getCompanyName());
 			companyResponse.setLegalName(company.getLegalName());
@@ -228,7 +233,7 @@ public class CompanyServiceImpl implements CompanyService {
 			companyResponse.setState(company.getState());
 			companyResponse.setCity(company.getCity());
 			companyResponse.setPincode(company.getPincode());
-			companyResponse.setIsActive(company.getActive());
+			companyResponse.setActive(company.getActive());
 
 			companyListResponse.add(companyResponse);
 		}

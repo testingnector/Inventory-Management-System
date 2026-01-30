@@ -6,7 +6,8 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import com.nector.orgservice.controller.BranchController;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.nector.orgservice.dto.request.internal.BranchCreateRequestDto;
 import com.nector.orgservice.dto.request.internal.BranchUpdateRequestDto;
 import com.nector.orgservice.dto.response.internal.ApiResponse;
@@ -24,7 +25,6 @@ import com.nector.orgservice.repository.BranchRepository;
 import com.nector.orgservice.repository.CompanyRepository;
 import com.nector.orgservice.service.BranchService;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -215,7 +215,7 @@ public class BranchServiceImpl implements BranchService {
 		responseDto.setCity(updatedBranch.getCity());
 		responseDto.setAddress(updatedBranch.getAddress());
 		responseDto.setActive(updatedBranch.getActive());
-		responseDto.setHeadOffice(branch.getActive());
+		responseDto.setHeadOffice(updatedBranch.getHeadOffice());
 		responseDto.setCompany(companyDto);
 
 		return new ApiResponse<>(true, "Branch updated successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),
@@ -264,7 +264,7 @@ public class BranchServiceImpl implements BranchService {
 		responseDto.setCity(branch.getCity());
 		responseDto.setAddress(branch.getAddress());
 		responseDto.setActive(branch.getActive());
-		responseDto.setHeadOffice(branch.getActive());
+		responseDto.setHeadOffice(branch.getHeadOffice());
 		responseDto.setCompany(companyDto);
 
 		return new ApiResponse<>(true, "Branch fetched successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),
@@ -297,7 +297,7 @@ public class BranchServiceImpl implements BranchService {
 		dto.setCity(branch.getCity());
 		dto.setAddress(branch.getAddress());
 		dto.setActive(branch.getActive());
-		dto.setHeadOffice(branch.getActive());
+		dto.setHeadOffice(branch.getHeadOffice());
 		dto.setCompany(companyDto);
 
 		return new ApiResponse<>(true, "Head office fetched successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),

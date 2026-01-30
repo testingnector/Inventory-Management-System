@@ -18,7 +18,7 @@ public interface CompanyService {
 
 	ApiResponse<CompanyResponse> updateCompany(UUID companyId, @Valid CompanyUpdateRequest request, UUID updatedBy);
 
-	ApiResponse<List<Object>> deleteCompany(UUID companyId);
+	ApiResponse<List<Object>> deleteCompany(UUID companyId, UUID deletedBy);
 
 	ApiResponse<List<CompanyResponse>> getAllCompanies();
 

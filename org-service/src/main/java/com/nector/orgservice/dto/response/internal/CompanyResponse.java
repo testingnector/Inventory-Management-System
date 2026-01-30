@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CompanyResponse {
 
-    private UUID id;
+    private UUID companyId;
     private String companyCode;
     private String companyName;
     private String legalName;
@@ -25,7 +25,7 @@ public class CompanyResponse {
     private String state;
     private String city;
     private String pincode;
-    private Boolean isActive; 
+    private Boolean active; 
     
     
 }

@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@Order(0)
+@Order(1)
 public class ExternalServiceAuthFilter extends OncePerRequestFilter {
 
 	@Value("${external.services.org-service}")

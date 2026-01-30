@@ -41,9 +41,9 @@ public class CompanyController {
 			@RequestHeader("X-USER-ID") UUID createdBy, @RequestHeader("X-USER-ROLE") String role) {
 
 		if (!"SUPER_ADMIN".equals(role)) {
-		    throw new RuntimeException("Only SUPER_ADMIN can create company");
+			throw new RuntimeException("Only SUPER_ADMIN can create company");
 		}
-		
+
 		ApiResponse<CompanyResponse> response = companyService.createCompany(request, createdBy);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
@@ -51,17 +51,26 @@ public class CompanyController {
 	// Update
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(@PathVariable("id") UUID companyId,
-			@Valid @RequestBody CompanyUpdateRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
+			@Valid @RequestBody CompanyUpdateRequest request, @RequestHeader("X-USER-ID") UUID updatedBy, @RequestHeader("X-USER-ROLE") String role) {
 
+		if (!"SUPER_ADMIN".equals(role)) {
+			throw new RuntimeException("Only SUPER_ADMIN can update company");
+		}
 		ApiResponse<CompanyResponse> response = companyService.updateCompany(companyId, request, updatedBy);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
-		
+
 	}
 
 	// Delete (soft delete)
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<ApiResponse<List<Object>>> deleteCompany(@PathVariable("id") UUID companyId) {
-		ApiResponse<List<Object>> response = companyService.deleteCompany(companyId);
+	public ResponseEntity<ApiResponse<List<Object>>> deleteCompany(@PathVariable("id") UUID companyId,
+			@RequestHeader("X-USER-ID") UUID deletedBy, @RequestHeader("X-USER-ROLE") String role) {
+		
+		if (!"SUPER_ADMIN".equals(role)) {
+			throw new RuntimeException("Only SUPER_ADMIN can delete company");
+		}
+		
+		ApiResponse<List<Object>> response = companyService.deleteCompany(companyId, deletedBy);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
 
@@ -78,14 +87,13 @@ public class CompanyController {
 		ApiResponse<CompanyResponse> response = companyService.getCompanyById(companyId);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
-	
+
 	@GetMapping("{companyId}/users")
 	public ResponseEntity<?> getAllUsersByCompanyId(@PathVariable("companyId") UUID companyId) {
 		ApiResponse<?> response = companyService.getAllUsersByCompanyId(companyId);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
-	
-	
+
 //	---------------------FOR EXTERNAL SERVICE CALLING-------------------
 
 	// Exists by ID
@@ -94,22 +102,21 @@ public class CompanyController {
 		ApiResponse<Boolean> response = companyService.existsCompanyById(companyId);
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
-	
+
 	@GetMapping("/detail/{id}")
 	public ResponseEntity<ApiResponse<CompanyResponseExternalDto>> getCompanyBasic(@PathVariable("id") UUID companyId) {
-	    ApiResponse<CompanyResponseExternalDto> response = companyService.getCompanyBasicById(companyId);
-	    System.out.println(response.toString());
-	    return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
-	}
-
-	@PostMapping("/details")
-	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(@Valid @RequestBody CompanyIdsRequestDto request) {
-		ApiResponse<List<CompanyResponseExternalDto>> response = companyService.getCompaniesDetailsByCompanyIds(request);
+		ApiResponse<CompanyResponseExternalDto> response = companyService.getCompanyBasicById(companyId);
 		System.out.println(response.toString());
 		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
 	}
 
-	
-	
-	
+	@PostMapping("/details")
+	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(
+			@Valid @RequestBody CompanyIdsRequestDto request) {
+		ApiResponse<List<CompanyResponseExternalDto>> response = companyService
+				.getCompaniesDetailsByCompanyIds(request);
+		System.out.println(response.toString());
+		return ResponseEntity.status(HttpStatus.resolve(response.getHttpStatusCode())).body(response);
+	}
+
 }

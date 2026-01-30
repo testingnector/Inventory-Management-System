@@ -97,6 +97,9 @@ public class Company {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    
+    @Column(name = "deleted_by")
+    private UUID deletedBy;
 
     //  Lifecycle hooks
     @PrePersist

@@ -16,6 +16,51 @@ import com.nector.orgservice.dto.response.internal.ApiResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ApiResponse<String>> handleAllException(Exception ex) {
+
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR; // default
+
+		// --------- Common Java / Spring exceptions ---------
+		if (ex instanceof IllegalArgumentException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof NullPointerException) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR; // 500
+		} else if (ex instanceof IllegalStateException) {
+			status = HttpStatus.CONFLICT; // 409
+		} else if (ex instanceof UnsupportedOperationException) {
+			status = HttpStatus.NOT_IMPLEMENTED; // 501
+		} else if (ex instanceof IndexOutOfBoundsException || ex instanceof ArrayIndexOutOfBoundsException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof ClassCastException) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR; // 500
+		} else if (ex instanceof NumberFormatException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof SecurityException) {
+			status = HttpStatus.FORBIDDEN; // 403
+		} else if (ex instanceof UnsupportedOperationException) {
+			status = HttpStatus.NOT_IMPLEMENTED; // 501
+		} else if (ex instanceof org.springframework.dao.DataIntegrityViolationException) {
+			status = HttpStatus.CONFLICT; // 409
+		} else if (ex instanceof org.springframework.dao.EmptyResultDataAccessException) {
+			status = HttpStatus.NOT_FOUND; // 404
+		} else if (ex instanceof org.springframework.web.bind.MissingServletRequestParameterException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof org.springframework.web.method.annotation.MethodArgumentTypeMismatchException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof org.springframework.http.converter.HttpMessageNotReadableException) {
+			status = HttpStatus.BAD_REQUEST; // 400
+		} else if (ex instanceof org.springframework.web.HttpRequestMethodNotSupportedException) {
+			status = HttpStatus.METHOD_NOT_ALLOWED; // 405
+		}
+
+		// Build the response dynamically
+		ApiResponse<String> response = new ApiResponse<>(false, ex.getClass().getSimpleName(), // exception type
+				status.name(), status.value(), ex.getMessage());
+
+		return ResponseEntity.status(status).body(response);
+	}
+	
 	// ---------------- Validation errors ----------------
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationErrors(

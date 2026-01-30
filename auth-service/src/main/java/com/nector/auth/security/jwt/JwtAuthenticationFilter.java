@@ -27,17 +27,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@Order(1)
+@Order(2)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final CustomUserDetailsService customUserDetailsService;
+	private final UserSessionRepository userSessionRepository;
 
-	@Autowired
-	private CustomUserDetailsService customUserDetailsService;
-
-	@Autowired
-	private UserSessionRepository userSessionRepository;
+	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService,
+			UserSessionRepository userSessionRepository) {
+		this.jwtTokenProvider = jwtTokenProvider;
+		this.customUserDetailsService = customUserDetailsService;
+		this.userSessionRepository = userSessionRepository;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
