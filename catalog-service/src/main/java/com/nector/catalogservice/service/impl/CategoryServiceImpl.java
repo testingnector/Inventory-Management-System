@@ -17,9 +17,7 @@ import com.nector.catalogservice.dto.request.internal.CategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CategoryCompanyResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto2;
+import com.nector.catalogservice.dto.response.internal.CategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.exception.ActiveResourceException;
@@ -43,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CategoryCompanyResponseDto1> createCategory(CategoryCreateRequest request, UUID createdBy) {
+	public ApiResponse<CategoryResponse> createCategory(CategoryCreateRequest request, UUID createdBy) {
 
 		Optional<Category> existingCategoryOpt = categoryRepository
 				.findByCategoryCodeAndDeletedAtIsNull(request.getCategoryCode());
@@ -57,12 +55,9 @@ public class CategoryServiceImpl implements CategoryService {
 			}
 		}
 
-		CompanyResponseInternalDto crid = fetchCompany(request.getCompanyId());
-
 		Category category = new Category();
 		category.setCategoryCode(request.getCategoryCode());
 		category.setCategoryName(request.getCategoryName());
-		category.setCompanyId(request.getCompanyId());
 		category.setDescription(request.getDescription());
 		category.setDisplayOrder(request.getDisplayOrder());
 		category.setCreatedBy(createdBy);
@@ -70,24 +65,23 @@ public class CategoryServiceImpl implements CategoryService {
 		Category savedCategory = categoryRepository.save(category);
 
 //	    BUID RESPONSE
-		CategoryCompanyResponseDto1 ccrd = new CategoryCompanyResponseDto1();
-		ccrd.setCategoryId(savedCategory.getId());
-		ccrd.setCategoryCode(savedCategory.getCategoryCode());
-		ccrd.setCategoryName(savedCategory.getCategoryName());
-		ccrd.setDescription(savedCategory.getDescription());
-		ccrd.setDisplayOrder(savedCategory.getDisplayOrder());
-		ccrd.setActive(savedCategory.getActive());
-		ccrd.setCreatedAt(savedCategory.getCreatedAt());
-		ccrd.setCompany(crid);
+		CategoryResponse cr = new CategoryResponse();
+		cr.setCategoryId(savedCategory.getId());
+		cr.setCategoryCode(savedCategory.getCategoryCode());
+		cr.setCategoryName(savedCategory.getCategoryName());
+		cr.setDescription(savedCategory.getDescription());
+		cr.setDisplayOrder(savedCategory.getDisplayOrder());
+		cr.setActive(savedCategory.getActive());
+		cr.setCreatedAt(savedCategory.getCreatedAt());
 
-		return new ApiResponse<CategoryCompanyResponseDto1>(true, "Category created successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), ccrd);
+		return new ApiResponse<>(true, "Category created successfully...",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
 
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<CategoryCompanyResponseDto1> updateCategory(UUID categoryId,
+	public ApiResponse<CategoryResponse> updateCategory(UUID categoryId,
 			@Valid CategoryUpdateRequest request, UUID updatedBy) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
@@ -112,20 +106,20 @@ public class CategoryServiceImpl implements CategoryService {
 		category.setUpdatedBy(updatedBy);
 		Category updatedCategory = categoryRepository.save(category);
 
-		CompanyResponseInternalDto crid = fetchCompany(category.getCompanyId());
 
-		CategoryCompanyResponseDto1 ccrd = new CategoryCompanyResponseDto1();
-		ccrd.setCategoryId(updatedCategory.getId());
-		ccrd.setCategoryCode(updatedCategory.getCategoryCode());
-		ccrd.setCategoryName(updatedCategory.getCategoryName());
-		ccrd.setDescription(updatedCategory.getDescription());
-		ccrd.setDisplayOrder(updatedCategory.getDisplayOrder());
-		ccrd.setActive(updatedCategory.getActive());
-		ccrd.setCreatedAt(updatedCategory.getCreatedAt());
-		ccrd.setCompany(crid);
 
-		return new ApiResponse<CategoryCompanyResponseDto1>(true, "Category updated successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), ccrd);
+//	    BUID RESPONSE
+		CategoryResponse cr = new CategoryResponse();
+		cr.setCategoryId(updatedCategory.getId());
+		cr.setCategoryCode(updatedCategory.getCategoryCode());
+		cr.setCategoryName(updatedCategory.getCategoryName());
+		cr.setDescription(updatedCategory.getDescription());
+		cr.setDisplayOrder(updatedCategory.getDisplayOrder());
+		cr.setActive(updatedCategory.getActive());
+		cr.setCreatedAt(updatedCategory.getCreatedAt());
+
+		return new ApiResponse<>(true, "Category updated successfully...",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
 
 	}
 
@@ -147,128 +141,105 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CategoryCompanyResponseDto1> getCategoryByCategoryId(UUID categoryId) {
+	public ApiResponse<CategoryResponse> getCategoryByCategoryId(UUID categoryId) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
 
-		CompanyResponseInternalDto crid = fetchCompany(category.getCompanyId());
 
-		CategoryCompanyResponseDto1 ccrd = new CategoryCompanyResponseDto1();
-		ccrd.setCategoryId(category.getId());
-		ccrd.setCategoryCode(category.getCategoryCode());
-		ccrd.setCategoryName(category.getCategoryName());
-		ccrd.setDescription(category.getDescription());
-		ccrd.setDisplayOrder(category.getDisplayOrder());
-		ccrd.setActive(category.getActive());
-		ccrd.setCreatedAt(category.getCreatedAt());
-		ccrd.setCompany(crid);
+//	    BUID RESPONSE
+		CategoryResponse cr = new CategoryResponse();
+		cr.setCategoryId(category.getId());
+		cr.setCategoryCode(category.getCategoryCode());
+		cr.setCategoryName(category.getCategoryName());
+		cr.setDescription(category.getDescription());
+		cr.setDisplayOrder(category.getDisplayOrder());
+		cr.setActive(category.getActive());
+		cr.setCreatedAt(category.getCreatedAt());
 
-		return new ApiResponse<CategoryCompanyResponseDto1>(true, "Category details fetch successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), ccrd);
+		return new ApiResponse<>(true, "Category details fetch successfully...",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
 	}
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CategoryCompanyResponseDto1> getCategoryByCategoryCode(String categoryCode) {
+	public ApiResponse<CategoryResponse> getCategoryByCategoryCode(String categoryCode) {
 
 		Category category = categoryRepository.findByCategoryCodeAndDeletedAtIsNullAndActiveTrue(categoryCode)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
 
-		CompanyResponseInternalDto crid = fetchCompany(category.getCompanyId());
+//	    BUID RESPONSE
+		CategoryResponse cr = new CategoryResponse();
+		cr.setCategoryId(category.getId());
+		cr.setCategoryCode(category.getCategoryCode());
+		cr.setCategoryName(category.getCategoryName());
+		cr.setDescription(category.getDescription());
+		cr.setDisplayOrder(category.getDisplayOrder());
+		cr.setActive(category.getActive());
+		cr.setCreatedAt(category.getCreatedAt());
 
-		CategoryCompanyResponseDto1 ccrd = new CategoryCompanyResponseDto1();
-		ccrd.setCategoryId(category.getId());
-		ccrd.setCategoryCode(category.getCategoryCode());
-		ccrd.setCategoryName(category.getCategoryName());
-		ccrd.setDescription(category.getDescription());
-		ccrd.setDisplayOrder(category.getDisplayOrder());
-		ccrd.setActive(category.getActive());
-		ccrd.setCreatedAt(category.getCreatedAt());
-		ccrd.setCompany(crid);
-
-		return new ApiResponse<CategoryCompanyResponseDto1>(true, "Category details fetch successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), ccrd);
+		return new ApiResponse<>(true, "Category details fetch successfully...",
+				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
 
 	}
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyCategoriesResponseDto1> getActiveCategoriesByCompanyId(UUID companyId) {
+	public ApiResponse<List<CategoryResponse>> getAllActiveCategories() {
 
-		CompanyResponseInternalDto crid = fetchCompany(companyId);
-
-		List<Category> categories = categoryRepository.findByCompanyIdAndDeletedAtIsNullAndActiveTrue(companyId);
+		List<Category> categories = categoryRepository.findByDeletedAtIsNullAndActiveTrue();
 		if (categories.isEmpty()) {
 			throw new ResourceNotFoundException("No Active Categories found for this company");
 		}
 
-		CompanyCategoriesResponseDto1 ccrd = new CompanyCategoriesResponseDto1();
-		ccrd.setCompanyId(crid.getCompanyId());
-		ccrd.setCompanyName(crid.getCompanyName());
-		ccrd.setCompanyCode(crid.getCompanyCode());
-		ccrd.setActive(crid.getActive());
-
-		List<CompanyCategoriesResponseDto2> categoriesResponseDto2s = new ArrayList<>();
+		List<CategoryResponse> categoriesResponseDto2s = new ArrayList<>();
 		for (Category category : categories) {
-			CompanyCategoriesResponseDto2 ccrdt = new CompanyCategoriesResponseDto2();
-			ccrdt.setCategoryId(category.getId());
-			ccrdt.setCategoryCode(category.getCategoryCode());
-			ccrdt.setCategoryName(category.getCategoryName());
-			ccrdt.setDescription(category.getDescription());
-			ccrdt.setDisplayOrder(category.getDisplayOrder());
-			ccrdt.setActive(category.getActive());
-			ccrdt.setCreatedAt(category.getCreatedAt());
+			CategoryResponse cr = new CategoryResponse();
+			cr.setCategoryId(category.getId());
+			cr.setCategoryCode(category.getCategoryCode());
+			cr.setCategoryName(category.getCategoryName());
+			cr.setDescription(category.getDescription());
+			cr.setDisplayOrder(category.getDisplayOrder());
+			cr.setActive(category.getActive());
+			cr.setCreatedAt(category.getCreatedAt());
 
-			categoriesResponseDto2s.add(ccrdt);
+			categoriesResponseDto2s.add(cr);
 		}
 
-		ccrd.setCategories(categoriesResponseDto2s);
-
 		return new ApiResponse<>(true, "Active Categories details fetch successfully...", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), ccrd);
+				HttpStatus.OK.value(), categoriesResponseDto2s);
 	}
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyCategoriesResponseDto1> getInactiveCategoriesByCompanyId(UUID companyId) {
+	public ApiResponse<List<CategoryResponse>> getAllInactiveCategories() {
 
-		CompanyResponseInternalDto crid = fetchCompany(companyId);
-
-		List<Category> categories = categoryRepository.findByCompanyIdAndDeletedAtIsNullAndActiveFalse(companyId);
+		List<Category> categories = categoryRepository.findByDeletedAtIsNullAndActiveFalse();
 		if (categories.isEmpty()) {
 			throw new ResourceNotFoundException("No Inactive Categories found for this company");
 		}
 
-		CompanyCategoriesResponseDto1 ccrd = new CompanyCategoriesResponseDto1();
-		ccrd.setCompanyId(crid.getCompanyId());
-		ccrd.setCompanyName(crid.getCompanyName());
-		ccrd.setCompanyCode(crid.getCompanyCode());
-		ccrd.setActive(crid.getActive());
-
-		List<CompanyCategoriesResponseDto2> categoriesResponseDto2s = new ArrayList<>();
+		List<CategoryResponse> categoriesResponseDto2s = new ArrayList<>();
 		for (Category category : categories) {
-			CompanyCategoriesResponseDto2 ccrdt = new CompanyCategoriesResponseDto2();
-			ccrdt.setCategoryId(category.getId());
-			ccrdt.setCategoryCode(category.getCategoryCode());
-			ccrdt.setCategoryName(category.getCategoryName());
-			ccrdt.setDescription(category.getDescription());
-			ccrdt.setDisplayOrder(category.getDisplayOrder());
-			ccrdt.setActive(category.getActive());
-			ccrdt.setCreatedAt(category.getCreatedAt());
+			CategoryResponse cr = new CategoryResponse();
+			cr.setCategoryId(category.getId());
+			cr.setCategoryCode(category.getCategoryCode());
+			cr.setCategoryName(category.getCategoryName());
+			cr.setDescription(category.getDescription());
+			cr.setDisplayOrder(category.getDisplayOrder());
+			cr.setActive(category.getActive());
+			cr.setCreatedAt(category.getCreatedAt());
 
-			categoriesResponseDto2s.add(ccrdt);
+			categoriesResponseDto2s.add(cr);
 		}
 
-		ccrd.setCategories(categoriesResponseDto2s);
-
 		return new ApiResponse<>(true, "Inactive Categories details fetch successfully...", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), ccrd);
+				HttpStatus.OK.value(), categoriesResponseDto2s);
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyCategoriesResponseDto1> bulkUpdateActiveStatus(@Valid BulkCategoryStatusRequest request,
+	public ApiResponse<List<CategoryResponse>> bulkUpdateActiveStatus(@Valid BulkCategoryStatusRequest request,
 			boolean activeStatus, UUID updatedBy) {
 
 		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNull(request.getCategoryIds());
@@ -279,13 +250,6 @@ public class CategoryServiceImpl implements CategoryService {
 
 		if (categories.size() != request.getCategoryIds().size()) {
 			throw new ResourceNotFoundException("Some categories not found or already deleted");
-		}
-
-		UUID companyId = categories.get(0).getCompanyId();
-
-		boolean multipleCompanies = categories.stream().anyMatch(c -> !c.getCompanyId().equals(companyId));
-		if (multipleCompanies) {
-			throw new IllegalArgumentException("Bulk operation allowed for single company only");
 		}
 
 		categories.forEach(category -> {
@@ -301,36 +265,26 @@ public class CategoryServiceImpl implements CategoryService {
 
 		String message = activeStatus ? "Categories activated successfully" : "Categories deactivated successfully";
 
-		CompanyResponseInternalDto crid = fetchCompany(companyId);
-
-		CompanyCategoriesResponseDto1 ccrd = new CompanyCategoriesResponseDto1();
-		ccrd.setCompanyId(crid.getCompanyId());
-		ccrd.setCompanyName(crid.getCompanyName());
-		ccrd.setCompanyCode(crid.getCompanyCode());
-		ccrd.setActive(crid.getActive());
-
-		List<CompanyCategoriesResponseDto2> categoriesResponseDto2s = new ArrayList<>();
+		List<CategoryResponse> categoriesResponseDto2s = new ArrayList<>();
 		for (Category category : categories) {
-			CompanyCategoriesResponseDto2 ccrdt = new CompanyCategoriesResponseDto2();
-			ccrdt.setCategoryId(category.getId());
-			ccrdt.setCategoryCode(category.getCategoryCode());
-			ccrdt.setCategoryName(category.getCategoryName());
-			ccrdt.setDescription(category.getDescription());
-			ccrdt.setDisplayOrder(category.getDisplayOrder());
-			ccrdt.setActive(category.getActive());
-			ccrdt.setCreatedAt(category.getCreatedAt());
+			CategoryResponse cr = new CategoryResponse();
+			cr.setCategoryId(category.getId());
+			cr.setCategoryCode(category.getCategoryCode());
+			cr.setCategoryName(category.getCategoryName());
+			cr.setDescription(category.getDescription());
+			cr.setDisplayOrder(category.getDisplayOrder());
+			cr.setActive(category.getActive());
+			cr.setCreatedAt(category.getCreatedAt());
 
-			categoriesResponseDto2s.add(ccrdt);
+			categoriesResponseDto2s.add(cr);
 		}
 		
-		ccrd.setCategories(categoriesResponseDto2s);
-
-		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), ccrd);
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), categoriesResponseDto2s);
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyCategoriesResponseDto1> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request,
+	public ApiResponse<List<Object>> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request,
 			UUID deletedBy) {
 
 		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNull(request.getCategoryIds());
@@ -343,14 +297,6 @@ public class CategoryServiceImpl implements CategoryService {
 			throw new ResourceNotFoundException("Some categories not found or already deleted");
 		}
 
-		UUID companyId = categories.get(0).getCompanyId();
-
-		boolean multipleCompanies = categories.stream().anyMatch(c -> !c.getCompanyId().equals(companyId));
-
-		if (multipleCompanies) {
-			throw new IllegalArgumentException("Bulk delete allowed for single company only");
-		}
-
 		LocalDateTime now = LocalDateTime.now();
 
 		categories.forEach(category -> {
@@ -361,37 +307,12 @@ public class CategoryServiceImpl implements CategoryService {
 
 		categoryRepository.saveAll(categories);
 
-		CompanyResponseInternalDto crid = fetchCompany(companyId);
-
-		CompanyCategoriesResponseDto1 ccrd = new CompanyCategoriesResponseDto1();
-		ccrd.setCompanyId(crid.getCompanyId());
-		ccrd.setCompanyName(crid.getCompanyName());
-		ccrd.setCompanyCode(crid.getCompanyCode());
-		ccrd.setActive(crid.getActive());
-
-		List<CompanyCategoriesResponseDto2> categoryDtos = new ArrayList<>();
-		for (Category category : categories) {
-			CompanyCategoriesResponseDto2 dto = new CompanyCategoriesResponseDto2();
-			dto.setCategoryId(category.getId());
-			dto.setCategoryCode(category.getCategoryCode());
-			dto.setCategoryName(category.getCategoryName());
-			dto.setDescription(category.getDescription());
-			dto.setDisplayOrder(category.getDisplayOrder());
-			dto.setActive(category.getActive());
-			dto.setCreatedAt(category.getCreatedAt());
-			categoryDtos.add(dto);
-		}
-
-		ccrd.setCategories(categoryDtos);
-
 		return new ApiResponse<>(true, "Categories deleted successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),
-				ccrd);
+				Collections.emptyList());
 	}
 
 	
-	
-	
-	
+
 	
 	
 	

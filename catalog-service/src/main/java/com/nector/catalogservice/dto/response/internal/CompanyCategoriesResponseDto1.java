@@ -1,5 +1,6 @@
 package com.nector.catalogservice.dto.response.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,6 @@ public class CompanyCategoriesResponseDto1 {
     private String companyCode;
     private String companyName;
     private Boolean active;
-    
-    private List<CompanyCategoriesResponseDto2> categories;
+
+    private List<CategoryResponse> categories = new ArrayList<>();
 }

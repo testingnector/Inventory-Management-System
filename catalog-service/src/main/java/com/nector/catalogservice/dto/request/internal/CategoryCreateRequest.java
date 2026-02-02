@@ -1,9 +1,6 @@
 package com.nector.catalogservice.dto.request.internal;
 
-import java.util.UUID;
-
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,9 +20,6 @@ public class CategoryCreateRequest {
     @NotBlank(message = "Category name is mandatory")
     @Size(max = 70, message = "Category name must be at most 100 characters")
     private String categoryName;
-
-    @NotNull(message = "Company ID is mandatory")
-    private UUID companyId;
 
     @Size(max = 100, message = "Description must be at most 255 characters")
     private String description;

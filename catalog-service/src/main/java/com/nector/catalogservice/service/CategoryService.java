@@ -7,33 +7,32 @@ import com.nector.catalogservice.dto.request.internal.BulkCategoryStatusRequest;
 import com.nector.catalogservice.dto.request.internal.CategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CategoryCompanyResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CategoryResponse;
 
 import jakarta.validation.Valid;
 
 public interface CategoryService {
 
-	ApiResponse<CategoryCompanyResponseDto1> createCategory(CategoryCreateRequest categoryCreateRequest,
+	ApiResponse<CategoryResponse> createCategory(CategoryCreateRequest categoryCreateRequest,
 			UUID createdBy);
 
-	ApiResponse<CategoryCompanyResponseDto1> updateCategory(UUID categoryId, @Valid CategoryUpdateRequest categoryUpdateRequest,
+	ApiResponse<CategoryResponse> updateCategory(UUID categoryId, @Valid CategoryUpdateRequest categoryUpdateRequest,
 			UUID updatedBy);
 
 	ApiResponse<List<Object>> deleteCategory(UUID categoryId, UUID deletedBy);
 
-	ApiResponse<CategoryCompanyResponseDto1> getCategoryByCategoryId(UUID categoryId);
+	ApiResponse<CategoryResponse> getCategoryByCategoryId(UUID categoryId);
 
-	ApiResponse<CategoryCompanyResponseDto1> getCategoryByCategoryCode(String categoryCode);
+	ApiResponse<CategoryResponse> getCategoryByCategoryCode(String categoryCode);
 
-	ApiResponse<CompanyCategoriesResponseDto1> getActiveCategoriesByCompanyId(UUID companyId);
+	ApiResponse<List<CategoryResponse>> getAllActiveCategories();
 
-	ApiResponse<CompanyCategoriesResponseDto1> getInactiveCategoriesByCompanyId(UUID companyId);
+	ApiResponse<List<CategoryResponse>> getAllInactiveCategories();
 
-	ApiResponse<CompanyCategoriesResponseDto1> bulkUpdateActiveStatus(@Valid BulkCategoryStatusRequest request, boolean activeStatus,
+	ApiResponse<List<CategoryResponse>> bulkUpdateActiveStatus(@Valid BulkCategoryStatusRequest request, boolean activeStatus,
 			UUID updatedBy);
 
-	ApiResponse<CompanyCategoriesResponseDto1> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request,
+	ApiResponse<List<Object>> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request,
 			UUID deletedBy);
 
 

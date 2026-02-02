@@ -34,9 +34,6 @@ public class Category {
     @Column(name = "category_name", length = 70, nullable = false)
     private String categoryName;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
-
     @Column(name = "description", length = 100)
     private String description;
 

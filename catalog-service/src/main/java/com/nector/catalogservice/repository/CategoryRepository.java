@@ -18,13 +18,17 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
 	Optional<Category> findByCategoryCodeAndDeletedAtIsNullAndActiveTrue(String categoryCode);
 
-	List<Category> findByCompanyIdAndDeletedAtIsNullAndActiveTrue(UUID companyId);
 
 	Optional<Category> findByCategoryCodeAndDeletedAtIsNull(String categoryCode);
 
-	List<Category> findByCompanyIdAndDeletedAtIsNullAndActiveFalse(UUID companyId);
 
 	List<Category> findByIdInAndDeletedAtIsNull(List<UUID> categoryIds);
+
+	List<Category> findByDeletedAtIsNullAndActiveTrue();
+
+	List<Category> findByDeletedAtIsNullAndActiveFalse();
+
+	List<Category> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> categoryIds);
 
 
 

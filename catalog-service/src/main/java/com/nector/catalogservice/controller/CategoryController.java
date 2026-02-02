@@ -18,8 +18,7 @@ import com.nector.catalogservice.dto.request.internal.BulkCategoryStatusRequest;
 import com.nector.catalogservice.dto.request.internal.CategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CategoryCompanyResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CategoryResponse;
 import com.nector.catalogservice.service.CategoryService;
 
 import jakarta.validation.Valid;
@@ -34,22 +33,21 @@ public class CategoryController {
 
 	// Create
 	@PostMapping("/insert")
-	public ResponseEntity<ApiResponse<CategoryCompanyResponseDto1>> createCategory(
+	public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
 			@Valid @RequestBody CategoryCreateRequest categoryCreateRequest, @RequestHeader("X-USER-ID") UUID createdBy,
 			@RequestHeader("X-USER-ROLE") String role) {
 
-		ApiResponse<CategoryCompanyResponseDto1> response = categoryService.createCategory(categoryCreateRequest,
-				createdBy);
+		ApiResponse<CategoryResponse> response = categoryService.createCategory(categoryCreateRequest, createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<CategoryCompanyResponseDto1>> updateCategory(@PathVariable("id") UUID categoryId,
+	public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(@PathVariable("id") UUID categoryId,
 			@Valid @RequestBody CategoryUpdateRequest categoryUpdateRequest, @RequestHeader("X-USER-ID") UUID updatedBy,
 			@RequestHeader("X-USER-ROLE") String role) {
 
-		ApiResponse<CategoryCompanyResponseDto1> response = categoryService.updateCategory(categoryId,
-				categoryUpdateRequest, updatedBy);
+		ApiResponse<CategoryResponse> response = categoryService.updateCategory(categoryId, categoryUpdateRequest,
+				updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
@@ -62,63 +60,57 @@ public class CategoryController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<CategoryCompanyResponseDto1>> getCategoryByCategoryId(
-			@PathVariable("id") UUID categoryId) {
+	public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryByCategoryId(@PathVariable("id") UUID categoryId) {
 
-		ApiResponse<CategoryCompanyResponseDto1> response = categoryService.getCategoryByCategoryId(categoryId);
+		ApiResponse<CategoryResponse> response = categoryService.getCategoryByCategoryId(categoryId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/code/{categoryCode}")
-	public ResponseEntity<ApiResponse<CategoryCompanyResponseDto1>> getCategoryByCategoryCode(
+	public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryByCategoryCode(
 			@PathVariable("categoryCode") String categoryCode) {
 
-		ApiResponse<CategoryCompanyResponseDto1> response = categoryService.getCategoryByCategoryCode(categoryCode);
+		ApiResponse<CategoryResponse> response = categoryService.getCategoryByCategoryCode(categoryCode);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-	@GetMapping("/company/{companyId}/active")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> getAllActiveCategoriesByCompanyId(
-			@PathVariable UUID companyId) {
+	@GetMapping("/active")
+	public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllActiveCategories() {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = categoryService.getActiveCategoriesByCompanyId(companyId);
-
+		ApiResponse<List<CategoryResponse>> response = categoryService.getAllActiveCategories();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-	@GetMapping("/company/{companyId}/inactive")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> getAllInactiveCategoriesByCompanyId(
-			@PathVariable UUID companyId) {
+	@GetMapping("/inactive")
+	public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllInactiveCategories() {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = categoryService
-				.getInactiveCategoriesByCompanyId(companyId);
-
+		ApiResponse<List<CategoryResponse>> response = categoryService.getAllInactiveCategories();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/bulk-activate")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> bulkActivate(
+	public ResponseEntity<ApiResponse<List<CategoryResponse>>> bulkActivate(
 			@Valid @RequestBody BulkCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = categoryService.bulkUpdateActiveStatus(request, true,
+		ApiResponse<List<CategoryResponse>> response = categoryService.bulkUpdateActiveStatus(request, true,
 				updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/bulk-deactivate")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> bulkDeactivate(
+	public ResponseEntity<ApiResponse<List<CategoryResponse>>> bulkDeactivate(
 			@Valid @RequestBody BulkCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = categoryService.bulkUpdateActiveStatus(request, false,
+		ApiResponse<List<CategoryResponse>> response = categoryService.bulkUpdateActiveStatus(request, false,
 				updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@DeleteMapping("/bulk-delete")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> bulkDelete(
+	public ResponseEntity<ApiResponse<List<Object>>> bulkDelete(
 			@Valid @RequestBody BulkCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID deletedBy) {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = categoryService.bulkDeleteCategories(request, deletedBy);
+		ApiResponse<List<Object>> response = categoryService.bulkDeleteCategories(request, deletedBy);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
