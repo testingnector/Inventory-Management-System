@@ -281,7 +281,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 		List<CompanyCategory> companyCategories = companyCategoryRepository
 				.findByCompanyIdAndDeletedAtIsNullAndActiveTrue(companyId);
-		
+
 		if (companyCategories.isEmpty()) {
 			throw new ResourceNotFoundException("No active categories found for this company");
 		}
@@ -350,7 +350,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 		List<CompanyCategory> companyCategories = companyCategoryRepository
 				.findByCompanyIdAndDeletedAtIsNullAndActiveFalse(companyId);
-		
+
 		if (companyCategories.isEmpty()) {
 			throw new ResourceNotFoundException("No inactive categories found for this company");
 		}
@@ -477,5 +477,36 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), response);
 	}
+
+	@Transactional
+	@Override
+	public ApiResponse<List<Object>> bulkDeleteCompanyCategoriesByCompanyId(UUID companyId,
+			BulkCompanyCategoryStatusRequest request, UUID deletedBy) {
+
+	    List<CompanyCategory> companyCategories = companyCategoryRepository
+	            .findByIdInAndCompanyIdAndDeletedAtIsNull(request.getCompanyCategoryIds(), companyId);
+
+	    if (companyCategories.isEmpty()) {
+	    	throw new ResourceNotFoundException("No company categories found for the given company and IDs");
+	    }
+
+	    if (request.getCompanyCategoryIds().size() != companyCategories.size()) {
+	    	throw new ResourceNotFoundException("Some company categories not found or already deleted");
+		}
+
+	    // Soft delete
+	    companyCategories.forEach(cc -> {
+	        cc.setDeletedAt(LocalDateTime.now());
+	        cc.setDeletedBy(deletedBy);
+	        cc.setActive(false);
+	    });
+
+	    companyCategoryRepository.saveAll(companyCategories);
+
+	    return new ApiResponse<>(true, "Selected company categories deleted successfully", "OK", 200,
+	            Collections.emptyList());
+	}
+
+
 
 }

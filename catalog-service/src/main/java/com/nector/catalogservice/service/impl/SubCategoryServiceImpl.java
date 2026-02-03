@@ -4,13 +4,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nector.catalogservice.dto.request.internal.BulkSubCategoryStatusRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
@@ -225,17 +232,19 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	@Transactional(readOnly = true)
 	@Override
 	public ApiResponse<CategorySubCategoriesResponseDto1> getAllActiveSubCategoriesByCategoryId(UUID categoryId) {
-		
-		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 		if (!category.getActive()) {
 			throw new InactiveResourceException("Category is inactive");
 		}
-		
-		List<SubCategory> subCatgories = subCategoryRepository.findByCategoryIdAndDeletedAtIsNullAndActiveTrue(category.getId());
+
+		List<SubCategory> subCatgories = subCategoryRepository
+				.findByCategoryIdAndDeletedAtIsNullAndActiveTrue(category.getId());
 		if (subCatgories.isEmpty()) {
 			throw new ResourceNotFoundException("No Active Sub-Category found for this Category");
 		}
-		
+
 		List<CategorySubCategoriesResponseDto2> cscrdtList = new ArrayList<>();
 		for (SubCategory sc : subCatgories) {
 			CategorySubCategoriesResponseDto2 csrdt = new CategorySubCategoriesResponseDto2();
@@ -246,10 +255,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			csrdt.setDisplayOrder(sc.getDisplayOrder());
 			csrdt.setActive(sc.getActive());
 			csrdt.setCreatedAt(sc.getCreatedAt());
-			
+
 			cscrdtList.add(csrdt);
 		}
-		
+
 		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
 		csrd.setCategoryId(category.getId());
 		csrd.setCategoryCode(category.getCategoryCode());
@@ -257,7 +266,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		csrd.setDescription(category.getDescription());
 		csrd.setDisplayOrder(category.getDisplayOrder());
 		csrd.setActive(category.getActive());
-		
+
 		csrd.setSubCategories(cscrdtList);
 
 		return new ApiResponse<>(true, "Sub-Category data fetch successfully...", HttpStatus.OK.name(),
@@ -267,17 +276,19 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	@Transactional(readOnly = true)
 	@Override
 	public ApiResponse<CategorySubCategoriesResponseDto1> getAllInactiveSubCategoriesByCategoryId(UUID categoryId) {
-		
-		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 		if (!category.getActive()) {
 			throw new InactiveResourceException("Category is inactive");
 		}
-		
-		List<SubCategory> subCatgories = subCategoryRepository.findByCategoryIdAndDeletedAtIsNullAndActiveFalse(category.getId());
+
+		List<SubCategory> subCatgories = subCategoryRepository
+				.findByCategoryIdAndDeletedAtIsNullAndActiveFalse(category.getId());
 		if (subCatgories.isEmpty()) {
 			throw new ResourceNotFoundException("No Inactive Sub-Category found for this Category");
 		}
-		
+
 		List<CategorySubCategoriesResponseDto2> cscrdtList = new ArrayList<>();
 		for (SubCategory sc : subCatgories) {
 			CategorySubCategoriesResponseDto2 csrdt = new CategorySubCategoriesResponseDto2();
@@ -288,10 +299,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			csrdt.setDisplayOrder(sc.getDisplayOrder());
 			csrdt.setActive(sc.getActive());
 			csrdt.setCreatedAt(sc.getCreatedAt());
-			
+
 			cscrdtList.add(csrdt);
 		}
-		
+
 		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
 		csrd.setCategoryId(category.getId());
 		csrd.setCategoryCode(category.getCategoryCode());
@@ -299,12 +310,192 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		csrd.setDescription(category.getDescription());
 		csrd.setDisplayOrder(category.getDisplayOrder());
 		csrd.setActive(category.getActive());
-		
+
 		csrd.setSubCategories(cscrdtList);
 
 		return new ApiResponse<>(true, "Sub-Category data fetch successfully...", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), csrd);		
-		
+				HttpStatus.OK.value(), csrd);
+
 	}
+
+	@Transactional
+	@Override
+	public ApiResponse<CategorySubCategoriesResponseDto1> bulkUpdateSubCategoryStatusByCategory(UUID categoryId,
+			BulkSubCategoryStatusRequest request, boolean activeStatus, UUID updatedBy) {
+
+		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found or inactive"));
+
+		List<SubCategory> subCategories = subCategoryRepository
+				.findByIdInAndCategoryIdAndDeletedAtIsNull(request.getSubCategoryIds(), categoryId);
+
+		if (subCategories.isEmpty()) {
+			throw new ResourceNotFoundException("No Sub-Categories found for this category");
+		}
+
+		if (subCategories.size() != request.getSubCategoryIds().size()) {
+			throw new ResourceNotFoundException("Some Sub-Categories do not belong to this Category or are deleted");
+		}
+
+		subCategories.forEach(sc -> {
+			if (!sc.getActive().equals(activeStatus)) {
+				sc.setActive(activeStatus);
+				sc.setUpdatedBy(updatedBy);
+			}
+		});
+
+		subCategoryRepository.saveAll(subCategories);
+
+		List<CategorySubCategoriesResponseDto2> responseList = new ArrayList<>();
+
+		for (SubCategory sc : subCategories) {
+			CategorySubCategoriesResponseDto2 dto = new CategorySubCategoriesResponseDto2();
+			dto.setSubCategoryId(sc.getId());
+			dto.setSubCategoryCode(sc.getSubCategoryCode());
+			dto.setSubCategoryName(sc.getSubCategoryName());
+			dto.setDescription(sc.getDescription());
+			dto.setDisplayOrder(sc.getDisplayOrder());
+			dto.setActive(sc.getActive());
+			dto.setCreatedAt(sc.getCreatedAt());
+
+			responseList.add(dto);
+		}
+
+		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
+		csrd.setCategoryId(category.getId());
+		csrd.setCategoryCode(category.getCategoryCode());
+		csrd.setCategoryName(category.getCategoryName());
+		csrd.setDescription(category.getDescription());
+		csrd.setDisplayOrder(category.getDisplayOrder());
+		csrd.setActive(category.getActive());
+		csrd.setSubCategories(responseList);
+
+		String message = activeStatus ? "Sub-Categories activated successfully"
+				: "Sub-Categories deactivated successfully";
+
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), csrd);
+	}
+
+	@Transactional
+	@Override
+	public ApiResponse<List<Object>> bulkDeleteSubCategoriesByCategory(UUID categoryId,
+			BulkSubCategoryStatusRequest request, UUID deletedBy) {
+
+		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+		if (!category.getActive()) {
+			throw new InactiveResourceException("Category is inactive");
+		}
+
+		List<SubCategory> subCategories = subCategoryRepository
+				.findByIdInAndCategoryIdAndDeletedAtIsNull(request.getSubCategoryIds(), categoryId);
+
+		if (subCategories.isEmpty()) {
+			throw new ResourceNotFoundException("No Sub-Categories found for this Category");
+		}
+
+		if (subCategories.size() != request.getSubCategoryIds().size()) {
+			throw new ResourceNotFoundException(
+					"Some Sub-Categories do not belong to this Category or are already deleted");
+		}
+
+		// Soft delete
+		LocalDateTime now = LocalDateTime.now();
+		subCategories.forEach(sc -> {
+			sc.setDeletedAt(now);
+			sc.setDeletedBy(deletedBy);
+			sc.setActive(false);
+		});
+
+		subCategoryRepository.saveAll(subCategories);
+
+		return new ApiResponse<>(true, "Sub-Categories deleted successfully", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), Collections.emptyList());
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ApiResponse<Page<SubCategoryCategoryResponseDto1>> getSubCategories(Boolean active, int page, int size) {
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+		Page<SubCategory> subCategories;
+		if (active == null) {
+			subCategories = subCategoryRepository.findByDeletedAtIsNull(pageable);
+		} else {
+			subCategories = subCategoryRepository.findByDeletedAtIsNullAndActive(active, pageable);
+		}
+
+		List<UUID> categoryIds = subCategories.stream().map(SubCategory::getCategoryId).distinct().toList();
+
+		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(categoryIds);
+		Map<UUID, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, c -> c));
+
+		Page<SubCategoryCategoryResponseDto1> dtoPage = subCategories.map(subCat -> {
+			SubCategoryCategoryResponseDto1 dto = new SubCategoryCategoryResponseDto1();
+			dto.setSubCategoryId(subCat.getId());
+			dto.setSubCategoryCode(subCat.getSubCategoryCode());
+			dto.setSubCategoryName(subCat.getSubCategoryName());
+			dto.setDescription(subCat.getDescription());
+			dto.setDisplayOrder(subCat.getDisplayOrder());
+			dto.setActive(subCat.getActive());
+			dto.setCreatedAt(subCat.getCreatedAt());
+
+			Category category = categoryMap.get(subCat.getCategoryId());
+			if (category != null) {
+				SubCategoryCategoryResponseDto2 catDto = new SubCategoryCategoryResponseDto2();
+				catDto.setCategoryId(category.getId());
+				catDto.setCategoryCode(category.getCategoryCode());
+				catDto.setCategoryName(category.getCategoryName());
+				catDto.setDescription(category.getDescription());
+				catDto.setDisplayOrder(category.getDisplayOrder());
+				catDto.setActive(category.getActive());
+
+				dto.setCategory(catDto);
+			}
+
+			return dto;
+		});
+
+		return new ApiResponse<>(true, "Sub-Categories fetched successfully", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), dtoPage);
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public ApiResponse<SubCategoryCategoryResponseDto1> getSubCategoryByCode(String subCategoryCode) {
+
+	    SubCategory subCategory = subCategoryRepository
+	            .findBySubCategoryCodeAndDeletedAtIsNullAndActiveTrue(subCategoryCode)
+	            .orElseThrow(() -> new ResourceNotFoundException("Active Sub-Category not found for code: " + subCategoryCode));
+
+	    Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(subCategory.getCategoryId())
+	            .orElseThrow(() -> new ResourceNotFoundException("Parent Category not found or inactive"));
+
+	    // Build response
+	    SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
+	    scrd.setSubCategoryId(subCategory.getId());
+	    scrd.setSubCategoryCode(subCategory.getSubCategoryCode());
+	    scrd.setSubCategoryName(subCategory.getSubCategoryName());
+	    scrd.setDescription(subCategory.getDescription());
+	    scrd.setDisplayOrder(subCategory.getDisplayOrder());
+	    scrd.setActive(subCategory.getActive());
+	    scrd.setCreatedAt(subCategory.getCreatedAt());
+
+	    SubCategoryCategoryResponseDto2 categoryDto = new SubCategoryCategoryResponseDto2();
+	    categoryDto.setCategoryId(category.getId());
+	    categoryDto.setCategoryCode(category.getCategoryCode());
+	    categoryDto.setCategoryName(category.getCategoryName());
+	    categoryDto.setDescription(category.getDescription());
+	    categoryDto.setDisplayOrder(category.getDisplayOrder());
+	    categoryDto.setActive(category.getActive());
+
+	    scrd.setCategory(categoryDto);
+
+	    return new ApiResponse<>(true, "Sub-Category fetched successfully", HttpStatus.OK.name(),
+	            HttpStatus.OK.value(), scrd);
+	}
+
 
 }

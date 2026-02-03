@@ -44,13 +44,14 @@ public class CategoryServiceImpl implements CategoryService {
 	public ApiResponse<CategoryResponse> createCategory(CategoryCreateRequest request, UUID createdBy) {
 
 		Optional<Category> existingCategoryOpt = categoryRepository
-				.findByCategoryCodeAndDeletedAtIsNull(request.getCategoryCode());
+				.findByCategoryCode(request.getCategoryCode());
 
 		if (existingCategoryOpt.isPresent()) {
 			Category existing = existingCategoryOpt.get();
-			if (!existing.getActive()) {
+			if (!existing.getActive() && existing.getDeletedAt() == null) {
 				throw new InactiveResourceException("Category already exists but is inactive");
-			} else {
+			} 
+			else {
 				throw new DuplicateResourceException("Category code already exists!");
 			}
 		}

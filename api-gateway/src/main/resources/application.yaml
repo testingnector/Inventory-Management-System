@@ -1,0 +1,75 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # ===== Auth Service Routes =====
+          routes:
+            - id: auth-service-auth
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/**
+
+            - id: auth-service-permissions
+              uri: lb://auth-service
+              predicates:
+                - Path=/permissions/**
+
+            - id: auth-service-roles
+              uri: lb://auth-service
+              predicates:
+                - Path=/roles/**
+
+            - id: auth-service-role-permissions
+              uri: lb://auth-service
+              predicates:
+                - Path=/role-permissions/**
+
+            - id: auth-service-users
+              uri: lb://auth-service
+              predicates:
+                - Path=/users/**
+
+            - id: auth-service-user-permissions
+              uri: lb://auth-service
+              predicates:
+                - Path=/user-permissions/**
+
+            - id: auth-service-user-roles
+              uri: lb://auth-service
+              predicates:
+                - Path=/user-roles/**
+
+            # ===== Org Service Routes =====
+            - id: org-service-companies
+              uri: lb://org-service
+              predicates:
+                - Path=/companies/**
+
+            - id: org-service-branches
+              uri: lb://org-service
+              predicates:
+                - Path=/branches/**
+
+            # ===== Catalog Service Routes =====
+            - id: catalog-service-categories
+              uri: lb://catalog-service
+              predicates:
+                - Path=/categories/**
+
+            - id: catalog-service-sub-categories
+              uri: lb://catalog-service
+              predicates:
+                - Path=/sub-categories/**
+
+            - id: catalog-service-company-categories
+              uri: lb://catalog-service
+              predicates:
+                - Path=/company-categories/**

@@ -24,4 +24,5 @@ public class CategoryResponse {
 	private Integer displayOrder;
 	private Boolean active;
 	private LocalDateTime createdAt;
+
 }

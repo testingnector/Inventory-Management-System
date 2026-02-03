@@ -30,5 +30,8 @@ public interface CompanyCategoryService {
 	ApiResponse<CompanyCCsCategoriesResponseDto1> bulkUpdateCompanyCategoryActiveStatus(
 			@Valid BulkCompanyCategoryStatusRequest request, boolean b, UUID updatedBy);
 
+	ApiResponse<List<Object>> bulkDeleteCompanyCategoriesByCompanyId(UUID companyId,
+			@Valid BulkCompanyCategoryStatusRequest request, UUID deletedBy);
+
 
 }

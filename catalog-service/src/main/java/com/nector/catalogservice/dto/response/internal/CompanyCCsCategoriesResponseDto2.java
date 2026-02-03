@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@JsonPropertyOrder({"companyCategoryId", "active", "createdAt", "category"})
+@JsonPropertyOrder({"companyCategoryId", "active", "createdAt", "deletedAt", "category"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,6 +20,7 @@ public class CompanyCCsCategoriesResponseDto2 {
     private UUID companyCategoryId;
     private Boolean active;
     private LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
     private CategoryResponse category;
 
 }

@@ -88,7 +88,8 @@ public class CompanyCategoryController {
 	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> bulkActivate(
 			@Valid @RequestBody BulkCompanyCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService.bulkUpdateCompanyCategoryActiveStatus(request, true, updatedBy);
+		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+				.bulkUpdateCompanyCategoryActiveStatus(request, true, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
@@ -96,8 +97,18 @@ public class CompanyCategoryController {
 	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> bulkDeactivate(
 			@Valid @RequestBody BulkCompanyCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService.bulkUpdateCompanyCategoryActiveStatus(request, false,
-				updatedBy);
+		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+				.bulkUpdateCompanyCategoryActiveStatus(request, false, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
+
+	@DeleteMapping("/company/{companyId}/bulk-delete")
+	public ResponseEntity<ApiResponse<List<Object>>> bulkDeleteByCompany(@PathVariable UUID companyId,
+			@Valid @RequestBody BulkCompanyCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID deletedBy) {
+
+		ApiResponse<List<Object>> response = companyCategoryService.bulkDeleteCompanyCategoriesByCompanyId(companyId,
+				request, deletedBy);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
 }

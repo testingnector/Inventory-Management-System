@@ -1,5 +1,6 @@
 package com.nector.catalogservice.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.entity.CompanyCategory;
 
 @Repository
@@ -25,6 +27,12 @@ public interface CompanyCategoryRepository extends JpaRepository<CompanyCategory
 	List<CompanyCategory> findByCompanyIdAndDeletedAtIsNullAndActiveFalse(UUID companyId);
 
 	List<CompanyCategory> findByIdInAndDeletedAtIsNull(List<UUID> companyCategoryIds);
+
+	List<CompanyCategory> findByCompanyIdAndDeletedAtIsNotNull(UUID companyId);
+
+	List<CompanyCategory> findByIdInAndDeletedAtIsNotNull(List<UUID> companyCategoryIds);
+
+	List<CompanyCategory> findByIdInAndCompanyIdAndDeletedAtIsNull(List<UUID> companyCategoryIds, UUID companyId);
 
 }
 

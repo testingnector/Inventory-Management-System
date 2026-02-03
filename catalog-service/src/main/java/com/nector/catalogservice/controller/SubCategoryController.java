@@ -3,6 +3,7 @@ package com.nector.catalogservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nector.catalogservice.dto.request.internal.BulkSubCategoryStatusRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
@@ -90,5 +93,55 @@ public class SubCategoryController {
 				.getAllInactiveSubCategoriesByCategoryId(categoryId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
+
+	@PutMapping("/category/{categoryId}/bulk-activate")
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkActivate(@PathVariable UUID categoryId,
+			@RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
+
+		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, true, updatedBy);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@PutMapping("/category/{categoryId}/bulk-deactivate")
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkDeactivate(@PathVariable UUID categoryId,
+			@RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
+
+		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, false, updatedBy);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@DeleteMapping("/category/{categoryId}/bulk-delete")
+	public ResponseEntity<ApiResponse<List<Object>>> bulkDeleteSubCategories(@PathVariable UUID categoryId,
+			@Valid @RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID deletedBy) {
+
+		ApiResponse<List<Object>> response = subCategoryService.bulkDeleteSubCategoriesByCategory(categoryId, request,
+				deletedBy);
+
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<Page<SubCategoryCategoryResponseDto1>>> getSubCategories(
+			@RequestParam(required = false) Boolean active, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+
+		ApiResponse<Page<SubCategoryCategoryResponseDto1>> response = subCategoryService.getSubCategories(active, page,
+				size);
+
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+	
+	@GetMapping("/code/{subCategoryCode}")
+	public ResponseEntity<ApiResponse<SubCategoryCategoryResponseDto1>> getSubCategoryByCode(
+	        @PathVariable("subCategoryCode") String subCategoryCode) {
+
+	    ApiResponse<SubCategoryCategoryResponseDto1> response =
+	            subCategoryService.getSubCategoryByCode(subCategoryCode);
+
+	    return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
 
 }
