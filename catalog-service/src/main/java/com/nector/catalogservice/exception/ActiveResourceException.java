@@ -8,7 +8,7 @@ public class ActiveResourceException extends RuntimeException {
     private final Map<String, String> data;
 
     public ActiveResourceException(String resourceName) {
-        super(resourceName + " is inactive");  
+    	 super("Active Resource Exception!");
         this.data = Map.of("Exception message", resourceName);
     }
 

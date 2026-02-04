@@ -96,7 +96,7 @@ public class SubCategoryController {
 
 	@PutMapping("/category/{categoryId}/bulk-activate")
 	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkActivate(@PathVariable UUID categoryId,
-			@RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
+			@Valid @RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
 		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
 				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, true, updatedBy);
@@ -105,7 +105,7 @@ public class SubCategoryController {
 
 	@PutMapping("/category/{categoryId}/bulk-deactivate")
 	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkDeactivate(@PathVariable UUID categoryId,
-			@RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
+			@Valid @RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
 		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
 				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, false, updatedBy);

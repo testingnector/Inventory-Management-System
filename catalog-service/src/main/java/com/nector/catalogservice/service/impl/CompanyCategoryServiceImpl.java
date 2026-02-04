@@ -220,8 +220,8 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			throw new InactiveResourceException("Assigned category for this company is inactive");
 		}
 
-		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(cc.getCategoryId())
-				.orElseThrow(() -> new ResourceNotFoundException("Assigned Category not found or inactive"));
+		Category category = categoryRepository.findByIdAndDeletedAtIsNull(cc.getCategoryId())
+				.orElseThrow(() -> new ResourceNotFoundException("Assigned Category not found"));
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -293,7 +293,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			categoryIds.add(companyCategory.getCategoryId());
 		}
 
-		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(categoryIds);
+		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNull(categoryIds);
 		Map<UUID, Category> categoryMap = new HashMap<>();
 		for (Category category2 : categories) {
 			categoryMap.put(category2.getId(), category2);
@@ -362,7 +362,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			categoryIds.add(companyCategory.getCategoryId());
 		}
 
-		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(categoryIds);
+		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNull(categoryIds);
 		Map<UUID, Category> categoryMap = new HashMap<>();
 		for (Category category2 : categories) {
 			categoryMap.put(category2.getId(), category2);
