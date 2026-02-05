@@ -13,9 +13,9 @@ public class ApiResponse<T> {
 
     private String message;
 
-    private String httpStatus;   // change from String to HttpStatus
+    private String httpStatus;   
 
-    private int httpStatusCode;      // change from String to int
+    private int httpStatusCode;     
 
     private T data;
 }

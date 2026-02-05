@@ -107,6 +107,13 @@ public class ProductController {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
+	@DeleteMapping("/company/{companyId}/bulk-delete")
+	public ResponseEntity<ApiResponse<List<Object>>> bulkDeletionOfProductsByCompanyId(@PathVariable UUID  companyId, @Valid @RequestBody BulkProductStatusRequest request, @RequestHeader("X-USER-ID") UUID deletedBy) {
+		
+		ApiResponse<List<Object>> response = productService.bulkDeletionOfProductsByCompanyId(companyId, request, deletedBy);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+	
 	
 
 }

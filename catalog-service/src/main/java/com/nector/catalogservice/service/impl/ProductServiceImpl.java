@@ -550,7 +550,41 @@ public class ProductServiceImpl implements ProductService {
 				HttpStatus.OK.value(), response);
 	}
 
-	
+	@Transactional
+	@Override
+	public ApiResponse<List<Object>> bulkDeletionOfProductsByCompanyId(UUID companyId, @Valid BulkProductStatusRequest request, UUID deletedBy) {
+
+		CompanyResponseExternalDto companyResponse;
+		try {
+			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
+		} catch (FeignException e) {
+			HttpStatus status = HttpStatus.resolve(e.status());
+			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
+					: "Error while communicating with Organization Service";
+			throw new OrgServiceException(message, status, e);
+		}
+		
+		List<Product> products = productRepository.findByIdInAndCompanyIdAndDeletedAtIsNull(request.getProductIds(), companyId);
+
+		if (products.isEmpty()) {
+			throw new ResourceNotFoundException("Products not found");
+		}
+		
+		if (products.size() != request.getProductIds().size()) {
+			throw new ResourceNotFoundException("Some Products do not belong to this Company or are already deleted");
+		}
+		
+		products.forEach(p -> {
+			p.setDeletedAt(LocalDateTime.now());
+			p.setDeletedBy(deletedBy);
+			p.setActive(false);
+		});
+		
+		productRepository.saveAll(products);
+		
+		return new ApiResponse<>(true, "Products deleted successfully", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), Collections.emptyList());
+	}	
 	
 	
 	
@@ -684,5 +718,6 @@ public class ProductServiceImpl implements ProductService {
 
 		return response;
 	}
+
 
 }

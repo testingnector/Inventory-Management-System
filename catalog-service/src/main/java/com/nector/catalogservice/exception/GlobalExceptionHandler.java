@@ -93,6 +93,13 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
 	
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(ResponseStatusException exception) {
+		
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(), exception.getData());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+	
 	@ExceptionHandler(InactiveResourceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleInactiveResourceException(InactiveResourceException exception) {
 

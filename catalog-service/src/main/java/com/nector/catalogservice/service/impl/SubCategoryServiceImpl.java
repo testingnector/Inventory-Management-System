@@ -400,7 +400,6 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 					"Some Sub-Categories do not belong to this Category or are already deleted");
 		}
 
-		// Soft delete
 		LocalDateTime now = LocalDateTime.now();
 		subCategories.forEach(sc -> {
 			sc.setDeletedAt(now);
@@ -473,7 +472,6 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	    Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(subCategory.getCategoryId())
 	            .orElseThrow(() -> new ResourceNotFoundException("Parent Category not found or inactive"));
 
-	    // Build response
 	    SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
 	    scrd.setSubCategoryId(subCategory.getId());
 	    scrd.setSubCategoryCode(subCategory.getSubCategoryCode());

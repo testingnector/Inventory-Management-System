@@ -31,4 +31,6 @@ public interface ProductService {
 			@Valid BulkProductStatusRequest request, boolean b, UUID updatedBy);
 
 	ApiResponse<ProductAggregateResponse> getProductByProductCode(String productCode);
+
+	ApiResponse<List<Object>> bulkDeletionOfProductsByCompanyId(UUID companyId, @Valid BulkProductStatusRequest request, UUID deletedBy);
 }

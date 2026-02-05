@@ -24,4 +24,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
 	Optional<Product> findByProductCodeAndDeletedAtIsNull(String productCode);
 
+	List<Product> findByIdInAndCompanyIdAndDeletedAtIsNull(List<UUID> productIds, UUID companyId);
+
 }
