@@ -18,7 +18,8 @@ import com.nector.catalogservice.dto.request.internal.BulkProductStatusRequest;
 import com.nector.catalogservice.dto.request.internal.ProductCreateRequest;
 import com.nector.catalogservice.dto.request.internal.ProductUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyProductsDetailsResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CategoryResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyProductsResponse;
 import com.nector.catalogservice.dto.response.internal.ProductAggregateResponse;
 import com.nector.catalogservice.service.ProductService;
 
@@ -67,36 +68,36 @@ public class ProductController {
 	}
 
 	@GetMapping("/company/{companyId}/active")
-	public ResponseEntity<ApiResponse<CompanyProductsDetailsResponseDto1>> getAllActiveProductByCompanyId(
+	public ResponseEntity<ApiResponse<CompanyProductsResponse>> getAllActiveProductByCompanyId(
 			@PathVariable UUID companyId) {
 
-		ApiResponse<CompanyProductsDetailsResponseDto1> response = productService
+		ApiResponse<CompanyProductsResponse> response = productService
 				.getAllActiveProductsByCompanyId(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}/inactive")
-	public ResponseEntity<ApiResponse<CompanyProductsDetailsResponseDto1>> getAllInactiveProductByCompanyId(
+	public ResponseEntity<ApiResponse<CompanyProductsResponse>> getAllInactiveProductByCompanyId(
 			@PathVariable UUID companyId) {
 
-		ApiResponse<CompanyProductsDetailsResponseDto1> response = productService
+		ApiResponse<CompanyProductsResponse> response = productService
 				.getAllInactiveProductsByCompanyId(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}/bulk-activate")
-	public ResponseEntity<ApiResponse<CompanyProductsDetailsResponseDto1>> bulkActivateProductsByCompanyId(@PathVariable UUID companyId,
+	public ResponseEntity<ApiResponse<CompanyProductsResponse>> bulkActivateProductsByCompanyId(@PathVariable UUID companyId,
 			@Valid @RequestBody BulkProductStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyProductsDetailsResponseDto1> response = productService.bulkUpdateProductStatusByCompany(companyId, request, true, updatedBy);
+		ApiResponse<CompanyProductsResponse> response = productService.bulkUpdateProductStatusByCompany(companyId, request, true, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@GetMapping("/company/{companyId}/bulk-deactivate")
-	public ResponseEntity<ApiResponse<CompanyProductsDetailsResponseDto1>> bulkDeactivateProductsByCompanyId(@PathVariable UUID companyId,
+	public ResponseEntity<ApiResponse<CompanyProductsResponse>> bulkDeactivateProductsByCompanyId(@PathVariable UUID companyId,
 			@Valid @RequestBody BulkProductStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 		
-		ApiResponse<CompanyProductsDetailsResponseDto1> response = productService.bulkUpdateProductStatusByCompany(companyId, request, false, updatedBy);
+		ApiResponse<CompanyProductsResponse> response = productService.bulkUpdateProductStatusByCompany(companyId, request, false, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	

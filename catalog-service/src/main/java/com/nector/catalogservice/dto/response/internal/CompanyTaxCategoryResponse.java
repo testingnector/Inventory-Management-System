@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @JsonPropertyOrder({ "companyTaxCategoryId", "taxRate", "hsnCode", "effectiveFrom",
-		"effectiveTo", "active", "createdAt", "updatedAt", "taxMaster", "company"})
+	"effectiveTo", "active", "createdAt", "updatedAt"})
 @Data
 public class CompanyTaxCategoryResponse {
-
+	
 	private UUID companyTaxCategoryId;
 	private Double taxRate;
 	private String hsnCode;
@@ -21,7 +21,5 @@ public class CompanyTaxCategoryResponse {
 	private Boolean active;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-
-	private TaxMasterResponse taxMaster;
-	private CompanyResponseInternalDto company;
+	
 }

@@ -11,12 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.nector.orgservice.dto.request.internal.BranchCreateRequestDto;
 import com.nector.orgservice.dto.request.internal.BranchUpdateRequestDto;
 import com.nector.orgservice.dto.response.internal.ApiResponse;
-import com.nector.orgservice.dto.response.internal.BranchCompanyResponseDto1;
-import com.nector.orgservice.dto.response.internal.BranchCompanyResponseDto2;
-import com.nector.orgservice.dto.response.internal.CompanyBranchResponseDto1;
-import com.nector.orgservice.dto.response.internal.CompanyBranchResponseDto2;
-import com.nector.orgservice.dto.response.internal.CompanyBranchesResponseDto1;
-import com.nector.orgservice.dto.response.internal.CompanyBranchesResponseDto2;
+import com.nector.orgservice.dto.response.internal.BranchCompanyResponse;
+import com.nector.orgservice.dto.response.internal.BranchResponse;
+import com.nector.orgservice.dto.response.internal.CompanyBranchResponse;
+import com.nector.orgservice.dto.response.internal.CompanyBranchesResponse;
+import com.nector.orgservice.dto.response.internal.CompanyBriefResponse;
 import com.nector.orgservice.entity.Branch;
 import com.nector.orgservice.entity.Company;
 import com.nector.orgservice.exception.DuplicateResourceException;
@@ -36,7 +35,7 @@ public class BranchServiceImpl implements BranchService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyBranchResponseDto1> createBranch(BranchCreateRequestDto dto, UUID createdBy) {
+	public ApiResponse<CompanyBranchResponse> createBranch(BranchCreateRequestDto dto, UUID createdBy) {
 
 		// CHECK DUPLICATE
 		if (branchRepository.existsByBranchCode(dto.getBranchCode())) {
@@ -64,7 +63,7 @@ public class BranchServiceImpl implements BranchService {
 		Branch savedBranch = branchRepository.save(branch);
 
 		// BUILD RESPONSE
-		CompanyBranchResponseDto2 cbrd = new CompanyBranchResponseDto2();
+		BranchResponse cbrd = new BranchResponse();
 		cbrd.setBranchId(savedBranch.getId());
 		cbrd.setBranchCode(savedBranch.getBranchCode());
 		cbrd.setBranchName(savedBranch.getBranchName());
@@ -74,7 +73,7 @@ public class BranchServiceImpl implements BranchService {
 		cbrd.setHeadOffice(branch.getHeadOffice());
 		cbrd.setCreatedAt(savedBranch.getCreatedAt());
 
-		CompanyBranchResponseDto1 cbrdt = new CompanyBranchResponseDto1();
+		CompanyBranchResponse cbrdt = new CompanyBranchResponse();
 		cbrdt.setCompanyId(savedBranch.getCompanyId());
 		cbrdt.setCompanyCode(company.getCompanyCode());
 		cbrdt.setCompanyName(company.getCompanyName());
@@ -88,14 +87,14 @@ public class BranchServiceImpl implements BranchService {
 
 	@Transactional
 	@Override
-	public ApiResponse<BranchCompanyResponseDto1> getBranchById(UUID id) {
+	public ApiResponse<BranchCompanyResponse> getBranchById(UUID id) {
 		Branch branch = branchRepository.findByIdAndDeletedAtIsNullAndActiveTrue(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Branch is not found or inactive"));
 
 		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(branch.getCompanyId())
 				.orElseThrow(() -> new ResourceNotFoundException("Company does not exist!"));
 
-		BranchCompanyResponseDto2 bcrd = new BranchCompanyResponseDto2();
+		CompanyBriefResponse bcrd = new CompanyBriefResponse();
 		bcrd.setCompanyId(branch.getCompanyId());
 		bcrd.setCompanyCode(company.getCompanyCode());
 		bcrd.setCompanyName(company.getCompanyName());
@@ -103,7 +102,7 @@ public class BranchServiceImpl implements BranchService {
 		bcrd.setActive(branch.getActive());
 		bcrd.setCreatedAt(branch.getCreatedAt());
 
-		BranchCompanyResponseDto1 bcrdt = new BranchCompanyResponseDto1();
+		BranchCompanyResponse bcrdt = new BranchCompanyResponse();
 		bcrdt.setBranchId(branch.getId());
 		bcrdt.setBranchCode(branch.getBranchCode());
 		bcrdt.setBranchName(branch.getBranchName());
@@ -120,7 +119,7 @@ public class BranchServiceImpl implements BranchService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyBranchesResponseDto1> getBranchesByCompany(UUID companyId) {
+	public ApiResponse<CompanyBranchesResponse> getBranchesByCompany(UUID companyId) {
 
 		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company does not exist!"));
@@ -131,8 +130,8 @@ public class BranchServiceImpl implements BranchService {
 			throw new ResourceNotFoundException("No active branches found for the company with ID " + companyId);
 		}
 
-		List<CompanyBranchesResponseDto2> branchDtos = branches.stream().map(branch -> {
-			CompanyBranchesResponseDto2 dto = new CompanyBranchesResponseDto2();
+		List<BranchResponse> branchDtos = branches.stream().map(branch -> {
+			BranchResponse dto = new BranchResponse();
 			dto.setBranchId(branch.getId());
 			dto.setBranchCode(branch.getBranchCode());
 			dto.setBranchName(branch.getBranchName());
@@ -144,7 +143,7 @@ public class BranchServiceImpl implements BranchService {
 			return dto;
 		}).toList();
 
-		CompanyBranchesResponseDto1 companyDto = new CompanyBranchesResponseDto1();
+		CompanyBranchesResponse companyDto = new CompanyBranchesResponse();
 		companyDto.setCompanyId(company.getId());
 		companyDto.setCompanyCode(company.getCompanyCode());
 		companyDto.setCompanyName(company.getCompanyName());
@@ -158,7 +157,7 @@ public class BranchServiceImpl implements BranchService {
 
 	@Transactional
 	@Override
-	public ApiResponse<BranchCompanyResponseDto1> updateBranch(UUID branchId, BranchUpdateRequestDto dto,
+	public ApiResponse<BranchCompanyResponse> updateBranch(UUID branchId, BranchUpdateRequestDto dto,
 			UUID updatedBy) {
 
 		Branch branch = branchRepository.findByIdAndDeletedAtIsNull(branchId)
@@ -199,8 +198,7 @@ public class BranchServiceImpl implements BranchService {
 		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(updatedBranch.getCompanyId())
 				.orElseThrow(() -> new ResourceNotFoundException("Company does not exist"));
 
-		// Response mapping
-		BranchCompanyResponseDto2 companyDto = new BranchCompanyResponseDto2();
+		CompanyBriefResponse companyDto = new CompanyBriefResponse();
 		companyDto.setCompanyId(company.getId());
 		companyDto.setCompanyCode(company.getCompanyCode());
 		companyDto.setCompanyName(company.getCompanyName());
@@ -208,7 +206,7 @@ public class BranchServiceImpl implements BranchService {
 		companyDto.setActive(company.getActive());
 		companyDto.setCreatedAt(company.getCreatedAt());
 
-		BranchCompanyResponseDto1 responseDto = new BranchCompanyResponseDto1();
+		BranchCompanyResponse responseDto = new BranchCompanyResponse();
 		responseDto.setBranchId(updatedBranch.getId());
 		responseDto.setBranchCode(updatedBranch.getBranchCode());
 		responseDto.setBranchName(updatedBranch.getBranchName());
@@ -240,7 +238,7 @@ public class BranchServiceImpl implements BranchService {
 	}
 
 	@Override
-	public ApiResponse<BranchCompanyResponseDto1> getBranchByCode(String branchCode) {
+	public ApiResponse<BranchCompanyResponse> getBranchByCode(String branchCode) {
 
 		Branch branch = branchRepository.findByBranchCodeAndDeletedAtIsNullAndActiveTrue(branchCode)
 				.orElseThrow(() -> new ResourceNotFoundException("Branch not found or inactive"));
@@ -249,7 +247,7 @@ public class BranchServiceImpl implements BranchService {
 				.orElseThrow(() -> new ResourceNotFoundException("Company does not exist"));
 
 //		BUILD RESPONSE
-		BranchCompanyResponseDto2 companyDto = new BranchCompanyResponseDto2();
+		CompanyBriefResponse companyDto = new CompanyBriefResponse();
 		companyDto.setCompanyId(company.getId());
 		companyDto.setCompanyCode(company.getCompanyCode());
 		companyDto.setCompanyName(company.getCompanyName());
@@ -257,7 +255,7 @@ public class BranchServiceImpl implements BranchService {
 		companyDto.setActive(company.getActive());
 		companyDto.setCreatedAt(company.getCreatedAt());
 
-		BranchCompanyResponseDto1 responseDto = new BranchCompanyResponseDto1();
+		BranchCompanyResponse responseDto = new BranchCompanyResponse();
 		responseDto.setBranchId(branch.getId());
 		responseDto.setBranchCode(branch.getBranchCode());
 		responseDto.setBranchName(branch.getBranchName());
@@ -272,7 +270,7 @@ public class BranchServiceImpl implements BranchService {
 	}
 
 	@Override
-	public ApiResponse<BranchCompanyResponseDto1> getHeadOfficeByCompanyId(UUID companyId) {
+	public ApiResponse<BranchCompanyResponse> getHeadOfficeByCompanyId(UUID companyId) {
 
 		Branch branch = branchRepository.findByCompanyIdAndHeadOfficeTrueAndDeletedAtIsNullAndActiveTrue(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Active head office not found"));
@@ -281,7 +279,7 @@ public class BranchServiceImpl implements BranchService {
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
 		// Company DTO
-		BranchCompanyResponseDto2 companyDto = new BranchCompanyResponseDto2();
+		CompanyBriefResponse companyDto = new CompanyBriefResponse();
 		companyDto.setCompanyId(company.getId());
 		companyDto.setCompanyCode(company.getCompanyCode());
 		companyDto.setCompanyName(company.getCompanyName());
@@ -290,7 +288,7 @@ public class BranchServiceImpl implements BranchService {
 		companyDto.setCreatedAt(company.getCreatedAt());
 
 		// Branch DTO
-		BranchCompanyResponseDto1 dto = new BranchCompanyResponseDto1();
+		BranchCompanyResponse dto = new BranchCompanyResponse();
 		dto.setBranchId(branch.getId());
 		dto.setBranchCode(branch.getBranchCode());
 		dto.setBranchName(branch.getBranchName());

@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nector.catalogservice.dto.request.internal.CompanyTaxCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CompanyTaxCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCompanyTaxCategoryCurrentResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCompanyTaxCategoryHistoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryPageResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponseWithTaxMasterAndCompany;
+import com.nector.catalogservice.dto.response.internal.CompanyTaxMasterCompanyTaxCategoryHistory;
 import com.nector.catalogservice.dto.response.internal.CompanyWithTaxCategoriesResponse;
 import com.nector.catalogservice.dto.response.internal.PagedResponse;
 import com.nector.catalogservice.service.CompanyTaxCategoryService;
@@ -37,20 +40,21 @@ public class CompanyTaxCategoryController {
 	private final CompanyTaxCategoryService companyTaxCategoryService;
 
 	@PostMapping("/insert")
-	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponse>> createCompanyTaxCategory(
+	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany>> createCompanyTaxCategory(
 			@Valid @RequestBody CompanyTaxCategoryCreateRequest request, @RequestHeader("X-User-Id") UUID createdBy) {
 
-		ApiResponse<CompanyTaxCategoryResponse> response = companyTaxCategoryService.createCompanyTaxCategory(request,
-				createdBy);
+		ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> response = companyTaxCategoryService
+				.createCompanyTaxCategory(request, createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponse>> updateCompanyTaxCategory(@PathVariable UUID id,
-			@Valid @RequestBody CompanyTaxCategoryUpdateRequest request, @RequestHeader("X-User-Id") UUID updatedBy) {
+	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany>> updateCompanyTaxCategory(
+			@PathVariable UUID id, @Valid @RequestBody CompanyTaxCategoryUpdateRequest request,
+			@RequestHeader("X-User-Id") UUID updatedBy) {
 
-		ApiResponse<CompanyTaxCategoryResponse> response = companyTaxCategoryService.updateCompanyTaxCategory(id,
-				request, updatedBy);
+		ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> response = companyTaxCategoryService
+				.updateCompanyTaxCategory(id, request, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
@@ -61,51 +65,66 @@ public class CompanyTaxCategoryController {
 		ApiResponse<List<Object>> response = companyTaxCategoryService.deleteCompanyTaxCategory(id, deletedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
- 
+
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponse>> getById(@PathVariable UUID id) {
+	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany>> getById(
+			@PathVariable UUID id) {
 
-		ApiResponse<CompanyTaxCategoryResponse> response = companyTaxCategoryService.getCompanyTaxCategoryById(id);
-
-		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
-	}
-
-	@GetMapping("/company/{companyId}")
-	public ResponseEntity<ApiResponse<CompanyTaxCategoryPageResponse>> getByCompany(@PathVariable UUID companyId,
-			@RequestParam(required = false) Boolean active, 
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(defaultValue = "effectiveFrom,desc") String sort) {
-
-		ApiResponse<CompanyTaxCategoryPageResponse> response = companyTaxCategoryService
-				.getCompanyTaxCategoryByCompany(companyId, active, page, size, sort);
+		ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> response = companyTaxCategoryService
+				.getCompanyTaxCategoryById(id);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}/tax/{taxMasterId}")
-	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponse>> getByCompanyAndTax(
-	        @PathVariable UUID companyId,
-	        @PathVariable UUID taxMasterId) {
+	public ResponseEntity<ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany>> getByCompanyAndTax(
+			@PathVariable UUID companyId, @PathVariable UUID taxMasterId) {
 
-	    ApiResponse<CompanyTaxCategoryResponse> response =
-	    		companyTaxCategoryService.getByCompanyAndTax(companyId, taxMasterId);
-	    return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+		ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> response = companyTaxCategoryService
+				.getByCompanyAndTax(companyId, taxMasterId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-	@GetMapping
-	public ResponseEntity<ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>>> getAllTaxCategories(
-	        @RequestParam(value = "companyId", required = false) UUID companyId,
-	        @RequestParam(value = "active", required = false) Boolean active,
-	        @RequestParam(value = "page", defaultValue = "0") int page,
-	        @RequestParam(value = "size", defaultValue = "20") int size,
-	        @RequestParam(value = "sort", defaultValue = "effectiveFrom,desc") String sort) {
+	@GetMapping("/company/{companyId}/tax/{taxMasterId}/history")
+	public ResponseEntity<ApiResponse<CompanyTaxMasterCompanyTaxCategoryHistory>> getHistoryByCompanyAndTax(
+			@PathVariable UUID companyId, @PathVariable UUID taxMasterId) {
 
-		ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>> response =
-	    		companyTaxCategoryService.getAllTaxCategories(companyId, active, page, size, sort);
+		ApiResponse<CompanyTaxMasterCompanyTaxCategoryHistory> response = companyTaxCategoryService
+				.getHistoryByCompanyAndTax(companyId, taxMasterId);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-	
+	@GetMapping("/company/{companyId}")
+	public ResponseEntity<ApiResponse<CompanyCompanyTaxCategoryCurrentResponse>> getAllCurrentByCompany(
+			@PathVariable UUID companyId) {
+
+		ApiResponse<CompanyCompanyTaxCategoryCurrentResponse> response = companyTaxCategoryService
+				.getAllCurrentByCompany(companyId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@GetMapping("/company/{companyId}/history")
+	public ResponseEntity<ApiResponse<CompanyCompanyTaxCategoryHistoryResponse>> getHistoryByCompany(
+			@PathVariable UUID companyId) {
+
+		ApiResponse<CompanyCompanyTaxCategoryHistoryResponse> response = companyTaxCategoryService
+				.getHistoryByCompany(companyId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>>> getAllTaxCategories(
+			@RequestParam(value = "companyId", required = false) UUID companyId,
+			@RequestParam(value = "active", required = false) Boolean active,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "20") int size,
+			@RequestParam(value = "sort", defaultValue = "effectiveFrom,desc") String sort) {
+
+		ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>> response = companyTaxCategoryService
+				.getAllTaxCategories(companyId, active, page, size, sort);
+
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
 }

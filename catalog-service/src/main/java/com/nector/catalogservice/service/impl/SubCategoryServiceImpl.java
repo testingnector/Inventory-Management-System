@@ -21,10 +21,10 @@ import com.nector.catalogservice.dto.request.internal.BulkSubCategoryStatusReque
 import com.nector.catalogservice.dto.request.internal.SubCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CategorySubCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CategorySubCategoriesResponseDto2;
-import com.nector.catalogservice.dto.response.internal.SubCategoryCategoryResponseDto1;
-import com.nector.catalogservice.dto.response.internal.SubCategoryCategoryResponseDto2;
+import com.nector.catalogservice.dto.response.internal.CategoryResponse;
+import com.nector.catalogservice.dto.response.internal.CategorySubCategoriesResponse;
+import com.nector.catalogservice.dto.response.internal.SubCategoryCategoryResponse;
+import com.nector.catalogservice.dto.response.internal.SubCategoryResponse;
 import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.entity.SubCategory;
 import com.nector.catalogservice.exception.DuplicateResourceException;
@@ -46,7 +46,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<SubCategoryCategoryResponseDto1> createSubCategory(@Valid SubCategoryCreateRequest request,
+	public ApiResponse<SubCategoryCategoryResponse> createSubCategory(@Valid SubCategoryCreateRequest request,
 			UUID createdBy) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(request.getCategoryId())
@@ -90,7 +90,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		SubCategory savedSubCategory = subCategoryRepository.save(subCategory);
 
 //		RESPONSE BUILD
-		SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
+		SubCategoryCategoryResponse scrd = new SubCategoryCategoryResponse();
 		scrd.setSubCategoryId(savedSubCategory.getId());
 		scrd.setSubCategoryCode(savedSubCategory.getSubCategoryCode());
 		scrd.setSubCategoryName(savedSubCategory.getSubCategoryName());
@@ -99,7 +99,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		scrd.setActive(savedSubCategory.getActive());
 		scrd.setCreatedAt(savedSubCategory.getCreatedAt());
 
-		SubCategoryCategoryResponseDto2 srcrdt = new SubCategoryCategoryResponseDto2();
+		CategoryResponse srcrdt = new CategoryResponse();
 		srcrdt.setCategoryId(category.getId());
 		srcrdt.setCategoryCode(category.getCategoryCode());
 		srcrdt.setCategoryName(category.getCategoryName());
@@ -116,7 +116,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<SubCategoryCategoryResponseDto1> updateSubCategory(UUID subCategoryId,
+	public ApiResponse<SubCategoryCategoryResponse> updateSubCategory(UUID subCategoryId,
 			@Valid SubCategoryUpdateRequest request, UUID updatedBy) {
 
 		SubCategory subCategory = subCategoryRepository.findByIdAndDeletedAtIsNull(subCategoryId)
@@ -134,7 +134,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		if (request.getActive() != null)
 			subCategory.setActive(request.getActive());
 
-		SubCategoryCategoryResponseDto2 categoryDto = new SubCategoryCategoryResponseDto2();
+		CategoryResponse categoryDto = new CategoryResponse();
 
 		if (request.getCategoryId() != null && !request.getCategoryId().equals(subCategory.getCategoryId())) {
 
@@ -155,7 +155,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 		SubCategory updatedSubCategory = subCategoryRepository.save(subCategory);
 
-		SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
+		SubCategoryCategoryResponse scrd = new SubCategoryCategoryResponse();
 		scrd.setSubCategoryId(updatedSubCategory.getId());
 		scrd.setSubCategoryCode(updatedSubCategory.getSubCategoryCode());
 		scrd.setSubCategoryName(updatedSubCategory.getSubCategoryName());
@@ -169,13 +169,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 				HttpStatus.OK.value(), scrd);
 	}
 
-	private void mapCategory(SubCategoryCategoryResponseDto2 dto, Category category) {
+	private void mapCategory(CategoryResponse dto, Category category) {
 		dto.setCategoryId(category.getId());
 		dto.setCategoryCode(category.getCategoryCode());
 		dto.setCategoryName(category.getCategoryName());
 		dto.setDescription(category.getDescription());
 		dto.setDisplayOrder(category.getDisplayOrder());
 		dto.setActive(category.getActive());
+		dto.setCreatedAt(category.getCreatedAt());
 	}
 
 	@Transactional
@@ -197,7 +198,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<SubCategoryCategoryResponseDto1> getSubCategoryBySubCategoryId(UUID subCategoryId) {
+	public ApiResponse<SubCategoryCategoryResponse> getSubCategoryBySubCategoryId(UUID subCategoryId) {
 
 		SubCategory subCategory = subCategoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(subCategoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Active Sub-Category not found or already deleted!"));
@@ -206,7 +207,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 				.orElseThrow(() -> new ResourceNotFoundException("Parent Category not found or inactive"));
 
 //		RESPONSE BUILD
-		SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
+		SubCategoryCategoryResponse scrd = new SubCategoryCategoryResponse();
 		scrd.setSubCategoryId(subCategory.getId());
 		scrd.setSubCategoryCode(subCategory.getSubCategoryCode());
 		scrd.setSubCategoryName(subCategory.getSubCategoryName());
@@ -215,13 +216,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		scrd.setActive(subCategory.getActive());
 		scrd.setCreatedAt(subCategory.getCreatedAt());
 
-		SubCategoryCategoryResponseDto2 srcrdt = new SubCategoryCategoryResponseDto2();
+		CategoryResponse srcrdt = new CategoryResponse();
 		srcrdt.setCategoryId(category.getId());
 		srcrdt.setCategoryCode(category.getCategoryCode());
 		srcrdt.setCategoryName(category.getCategoryName());
 		srcrdt.setDescription(category.getDescription());
 		srcrdt.setDisplayOrder(category.getDisplayOrder());
 		srcrdt.setActive(category.getActive());
+		srcrdt.setCreatedAt(category.getCreatedAt());
 
 		scrd.setCategory(srcrdt);
 
@@ -231,7 +233,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CategorySubCategoriesResponseDto1> getAllActiveSubCategoriesByCategoryId(UUID categoryId) {
+	public ApiResponse<CategorySubCategoriesResponse> getAllActiveSubCategoriesByCategoryId(UUID categoryId) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -245,9 +247,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			throw new ResourceNotFoundException("No Active Sub-Category found for this Category");
 		}
 
-		List<CategorySubCategoriesResponseDto2> cscrdtList = new ArrayList<>();
+		List<SubCategoryResponse> cscrdtList = new ArrayList<>();
 		for (SubCategory sc : subCatgories) {
-			CategorySubCategoriesResponseDto2 csrdt = new CategorySubCategoriesResponseDto2();
+			SubCategoryResponse csrdt = new SubCategoryResponse();
 			csrdt.setSubCategoryId(sc.getId());
 			csrdt.setSubCategoryCode(sc.getSubCategoryCode());
 			csrdt.setSubCategoryName(sc.getSubCategoryName());
@@ -259,7 +261,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			cscrdtList.add(csrdt);
 		}
 
-		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
+		CategorySubCategoriesResponse csrd = new CategorySubCategoriesResponse();
 		csrd.setCategoryId(category.getId());
 		csrd.setCategoryCode(category.getCategoryCode());
 		csrd.setCategoryName(category.getCategoryName());
@@ -275,7 +277,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CategorySubCategoriesResponseDto1> getAllInactiveSubCategoriesByCategoryId(UUID categoryId) {
+	public ApiResponse<CategorySubCategoriesResponse> getAllInactiveSubCategoriesByCategoryId(UUID categoryId) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -289,9 +291,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			throw new ResourceNotFoundException("No Inactive Sub-Category found for this Category");
 		}
 
-		List<CategorySubCategoriesResponseDto2> cscrdtList = new ArrayList<>();
+		List<SubCategoryResponse> cscrdtList = new ArrayList<>();
 		for (SubCategory sc : subCatgories) {
-			CategorySubCategoriesResponseDto2 csrdt = new CategorySubCategoriesResponseDto2();
+			SubCategoryResponse csrdt = new SubCategoryResponse();
 			csrdt.setSubCategoryId(sc.getId());
 			csrdt.setSubCategoryCode(sc.getSubCategoryCode());
 			csrdt.setSubCategoryName(sc.getSubCategoryName());
@@ -303,7 +305,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			cscrdtList.add(csrdt);
 		}
 
-		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
+		CategorySubCategoriesResponse csrd = new CategorySubCategoriesResponse();
 		csrd.setCategoryId(category.getId());
 		csrd.setCategoryCode(category.getCategoryCode());
 		csrd.setCategoryName(category.getCategoryName());
@@ -320,7 +322,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CategorySubCategoriesResponseDto1> bulkUpdateSubCategoryStatusByCategory(UUID categoryId,
+	public ApiResponse<CategorySubCategoriesResponse> bulkUpdateSubCategoryStatusByCategory(UUID categoryId,
 			BulkSubCategoryStatusRequest request, boolean activeStatus, UUID updatedBy) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(categoryId)
@@ -346,10 +348,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 		subCategoryRepository.saveAll(subCategories);
 
-		List<CategorySubCategoriesResponseDto2> responseList = new ArrayList<>();
+		List<SubCategoryResponse> responseList = new ArrayList<>();
 
 		for (SubCategory sc : subCategories) {
-			CategorySubCategoriesResponseDto2 dto = new CategorySubCategoriesResponseDto2();
+			SubCategoryResponse dto = new SubCategoryResponse();
 			dto.setSubCategoryId(sc.getId());
 			dto.setSubCategoryCode(sc.getSubCategoryCode());
 			dto.setSubCategoryName(sc.getSubCategoryName());
@@ -361,7 +363,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 			responseList.add(dto);
 		}
 
-		CategorySubCategoriesResponseDto1 csrd = new CategorySubCategoriesResponseDto1();
+		CategorySubCategoriesResponse csrd = new CategorySubCategoriesResponse();
 		csrd.setCategoryId(category.getId());
 		csrd.setCategoryCode(category.getCategoryCode());
 		csrd.setCategoryName(category.getCategoryName());
@@ -415,7 +417,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<Page<SubCategoryCategoryResponseDto1>> getSubCategories(Boolean active, int page, int size) {
+	public ApiResponse<Page<SubCategoryCategoryResponse>> getSubCategories(Boolean active, int page, int size) {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -431,8 +433,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(categoryIds);
 		Map<UUID, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, c -> c));
 
-		Page<SubCategoryCategoryResponseDto1> dtoPage = subCategories.map(subCat -> {
-			SubCategoryCategoryResponseDto1 dto = new SubCategoryCategoryResponseDto1();
+		Page<SubCategoryCategoryResponse> dtoPage = subCategories.map(subCat -> {
+			SubCategoryCategoryResponse dto = new SubCategoryCategoryResponse();
 			dto.setSubCategoryId(subCat.getId());
 			dto.setSubCategoryCode(subCat.getSubCategoryCode());
 			dto.setSubCategoryName(subCat.getSubCategoryName());
@@ -443,13 +445,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
 			Category category = categoryMap.get(subCat.getCategoryId());
 			if (category != null) {
-				SubCategoryCategoryResponseDto2 catDto = new SubCategoryCategoryResponseDto2();
+				CategoryResponse catDto = new CategoryResponse();
 				catDto.setCategoryId(category.getId());
 				catDto.setCategoryCode(category.getCategoryCode());
 				catDto.setCategoryName(category.getCategoryName());
 				catDto.setDescription(category.getDescription());
 				catDto.setDisplayOrder(category.getDisplayOrder());
 				catDto.setActive(category.getActive());
+				catDto.setCreatedAt(category.getCreatedAt());
 
 				dto.setCategory(catDto);
 			}
@@ -463,7 +466,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<SubCategoryCategoryResponseDto1> getSubCategoryByCode(String subCategoryCode) {
+	public ApiResponse<SubCategoryCategoryResponse> getSubCategoryByCode(String subCategoryCode) {
 
 	    SubCategory subCategory = subCategoryRepository
 	            .findBySubCategoryCodeAndDeletedAtIsNullAndActiveTrue(subCategoryCode)
@@ -472,7 +475,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	    Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(subCategory.getCategoryId())
 	            .orElseThrow(() -> new ResourceNotFoundException("Parent Category not found or inactive"));
 
-	    SubCategoryCategoryResponseDto1 scrd = new SubCategoryCategoryResponseDto1();
+	    SubCategoryCategoryResponse scrd = new SubCategoryCategoryResponse();
 	    scrd.setSubCategoryId(subCategory.getId());
 	    scrd.setSubCategoryCode(subCategory.getSubCategoryCode());
 	    scrd.setSubCategoryName(subCategory.getSubCategoryName());
@@ -481,13 +484,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 	    scrd.setActive(subCategory.getActive());
 	    scrd.setCreatedAt(subCategory.getCreatedAt());
 
-	    SubCategoryCategoryResponseDto2 categoryDto = new SubCategoryCategoryResponseDto2();
+	    CategoryResponse categoryDto = new CategoryResponse();
 	    categoryDto.setCategoryId(category.getId());
 	    categoryDto.setCategoryCode(category.getCategoryCode());
 	    categoryDto.setCategoryName(category.getCategoryName());
 	    categoryDto.setDescription(category.getDescription());
 	    categoryDto.setDisplayOrder(category.getDisplayOrder());
 	    categoryDto.setActive(category.getActive());
+	    categoryDto.setCreatedAt(category.getCreatedAt());
 
 	    scrd.setCategory(categoryDto);
 

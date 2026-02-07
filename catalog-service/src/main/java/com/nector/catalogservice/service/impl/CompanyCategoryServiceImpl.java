@@ -20,9 +20,9 @@ import com.nector.catalogservice.dto.request.internal.CompanyCategoryUpdateReque
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
 import com.nector.catalogservice.dto.response.internal.CategoryResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyCCsCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCCsCategoriesResponseDto2;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesCreationResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoryCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.Company_CategoryResponse;
 import com.nector.catalogservice.entity.Category;
@@ -51,10 +51,10 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyCategoriesResponseDto1> createCompanyCategories(CompanyCategoryCreateRequest request,
+	public ApiResponse<CompanyCategoriesCreationResponse> createCompanyCategories(CompanyCategoryCreateRequest request,
 			UUID createdBy) {
 
-		CompanyCategoriesResponseDto1 responseDto = new CompanyCategoriesResponseDto1();
+		CompanyCategoriesCreationResponse responseDto = new CompanyCategoriesCreationResponse();
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -262,7 +262,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyCCsCategoriesResponseDto1> getAllActiveCompanyCategoriesByCompanyId(UUID companyId) {
+	public ApiResponse<CompanyCategoriesResponse> getAllActiveCompanyCategoriesByCompanyId(UUID companyId) {
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -299,7 +299,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			categoryMap.put(category2.getId(), category2);
 		}
 
-		List<CompanyCCsCategoriesResponseDto2> cCsCategoriesResponseDto2s = new ArrayList<>();
+		List<CompanyCategoryCategoryResponse> cCsCategoriesResponseDto2s = new ArrayList<>();
 		for (CompanyCategory cc : companyCategories) {
 
 			Category category = categoryMap.get(cc.getCategoryId());
@@ -313,7 +313,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			cr.setActive(category.getActive());
 			cr.setCreatedAt(category.getCreatedAt());
 
-			CompanyCCsCategoriesResponseDto2 ccrd = new CompanyCCsCategoriesResponseDto2();
+			CompanyCategoryCategoryResponse ccrd = new CompanyCategoryCategoryResponse();
 			ccrd.setCompanyCategoryId(cc.getId());
 			ccrd.setActive(cc.getActive());
 			ccrd.setCreatedAt(cc.getCreatedAt());
@@ -322,7 +322,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			cCsCategoriesResponseDto2s.add(ccrd);
 		}
 
-		CompanyCCsCategoriesResponseDto1 cccrd = new CompanyCCsCategoriesResponseDto1();
+		CompanyCategoriesResponse cccrd = new CompanyCategoriesResponse();
 		cccrd.setCompany(crid);
 		cccrd.setCategories(cCsCategoriesResponseDto2s);
 
@@ -331,7 +331,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyCCsCategoriesResponseDto1> getAllInactiveCompanyCategoriesByCompanyId(UUID companyId) {
+	public ApiResponse<CompanyCategoriesResponse> getAllInactiveCompanyCategoriesByCompanyId(UUID companyId) {
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -368,7 +368,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			categoryMap.put(category2.getId(), category2);
 		}
 
-		List<CompanyCCsCategoriesResponseDto2> cCsCategoriesResponseDto2s = new ArrayList<>();
+		List<CompanyCategoryCategoryResponse> cCsCategoriesResponseDto2s = new ArrayList<>();
 		for (CompanyCategory cc : companyCategories) {
 
 			Category category = categoryMap.get(cc.getCategoryId());
@@ -382,7 +382,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			cr.setActive(category.getActive());
 			cr.setCreatedAt(category.getCreatedAt());
 
-			CompanyCCsCategoriesResponseDto2 ccrd = new CompanyCCsCategoriesResponseDto2();
+			CompanyCategoryCategoryResponse ccrd = new CompanyCategoryCategoryResponse();
 			ccrd.setCompanyCategoryId(cc.getId());
 			ccrd.setActive(cc.getActive());
 			ccrd.setCreatedAt(cc.getCreatedAt());
@@ -391,7 +391,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			cCsCategoriesResponseDto2s.add(ccrd);
 		}
 
-		CompanyCCsCategoriesResponseDto1 cccrd = new CompanyCCsCategoriesResponseDto1();
+		CompanyCategoriesResponse cccrd = new CompanyCategoriesResponse();
 		cccrd.setCompany(crid);
 		cccrd.setCategories(cCsCategoriesResponseDto2s);
 
@@ -400,7 +400,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyCCsCategoriesResponseDto1> bulkUpdateCompanyCategoryActiveStatus(
+	public ApiResponse<CompanyCategoriesResponse> bulkUpdateCompanyCategoryActiveStatus(
 			@Valid BulkCompanyCategoryStatusRequest request, boolean activeStatus, UUID updatedBy) {
 
 		List<CompanyCategory> companyCategories = companyCategoryRepository
@@ -442,7 +442,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 		Map<UUID, Category> categoryMap = categoryRepository.findByIdInAndDeletedAtIsNull(categoryIds).stream()
 				.collect(Collectors.toMap(Category::getId, c -> c));
 
-		List<CompanyCCsCategoriesResponseDto2> categoriesDtoList = new ArrayList<>();
+		List<CompanyCategoryCategoryResponse> categoriesDtoList = new ArrayList<>();
 
 		for (CompanyCategory cc : companyCategories) {
 
@@ -459,7 +459,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			cr.setActive(category.getActive());
 			cr.setCreatedAt(category.getCreatedAt());
 
-			CompanyCCsCategoriesResponseDto2 item = new CompanyCCsCategoriesResponseDto2();
+			CompanyCategoryCategoryResponse item = new CompanyCategoryCategoryResponse();
 			item.setCompanyCategoryId(cc.getId());
 			item.setActive(cc.getActive());
 			item.setCreatedAt(cc.getCreatedAt());
@@ -468,7 +468,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 			categoriesDtoList.add(item);
 		}
 
-		CompanyCCsCategoriesResponseDto1 response = new CompanyCCsCategoriesResponseDto1();
+		CompanyCategoriesResponse response = new CompanyCategoriesResponse();
 		response.setCompany(companyDto);
 		response.setCategories(categoriesDtoList);
 

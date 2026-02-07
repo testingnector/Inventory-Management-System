@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nector.auth.dto.request.internal.UserPermissionAssignRequest;
 import com.nector.auth.dto.request.internal.UserPermissionRevokeRequest;
 import com.nector.auth.dto.response.internal.ApiResponse;
-import com.nector.auth.dto.response.internal.PermissionUsersResponseDto1;
-import com.nector.auth.dto.response.internal.UserPermissionsResponseDto1;
+import com.nector.auth.dto.response.internal.PermissionUsersResponse;
+import com.nector.auth.dto.response.internal.UserPermissionsResponse;
 import com.nector.auth.service.UserPermissionService;
 
 import jakarta.validation.Valid;
@@ -31,40 +31,40 @@ public class UserPermissionController {
 	private final UserPermissionService userPermissionService;
 
 	@PostMapping("/assign")
-	public ResponseEntity<ApiResponse<UserPermissionsResponseDto1>> assign(
+	public ResponseEntity<ApiResponse<UserPermissionsResponse>> assign(
 			@Valid @RequestBody UserPermissionAssignRequest userPermissionAssignRequest, Authentication authentication) {
 
-		ApiResponse<UserPermissionsResponseDto1> response = userPermissionService.assignOrUpdate(userPermissionAssignRequest,
+		ApiResponse<UserPermissionsResponse> response = userPermissionService.assignOrUpdate(userPermissionAssignRequest,
 				authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/revoke")
-	public ResponseEntity<ApiResponse<UserPermissionsResponseDto1>> revokePermission(
+	public ResponseEntity<ApiResponse<UserPermissionsResponse>> revokePermission(
 			@Valid @RequestBody UserPermissionRevokeRequest request, Authentication authentication) {
-		ApiResponse<UserPermissionsResponseDto1> response = userPermissionService.revokeUserPermission(request,
+		ApiResponse<UserPermissionsResponse> response = userPermissionService.revokeUserPermission(request,
 				authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 
 	}
 
 	@GetMapping("/user/{userId}")
-	public ResponseEntity<ApiResponse<UserPermissionsResponseDto1>> getUserPermissionsByUser(@PathVariable UUID userId) {
-		ApiResponse<UserPermissionsResponseDto1> response = userPermissionService.getUserPermissionsByUserId(userId);
+	public ResponseEntity<ApiResponse<UserPermissionsResponse>> getUserPermissionsByUser(@PathVariable UUID userId) {
+		ApiResponse<UserPermissionsResponse> response = userPermissionService.getUserPermissionsByUserId(userId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 		
 	}
 	
 	@GetMapping("/permission/{permissionId}")
-	public ResponseEntity<ApiResponse<PermissionUsersResponseDto1>> getUserPermissionsByPermission(@PathVariable UUID permissionId) {
-		ApiResponse<PermissionUsersResponseDto1> response = userPermissionService.getUserPermissionsByPermissionId(permissionId);
+	public ResponseEntity<ApiResponse<PermissionUsersResponse>> getUserPermissionsByPermission(@PathVariable UUID permissionId) {
+		ApiResponse<PermissionUsersResponse> response = userPermissionService.getUserPermissionsByPermissionId(permissionId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 		
 	}
 	
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<UserPermissionsResponseDto1>>> getAllUserPermissions() {
-		ApiResponse<List<UserPermissionsResponseDto1>> response = userPermissionService.getAllUserPermissions();
+	public ResponseEntity<ApiResponse<List<UserPermissionsResponse>>> getAllUserPermissions() {
+		ApiResponse<List<UserPermissionsResponse>> response = userPermissionService.getAllUserPermissions();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 		
 	}

@@ -20,8 +20,8 @@ import com.nector.catalogservice.dto.request.internal.BulkSubCategoryStatusReque
 import com.nector.catalogservice.dto.request.internal.SubCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.SubCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CategorySubCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.SubCategoryCategoryResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CategorySubCategoriesResponse;
+import com.nector.catalogservice.dto.response.internal.SubCategoryCategoryResponse;
 import com.nector.catalogservice.service.SubCategoryService;
 
 import jakarta.validation.Valid;
@@ -36,23 +36,23 @@ public class SubCategoryController {
 
 //	ADMIN / SUPER_ADMIN
 	@PostMapping("/insert")
-	public ResponseEntity<ApiResponse<SubCategoryCategoryResponseDto1>> createSubCategory(
+	public ResponseEntity<ApiResponse<SubCategoryCategoryResponse>> createSubCategory(
 			@Valid @RequestBody SubCategoryCreateRequest subCategoryCreateRequest,
 			@RequestHeader("X-USER-ID") UUID createdBy, @RequestHeader("X-USER-ROLE") String role) {
 
-		ApiResponse<SubCategoryCategoryResponseDto1> response = subCategoryService
+		ApiResponse<SubCategoryCategoryResponse> response = subCategoryService
 				.createSubCategory(subCategoryCreateRequest, createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 //	ADMIN / SUPER_ADMIN
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<SubCategoryCategoryResponseDto1>> updateSubCategory(
+	public ResponseEntity<ApiResponse<SubCategoryCategoryResponse>> updateSubCategory(
 			@PathVariable("id") UUID subCategoryId,
 			@Valid @RequestBody SubCategoryUpdateRequest subCategoryUpdateRequest,
 			@RequestHeader("X-USER-ID") UUID updatedBy, @RequestHeader("X-USER-ROLE") String role) {
 
-		ApiResponse<SubCategoryCategoryResponseDto1> response = subCategoryService.updateSubCategory(subCategoryId,
+		ApiResponse<SubCategoryCategoryResponse> response = subCategoryService.updateSubCategory(subCategoryId,
 				subCategoryUpdateRequest, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -68,46 +68,46 @@ public class SubCategoryController {
 
 //	ADMIN / SUPER_ADMIN
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<SubCategoryCategoryResponseDto1>> getSubCategoryBySubCategoryId(
+	public ResponseEntity<ApiResponse<SubCategoryCategoryResponse>> getSubCategoryBySubCategoryId(
 			@PathVariable("id") UUID subCategoryId) {
 
-		ApiResponse<SubCategoryCategoryResponseDto1> response = subCategoryService
+		ApiResponse<SubCategoryCategoryResponse> response = subCategoryService
 				.getSubCategoryBySubCategoryId(subCategoryId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/category/{categoryId}/active")
-	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> getAllActiveSubCategoriesByCategoryId(
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponse>> getAllActiveSubCategoriesByCategoryId(
 			@PathVariable("categoryId") UUID categoryId) {
 
-		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+		ApiResponse<CategorySubCategoriesResponse> response = subCategoryService
 				.getAllActiveSubCategoriesByCategoryId(categoryId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/category/{categoryId}/inactive")
-	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> getAllInactiveSubCategoriesByCategoryId(
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponse>> getAllInactiveSubCategoriesByCategoryId(
 			@PathVariable("categoryId") UUID categoryId) {
 
-		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+		ApiResponse<CategorySubCategoriesResponse> response = subCategoryService
 				.getAllInactiveSubCategoriesByCategoryId(categoryId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/category/{categoryId}/bulk-activate")
-	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkActivate(@PathVariable UUID categoryId,
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponse>> bulkActivate(@PathVariable UUID categoryId,
 			@Valid @RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+		ApiResponse<CategorySubCategoriesResponse> response = subCategoryService
 				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, true, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/category/{categoryId}/bulk-deactivate")
-	public ResponseEntity<ApiResponse<CategorySubCategoriesResponseDto1>> bulkDeactivate(@PathVariable UUID categoryId,
+	public ResponseEntity<ApiResponse<CategorySubCategoriesResponse>> bulkDeactivate(@PathVariable UUID categoryId,
 			@Valid @RequestBody BulkSubCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CategorySubCategoriesResponseDto1> response = subCategoryService
+		ApiResponse<CategorySubCategoriesResponse> response = subCategoryService
 				.bulkUpdateSubCategoryStatusByCategory(categoryId, request, false, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -123,21 +123,21 @@ public class SubCategoryController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<Page<SubCategoryCategoryResponseDto1>>> getSubCategories(
+	public ResponseEntity<ApiResponse<Page<SubCategoryCategoryResponse>>> getSubCategories(
 			@RequestParam(required = false) Boolean active, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 
-		ApiResponse<Page<SubCategoryCategoryResponseDto1>> response = subCategoryService.getSubCategories(active, page,
+		ApiResponse<Page<SubCategoryCategoryResponse>> response = subCategoryService.getSubCategories(active, page,
 				size);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 	
 	@GetMapping("/code/{subCategoryCode}")
-	public ResponseEntity<ApiResponse<SubCategoryCategoryResponseDto1>> getSubCategoryByCode(
+	public ResponseEntity<ApiResponse<SubCategoryCategoryResponse>> getSubCategoryByCode(
 	        @PathVariable("subCategoryCode") String subCategoryCode) {
 
-	    ApiResponse<SubCategoryCategoryResponseDto1> response =
+	    ApiResponse<SubCategoryCategoryResponse> response =
 	            subCategoryService.getSubCategoryByCode(subCategoryCode);
 
 	    return ResponseEntity.status(response.getHttpStatusCode()).body(response);

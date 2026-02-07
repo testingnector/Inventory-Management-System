@@ -1,10 +1,11 @@
 package com.nector.catalogservice.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,14 +23,18 @@ import com.nector.catalogservice.dto.request.internal.CompanyTaxCategoryCreateRe
 import com.nector.catalogservice.dto.request.internal.CompanyTaxCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCompanyTaxCategoryCurrentResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCompanyTaxCategoryHistoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
-import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryPageResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponseByCompany;
+import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponseWithTaxMaster;
+import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponseWithTaxMasterAndCompany;
+import com.nector.catalogservice.dto.response.internal.CompanyTaxMasterCompanyTaxCategoryHistory;
 import com.nector.catalogservice.dto.response.internal.CompanyWithTaxCategoriesResponse;
-import com.nector.catalogservice.dto.response.internal.PageMeta;
 import com.nector.catalogservice.dto.response.internal.PagedResponse;
 import com.nector.catalogservice.dto.response.internal.TaxMasterResponse;
+import com.nector.catalogservice.dto.response.internal.TaxMasterWithCompanyTaxCategoryCurrentResponse;
+import com.nector.catalogservice.dto.response.internal.TaxMasterWithCompanyTaxCategoryHistoryResponse;
 import com.nector.catalogservice.entity.CompanyTaxCategory;
 import com.nector.catalogservice.entity.TaxMaster;
 import com.nector.catalogservice.exception.DuplicateResourceException;
@@ -53,16 +58,15 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyTaxCategoryResponse> createCompanyTaxCategory(CompanyTaxCategoryCreateRequest request,
-			UUID createdBy) {
+	public ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> createCompanyTaxCategory(
+			CompanyTaxCategoryCreateRequest request, UUID createdBy) {
 
-		Optional<CompanyTaxCategory> existing = companyTaxCategoryRepository
-				.findByCompanyIdAndTaxMasterIdAndEffectiveFromAndDeletedAtIsNull(request.getCompanyId(),
-						request.getTaxMasterId(), request.getEffectiveFrom());
+		boolean currentExists = companyTaxCategoryRepository.existsCurrentTax(request.getCompanyId(),
+				request.getTaxMasterId(), request.getEffectiveFrom());
 
-		if (existing.isPresent()) {
+		if (currentExists) {
 			throw new DuplicateResourceException(
-					"CompanyTaxCategory already exists for this company, tax, and effectiveFrom date");
+					"Current tax already exists for this company and tax master. Close existing tax before adding a new one.");
 		}
 
 		CompanyResponseExternalDto companyResponse;
@@ -92,7 +96,7 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 		CompanyTaxCategory saved = companyTaxCategoryRepository.save(entity);
 
-		CompanyTaxCategoryResponse response = toResponse(saved, taxMaster, companyResponse);
+		CompanyTaxCategoryResponseWithTaxMasterAndCompany response = toResponse(saved, taxMaster, companyResponse);
 
 		return new ApiResponse<>(true, "Company tax category created successfully", HttpStatus.OK.name(),
 				HttpStatus.OK.value(), response);
@@ -100,18 +104,32 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyTaxCategoryResponse> updateCompanyTaxCategory(UUID id,
+	public ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> updateCompanyTaxCategory(UUID id,
 			CompanyTaxCategoryUpdateRequest request, UUID updatedBy) {
 
 		CompanyTaxCategory entity = companyTaxCategoryRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Company tax category not found or deleted"));
 
+		if (Boolean.TRUE.equals(request.getActive())) {
+
+			boolean conflict = companyTaxCategoryRepository.existsAnotherCurrentActive(entity.getCompanyId(),
+					entity.getTaxMasterId(), entity.getId(), LocalDate.now());
+
+			if (conflict) {
+				throw new DuplicateResourceException(
+						"Another current active tax already exists for this company and tax master");
+			}
+		}
+
 		if (request.getTaxRate() != null)
 			entity.setTaxRate(request.getTaxRate());
+
 		if (request.getHsnCode() != null)
 			entity.setHsnCode(request.getHsnCode());
+
 		if (request.getEffectiveTo() != null)
 			entity.setEffectiveTo(request.getEffectiveTo());
+
 		if (request.getActive() != null)
 			entity.setActive(request.getActive());
 
@@ -130,7 +148,7 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 			throw new OrgServiceException("Error while communicating with Organization Service", null, e);
 		}
 
-		CompanyTaxCategoryResponse response = toResponse(saved, taxMaster, companyResponse);
+		CompanyTaxCategoryResponseWithTaxMasterAndCompany response = toResponse(saved, taxMaster, companyResponse);
 
 		return new ApiResponse<>(true, "Company tax category updated successfully", HttpStatus.OK.name(),
 				HttpStatus.OK.value(), response);
@@ -155,7 +173,7 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyTaxCategoryResponse> getCompanyTaxCategoryById(UUID id) {
+	public ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> getCompanyTaxCategoryById(UUID id) {
 
 		CompanyTaxCategory entity = companyTaxCategoryRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Company tax category not found or deleted"));
@@ -170,7 +188,7 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 			throw new OrgServiceException("Error while fetching company details", HttpStatus.resolve(e.status()), e);
 		}
 
-		CompanyTaxCategoryResponse response = toResponse(entity, taxMaster, companyResponse);
+		CompanyTaxCategoryResponseWithTaxMasterAndCompany response = toResponse(entity, taxMaster, companyResponse);
 
 		return new ApiResponse<>(true, "Company tax category fetched successfully", HttpStatus.OK.name(),
 				HttpStatus.OK.value(), response);
@@ -178,109 +196,24 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<CompanyTaxCategoryPageResponse> getCompanyTaxCategoryByCompany(UUID companyId, Boolean active,
-			int page, int size, String sort) {
-		CompanyResponseExternalDto company;
-		try {
-			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
-		}
-
-		String[] sortParams = sort.split(",");
-		Pageable pageable = PageRequest.of(page, size,
-				Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]));
-
-		Page<CompanyTaxCategory> pageData = (active == null)
-				? companyTaxCategoryRepository.findByCompanyIdAndDeletedAtIsNull(companyId, pageable)
-				: companyTaxCategoryRepository.findByCompanyIdAndActiveAndDeletedAtIsNull(companyId, active, pageable);
-
-		if (pageData.isEmpty()) {
-			throw new ResourceNotFoundException("No company tax categories found");
-		}
-
-		Set<UUID> taxMasterIds = pageData.getContent().stream().map(CompanyTaxCategory::getTaxMasterId)
-				.collect(Collectors.toSet());
-
-		Map<UUID, TaxMaster> taxMasterMap = taxMasterRepository.findByIdInAndDeletedAtIsNull(taxMasterIds).stream()
-				.collect(Collectors.toMap(TaxMaster::getId, t -> t));
-
-		List<CompanyTaxCategoryResponseByCompany> taxCategoryItems = pageData.getContent().stream().map(entity -> {
-
-			TaxMaster taxMaster = taxMasterMap.get(entity.getTaxMasterId());
-			if (taxMaster == null) {
-				throw new ResourceNotFoundException("Tax master not found");
-			}
-
-			CompanyTaxCategoryResponseByCompany item = new CompanyTaxCategoryResponseByCompany();
-			item.setCompanyTaxCategoryId(entity.getId());
-			item.setTaxRate(entity.getTaxRate());
-			item.setHsnCode(entity.getHsnCode());
-			item.setEffectiveFrom(entity.getEffectiveFrom());
-			item.setEffectiveTo(entity.getEffectiveTo());
-			item.setActive(entity.getActive());
-
-			TaxMasterResponse tmr = new TaxMasterResponse();
-			tmr.setTaxMasterId(taxMaster.getId());
-			tmr.setTaxCode(taxMaster.getTaxCode());
-			tmr.setTaxName(taxMaster.getTaxName());
-			tmr.setTaxType(taxMaster.getTaxType());
-			tmr.setCompoundTax(taxMaster.getCompoundTax());
-			tmr.setDescription(taxMaster.getDescription());
-			tmr.setActive(taxMaster.getActive());
-			tmr.setCreatedAt(taxMaster.getCreatedAt());
-			tmr.setUpdatedAt(taxMaster.getUpdatedAt());
-			item.setTaxMaster(tmr);
-
-			return item;
-		}).toList();
-
-		CompanyResponseInternalDto companyDto = new CompanyResponseInternalDto();
-		companyDto.setCompanyId(company.getCompanyId());
-		companyDto.setCompanyCode(company.getCompanyCode());
-		companyDto.setCompanyName(company.getCompanyName());
-		companyDto.setActive(company.getActive());
-
-		PageMeta pageMeta = new PageMeta();
-		pageMeta.setPageNumber(pageData.getNumber());
-		pageMeta.setPageSize(pageData.getSize());
-		pageMeta.setTotalElements(pageData.getTotalElements());
-		pageMeta.setTotalPages(pageData.getTotalPages());
-		pageMeta.setLast(pageData.isLast());
-
-		CompanyTaxCategoryPageResponse response = new CompanyTaxCategoryPageResponse();
-		response.setCompany(companyDto);
-		response.setTaxCategories(taxCategoryItems);
-		response.setPage(pageMeta);
-
-		return new ApiResponse<>(true, "Company tax categories fetched successfully", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), response);
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public ApiResponse<CompanyTaxCategoryResponse> getByCompanyAndTax(UUID companyId, UUID taxMasterId) {
+	public ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> getByCompanyAndTax(UUID companyId,
+			UUID taxMasterId) {
 
 		CompanyResponseExternalDto company;
 		try {
 			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
 		} catch (FeignException e) {
 			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
-		}
-
-		CompanyTaxCategory entity = companyTaxCategoryRepository
-				.findByCompanyIdAndTaxMasterIdAndDeletedAtIsNull(companyId, taxMasterId)
-				.orElseThrow(() -> new ResourceNotFoundException(
-						"Company tax category not found for given company and tax master"));
-
-		if (!entity.getActive()) {
-			throw new InactiveResourceException("Company tax category is inactive");
 		}
 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(taxMasterId)
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master not found"));
+		LocalDate today = LocalDate.now();
 
-		CompanyTaxCategoryResponse response = new CompanyTaxCategoryResponse();
+		CompanyTaxCategory entity = companyTaxCategoryRepository.findCurrentTaxCategory(companyId, taxMasterId, today)
+				.orElseThrow(() -> new ResourceNotFoundException("No active current tax category found"));
+
+		CompanyTaxCategoryResponseWithTaxMasterAndCompany response = new CompanyTaxCategoryResponseWithTaxMasterAndCompany();
 		response.setCompanyTaxCategoryId(entity.getId());
 		response.setTaxRate(entity.getTaxRate());
 		response.setHsnCode(entity.getHsnCode());
@@ -316,16 +249,215 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>> getAllTaxCategories(UUID companyId, Boolean active,
-			int page, int size, String sort) {
+	public ApiResponse<CompanyTaxMasterCompanyTaxCategoryHistory> getHistoryByCompanyAndTax(UUID companyId,
+			UUID taxMasterId) {
+
+		CompanyResponseExternalDto company;
+		try {
+			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
+		} catch (FeignException e) {
+			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		}
+
+		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(taxMasterId)
+				.orElseThrow(() -> new ResourceNotFoundException("Tax master not found"));
+
+		LocalDate today = LocalDate.now();
+
+		List<CompanyTaxCategory> historyList = companyTaxCategoryRepository.findHistoryByCompanyAndTax(companyId,
+				taxMasterId, today);
+
+		CompanyTaxMasterCompanyTaxCategoryHistory response = new CompanyTaxMasterCompanyTaxCategoryHistory();
+
+		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
+		crid.setCompanyId(company.getCompanyId());
+		crid.setCompanyCode(company.getCompanyCode());
+		crid.setCompanyName(company.getCompanyName());
+		crid.setActive(company.getActive());
+		response.setCompany(crid);
+
+		TaxMasterResponse tmr = new TaxMasterResponse();
+		tmr.setTaxMasterId(taxMaster.getId());
+		tmr.setTaxCode(taxMaster.getTaxCode());
+		tmr.setTaxName(taxMaster.getTaxName());
+		tmr.setTaxType(taxMaster.getTaxType());
+		tmr.setCompoundTax(taxMaster.getCompoundTax());
+		tmr.setDescription(taxMaster.getDescription());
+		tmr.setActive(taxMaster.getActive());
+		tmr.setCreatedAt(taxMaster.getCreatedAt());
+		tmr.setUpdatedAt(taxMaster.getUpdatedAt());
+		response.setTaxMaster(tmr);
+
+		List<CompanyTaxCategoryResponse> ctrList = new ArrayList<>();
+		for (CompanyTaxCategory entity : historyList) {
+			CompanyTaxCategoryResponse ctr = new CompanyTaxCategoryResponse();
+			ctr.setCompanyTaxCategoryId(entity.getId());
+			ctr.setTaxRate(entity.getTaxRate());
+			ctr.setHsnCode(entity.getHsnCode());
+			ctr.setEffectiveFrom(entity.getEffectiveFrom());
+			ctr.setEffectiveTo(entity.getEffectiveTo());
+			ctr.setActive(entity.getActive());
+			ctr.setCreatedAt(entity.getCreatedAt());
+			ctr.setUpdatedAt(entity.getUpdatedAt());
+
+			ctrList.add(ctr);
+		}
+
+		response.setCompanyTaxCategoryHistory(ctrList);
+
+		String message = historyList.isEmpty() ? "No historical tax categories"
+				: "Historical tax categories fetched successfully";
+
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), response);
+
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ApiResponse<CompanyCompanyTaxCategoryCurrentResponse> getAllCurrentByCompany(UUID companyId) {
+
+		CompanyResponseExternalDto company;
+		try {
+			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
+		} catch (FeignException e) {
+			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		}
+
+		LocalDate today = LocalDate.now();
+
+		List<CompanyTaxCategory> categories = companyTaxCategoryRepository.findAllCurrentByCompanyId(companyId, today);
+
+		Set<UUID> taxMasterIds = categories.stream().map(CompanyTaxCategory::getTaxMasterId)
+				.collect(Collectors.toSet());
+
+		List<TaxMaster> taxMasters = taxMasterRepository.findByIdInAndDeletedAtIsNull(taxMasterIds);
+
+		Map<UUID, TaxMaster> taxMasterMap = taxMasters.stream().collect(Collectors.toMap(TaxMaster::getId, t -> t));
+
+		List<TaxMasterWithCompanyTaxCategoryCurrentResponse> responseList = new ArrayList<>();
+		for (CompanyTaxCategory companyTaxCategory : categories) {
+
+			TaxMaster taxMaster = taxMasterMap.get(companyTaxCategory.getTaxMasterId());
+
+			TaxMasterWithCompanyTaxCategoryCurrentResponse twccr = new TaxMasterWithCompanyTaxCategoryCurrentResponse();
+			twccr.setTaxMasterId(taxMaster.getId());
+			twccr.setTaxCode(taxMaster.getTaxCode());
+			twccr.setTaxName(taxMaster.getTaxName());
+			twccr.setTaxType(taxMaster.getTaxType());
+			twccr.setCompoundTax(taxMaster.getCompoundTax());
+			twccr.setDescription(taxMaster.getDescription());
+			twccr.setActive(taxMaster.getActive());
+			twccr.setCreatedAt(taxMaster.getCreatedAt());
+			twccr.setUpdatedAt(taxMaster.getUpdatedAt());
+
+			CompanyTaxCategoryResponse ctr = new CompanyTaxCategoryResponse();
+			ctr.setCompanyTaxCategoryId(companyTaxCategory.getId());
+			ctr.setTaxRate(companyTaxCategory.getTaxRate());
+			ctr.setHsnCode(companyTaxCategory.getHsnCode());
+			ctr.setEffectiveFrom(companyTaxCategory.getEffectiveFrom());
+			ctr.setEffectiveTo(companyTaxCategory.getEffectiveTo());
+			ctr.setActive(companyTaxCategory.getActive());
+			ctr.setCreatedAt(companyTaxCategory.getCreatedAt());
+			ctr.setUpdatedAt(companyTaxCategory.getUpdatedAt());
+
+			twccr.setCompanyTaxCategory(ctr);
+
+			responseList.add(twccr);
+		}
+
+		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
+		crid.setCompanyId(company.getCompanyId());
+		crid.setCompanyCode(company.getCompanyCode());
+		crid.setCompanyName(company.getCompanyName());
+		crid.setActive(company.getActive());
+
+		CompanyCompanyTaxCategoryCurrentResponse cccr = new CompanyCompanyTaxCategoryCurrentResponse();
+		cccr.setCompany(crid);
+		cccr.setTaxMaster(responseList);
+
+		String message = categories.isEmpty() ? "No current tax categories"
+				: "Current tax categories fetched successfully";
+
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), cccr);
+
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ApiResponse<CompanyCompanyTaxCategoryHistoryResponse> getHistoryByCompany(UUID companyId) {
+
+		CompanyResponseExternalDto company;
+		try {
+			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
+		} catch (FeignException e) {
+			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		}
+
+		LocalDate today = LocalDate.now();
+
+		List<CompanyTaxCategory> categories = companyTaxCategoryRepository.findHistoryByCompanyId(companyId, today);
+
+		Set<UUID> taxMasterIds = categories.stream().map(CompanyTaxCategory::getTaxMasterId)
+				.collect(Collectors.toSet());
+
+		List<TaxMaster> taxMasters = taxMasterRepository.findByIdInAndDeletedAtIsNull(taxMasterIds);
+
+		Map<UUID, TaxMaster> taxMasterMap = taxMasters.stream().collect(Collectors.toMap(TaxMaster::getId, t -> t));
+
+		Map<UUID, List<CompanyTaxCategory>> grouped = categories.stream()
+				.collect(Collectors.groupingBy(CompanyTaxCategory::getTaxMasterId));
+
+		List<TaxMasterWithCompanyTaxCategoryHistoryResponse> responseList = new ArrayList<>();
+		for (UUID taxMasterId : grouped.keySet()) {
+			TaxMaster taxMaster = taxMasterMap.get(taxMasterId);
+
+			TaxMasterWithCompanyTaxCategoryHistoryResponse tmh = new TaxMasterWithCompanyTaxCategoryHistoryResponse();
+			tmh.setTaxMasterId(taxMaster.getId());
+			tmh.setTaxCode(taxMaster.getTaxCode());
+			tmh.setTaxName(taxMaster.getTaxName());
+			tmh.setTaxType(taxMaster.getTaxType());
+			tmh.setCompoundTax(taxMaster.getCompoundTax());
+			tmh.setDescription(taxMaster.getDescription());
+			tmh.setCreatedAt(taxMaster.getCreatedAt());
+			tmh.setUpdatedAt(taxMaster.getUpdatedAt());
+
+			tmh.setCompanyTaxCategories(
+					grouped.get(taxMasterId).stream().map(this::mapToResponse).collect(Collectors.toList()));
+
+			responseList.add(tmh);
+		}
+
+		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
+		crid.setCompanyId(company.getCompanyId());
+		crid.setCompanyCode(company.getCompanyCode());
+		crid.setCompanyName(company.getCompanyName());
+		crid.setActive(company.getActive());
+
+		CompanyCompanyTaxCategoryHistoryResponse historyResponse = new CompanyCompanyTaxCategoryHistoryResponse();
+		historyResponse.setCompany(crid);
+		historyResponse.setTaxMaster(responseList);
+
+		String message = categories.isEmpty() ? "No historical tax categories"
+				: "Historical tax categories fetched successfully";
+
+		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), historyResponse);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>> getAllTaxCategories(UUID companyId,
+			Boolean active, int page, int size, String sort) {
+
 		String[] sortParams = sort.split(",");
 		Pageable pageable = PageRequest.of(page, size,
 				Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]));
 
 		Page<CompanyTaxCategory> pageData;
 		if (companyId != null) {
-			pageData = (active == null) ? companyTaxCategoryRepository.findByCompanyIdAndDeletedAtIsNull(companyId, pageable)
-					: companyTaxCategoryRepository.findByCompanyIdAndActiveAndDeletedAtIsNull(companyId, active, pageable);
+			pageData = (active == null)
+					? companyTaxCategoryRepository.findByCompanyIdAndDeletedAtIsNull(companyId, pageable)
+					: companyTaxCategoryRepository.findByCompanyIdAndActiveAndDeletedAtIsNull(companyId, active,
+							pageable);
 		} else {
 			pageData = (active == null) ? companyTaxCategoryRepository.findByDeletedAtIsNull(pageable)
 					: companyTaxCategoryRepository.findByActiveAndDeletedAtIsNull(active, pageable);
@@ -338,7 +470,6 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		List<CompanyTaxCategory> categories = pageData.getContent();
 
 		Set<UUID> companyIds = categories.stream().map(CompanyTaxCategory::getCompanyId).collect(Collectors.toSet());
-
 		Set<UUID> taxMasterIds = categories.stream().map(CompanyTaxCategory::getTaxMasterId)
 				.collect(Collectors.toSet());
 
@@ -354,14 +485,18 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 					}
 				}));
 
-		Map<UUID, List<CompanyTaxCategoryResponse>> groupedByCompany = categories.stream().map(c -> {
+		List<CompanyTaxCategoryResponseWithTaxMaster> dtoList = categories.stream().map(c -> {
 			TaxMaster taxMaster = taxMasterMap.get(c.getTaxMasterId());
 			if (taxMaster == null)
 				throw new ResourceNotFoundException("Tax master not found: " + c.getTaxMasterId());
+			return toResponse(c, taxMaster);
+		}).toList();
 
-			CompanyResponseExternalDto company = companyMap.get(c.getCompanyId());
-			return toResponse(c, taxMaster, company);
-		}).collect(Collectors.groupingBy(r -> r.getCompany().getCompanyId()));
+		Map<UUID, List<CompanyTaxCategoryResponseWithTaxMaster>> groupedByCompany = dtoList.stream()
+				.collect(Collectors.groupingBy(c -> {
+					return categories.stream().filter(cat -> cat.getId().equals(c.getCompanyTaxCategoryId()))
+							.findFirst().get().getCompanyId();
+				}));
 
 		List<CompanyWithTaxCategoriesResponse> finalList = groupedByCompany.entrySet().stream().map(entry -> {
 			CompanyResponseExternalDto company = companyMap.get(entry.getKey());
@@ -386,8 +521,36 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 				HttpStatus.OK.value(), pagedResponse);
 	}
 
-//	---------------------------------------------
-	private CompanyTaxCategoryResponse toResponse(CompanyTaxCategory saved, TaxMaster taxMaster,
+	private CompanyTaxCategoryResponseWithTaxMaster toResponse(CompanyTaxCategory saved, TaxMaster taxMaster) {
+
+		TaxMasterResponse tmr = new TaxMasterResponse();
+		tmr.setTaxMasterId(taxMaster.getId());
+		tmr.setTaxCode(taxMaster.getTaxCode());
+		tmr.setTaxName(taxMaster.getTaxName());
+		tmr.setTaxType(taxMaster.getTaxType());
+		tmr.setCompoundTax(taxMaster.getCompoundTax());
+		tmr.setDescription(taxMaster.getDescription());
+		tmr.setActive(taxMaster.getActive());
+		tmr.setCreatedAt(taxMaster.getCreatedAt());
+		tmr.setUpdatedAt(taxMaster.getUpdatedAt());
+
+		CompanyTaxCategoryResponseWithTaxMaster ctcr = new CompanyTaxCategoryResponseWithTaxMaster();
+		ctcr.setCompanyTaxCategoryId(saved.getId());
+		ctcr.setTaxRate(saved.getTaxRate());
+		ctcr.setHsnCode(saved.getHsnCode());
+		ctcr.setEffectiveFrom(saved.getEffectiveFrom());
+		ctcr.setEffectiveTo(saved.getEffectiveTo());
+		ctcr.setActive(saved.getActive());
+		ctcr.setCreatedAt(saved.getCreatedAt());
+		ctcr.setUpdatedAt(saved.getUpdatedAt());
+
+		ctcr.setTaxMaster(tmr);
+
+		return ctcr;
+	}
+
+	// ---------------------------------------------
+	private CompanyTaxCategoryResponseWithTaxMasterAndCompany toResponse(CompanyTaxCategory saved, TaxMaster taxMaster,
 			CompanyResponseExternalDto companyResponse) {
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
@@ -407,7 +570,7 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		tmr.setCreatedAt(taxMaster.getCreatedAt());
 		tmr.setUpdatedAt(taxMaster.getUpdatedAt());
 
-		CompanyTaxCategoryResponse ctcr = new CompanyTaxCategoryResponse();
+		CompanyTaxCategoryResponseWithTaxMasterAndCompany ctcr = new CompanyTaxCategoryResponseWithTaxMasterAndCompany();
 		ctcr.setCompanyTaxCategoryId(saved.getId());
 		ctcr.setTaxRate(saved.getTaxRate());
 		ctcr.setHsnCode(saved.getHsnCode());
@@ -423,6 +586,17 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		return ctcr;
 	}
 
-	
+	private CompanyTaxCategoryResponse mapToResponse(CompanyTaxCategory entity) {
+		CompanyTaxCategoryResponse response = new CompanyTaxCategoryResponse();
+		response.setCompanyTaxCategoryId(entity.getId());
+		response.setTaxRate(entity.getTaxRate());
+		response.setHsnCode(entity.getHsnCode());
+		response.setEffectiveFrom(entity.getEffectiveFrom());
+		response.setEffectiveTo(entity.getEffectiveTo());
+		response.setActive(entity.getActive());
+		response.setCreatedAt(entity.getCreatedAt());
+		response.setUpdatedAt(entity.getUpdatedAt());
+		return response;
+	}
 
 }

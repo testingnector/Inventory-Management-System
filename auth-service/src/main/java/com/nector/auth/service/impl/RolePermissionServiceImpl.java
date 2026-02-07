@@ -17,9 +17,10 @@ import org.springframework.stereotype.Service;
 import com.nector.auth.dto.request.internal.RolePermissionAssignRequest;
 import com.nector.auth.dto.request.internal.RolePermissionRevokeRequest;
 import com.nector.auth.dto.response.internal.ApiResponse;
-import com.nector.auth.dto.response.internal.PermissionRolesResponseDto1;
-import com.nector.auth.dto.response.internal.PermissionRolesResponseDto2;
-import com.nector.auth.dto.response.internal.RolePermissionsResponseDto1;
+import com.nector.auth.dto.response.internal.AssignedPermissionWithRolePermissionResponse;
+import com.nector.auth.dto.response.internal.AssignedRoleResponse;
+import com.nector.auth.dto.response.internal.PermissionRolesResponse;
+import com.nector.auth.dto.response.internal.RolePermissionsResponse;
 import com.nector.auth.dto.response.internal.RolePermissionsResponseDto2;
 import com.nector.auth.entity.Permission;
 import com.nector.auth.entity.Role;
@@ -53,7 +54,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
 	@Transactional
 	@Override
-	public ApiResponse<RolePermissionsResponseDto1> assignPermission(RolePermissionAssignRequest request,
+	public ApiResponse<RolePermissionsResponse> assignPermission(RolePermissionAssignRequest request,
 			Authentication authentication) {
 
 		UUID assignedBy = getLoggedInUserId(authentication);
@@ -105,7 +106,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 				request.getPermissionIds().stream().collect(Collectors.toSet()));
 
 		// 6️⃣ Build RolePermissionResponse list
-		List<RolePermissionsResponseDto2> permissionResponses = new ArrayList<>();
+		List<AssignedPermissionWithRolePermissionResponse> permissionResponses = new ArrayList<>();
 		for (Permission p : permissions) {
 
 			RolePermission rp = existingMap.get(p.getId());
@@ -119,7 +120,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 				}
 			}
 
-			RolePermissionsResponseDto2 rpr = new RolePermissionsResponseDto2();
+			AssignedPermissionWithRolePermissionResponse rpr = new AssignedPermissionWithRolePermissionResponse();
 			rpr.setPermissionId(p.getId());
 			rpr.setPermissionCode(p.getPermissionCode());
 			rpr.setPermissionName(p.getPermissionName());
@@ -134,8 +135,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			permissionResponses.add(rpr);
 		}
 
-		// 7️⃣ Build final RolePermissionGroupResponse
-		RolePermissionsResponseDto1 response = new RolePermissionsResponseDto1();
+		RolePermissionsResponse response = new RolePermissionsResponse();
 		response.setRoleId(role.getId());
 		response.setRoleCode(role.getRoleCode());
 		response.setRoleName(role.getRoleName());
@@ -150,52 +150,43 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
 	@Transactional
 	@Override
-	public ApiResponse<RolePermissionsResponseDto1> revokePermission(RolePermissionRevokeRequest request,
+	public ApiResponse<RolePermissionsResponse> revokePermission(RolePermissionRevokeRequest request,
 			Authentication authentication) {
 
-		// 1️⃣ Logged-in user
 		UUID revokedBy = getLoggedInUserId(authentication);
 
-		// 2️⃣ Fetch RolePermission mapping
 		RolePermission rolePermission = rolePermissionRepository
 				.findByRoleIdAndPermissionId(request.getRoleId(), request.getPermissionId())
 				.orElseThrow(() -> new ResourceNotFoundException("Role-Permission mapping not found"));
 
-		// 3️⃣ Check if already revoked
 		if (!rolePermission.getActive()) {
 			throw new RuntimeException("Permission already revoked");
 		}
 
-		// 4️⃣ Revoke permission
 		rolePermission.setActive(false);
 		rolePermission.setRevokedAt(LocalDateTime.now());
 		rolePermission.setRevokedBy(revokedBy);
 		rolePermissionRepository.save(rolePermission);
 
-		// 5️⃣ Fetch all RolePermissions for this role
 		List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleId(request.getRoleId());
 		if (rolePermissions.isEmpty()) {
 			throw new ResourceNotFoundException("No permissions found for this role");
 		}
 
-		// 6️⃣ Fetch role info
 		Role role = roleRepository.findById(request.getRoleId())
 				.orElseThrow(() -> new ResourceNotFoundException("Role not found!"));
 
-		// 7️⃣ Collect permissionIds
 		List<UUID> permissionIds = new ArrayList<>();
 		for (RolePermission rp : rolePermissions) {
 			permissionIds.add(rp.getPermissionId());
 		}
 
-		// 8️⃣ Fetch permissions in one go
 		List<Permission> permissions = permissionRepository.findAllById(permissionIds);
 		Map<UUID, Permission> permissionMap = new HashMap<>();
 		for (Permission p : permissions) {
 			permissionMap.put(p.getId(), p);
 		}
 
-		// 9️⃣ Build RolePermissionResponse list
 		List<RolePermissionsResponseDto2> permissionResponses = new ArrayList<>();
 		for (RolePermission rp : rolePermissions) {
 			Permission permission = permissionMap.get(rp.getPermissionId());
@@ -217,8 +208,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			permissionResponses.add(rpr);
 		}
 
-		// 🔟 Build final RolePermissionGroupResponse
-		RolePermissionsResponseDto1 response = new RolePermissionsResponseDto1();
+		RolePermissionsResponse response = new RolePermissionsResponse();
 		response.setRoleId(role.getId());
 		response.setRoleCode(role.getRoleCode());
 		response.setRoleName(role.getRoleName());
@@ -232,7 +222,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	}
 
 	@Override
-	public ApiResponse<RolePermissionsResponseDto1> getPermissionsByRole(UUID roleId) {
+	public ApiResponse<RolePermissionsResponse> getPermissionsByRole(UUID roleId) {
 
 		// 1️⃣ Fetch role info
 		Role role = roleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException("Role not found!"));
@@ -285,7 +275,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		}
 
 		// 6️⃣ Build final group response
-		RolePermissionsResponseDto1 groupResponse = new RolePermissionsResponseDto1();
+		RolePermissionsResponse groupResponse = new RolePermissionsResponse();
 		groupResponse.setRoleId(role.getId());
 		groupResponse.setRoleCode(role.getRoleCode());
 		groupResponse.setRoleName(role.getRoleName());
@@ -302,26 +292,22 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 //	==================================================================================
 
 	@Override
-	public ApiResponse<PermissionRolesResponseDto1> getRolePermissionsByPermissionId(UUID permissionId) {
+	public ApiResponse<PermissionRolesResponse> getRolePermissionsByPermissionId(UUID permissionId) {
 
-		// 1️⃣ Fetch permission
 		Permission permission = permissionRepository.findByIdAndDeletedAtIsNullAndActiveTrue(permissionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Permission not found for id " + permissionId));
 
-		// 2️⃣ Fetch all RolePermission mappings for this permission
 		List<RolePermission> rolePermissions = rolePermissionRepository.findByPermissionId(permissionId);
 
 		if (rolePermissions.isEmpty()) {
 			throw new ResourceNotFoundException("No role-permissions found for this permission");
 		}
 
-		// 3️⃣ Collect all roleIds
 		Set<UUID> roleIds = new HashSet<>();
 		for (RolePermission rp : rolePermissions) {
 			roleIds.add(rp.getRoleId());
 		}
 
-		// 4️⃣ Fetch roles in one query
 		List<Role> roles = roleRepository.findByIdInAndDeletedAtIsNull(new ArrayList<>(roleIds));
 
 		Map<UUID, Role> roleMap = new HashMap<>();
@@ -329,16 +315,14 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			roleMap.put(role.getId(), role);
 		}
 
-		// 5️⃣ Build role responses
-		List<PermissionRolesResponseDto2> roleResponses = new ArrayList<>();
+		List<AssignedRoleResponse> roleResponses = new ArrayList<>();
 		for (RolePermission rp : rolePermissions) {
 			Role role = roleMap.get(rp.getRoleId());
 			if (role == null)
-				continue; // safety check if role deleted
+				continue; 
 
-			PermissionRolesResponseDto2 roleResp = new PermissionRolesResponseDto2();
+			AssignedRoleResponse roleResp = new AssignedRoleResponse();
 
-			// Role info
 			roleResp.setRoleId(role.getId());
 			roleResp.setRoleCode(role.getRoleCode());
 			roleResp.setRoleName(role.getRoleName());
@@ -346,7 +330,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			roleResp.setSystemRole(role.getSystemRole());
 			roleResp.setRoleIsActive(role.getActive());
 
-			// Mapping info
 			roleResp.setAllowed(rp.getActive());
 			roleResp.setAssignedActive(rp.getActive());
 			roleResp.setAssignedAt(rp.getAssignedAt());
@@ -354,8 +337,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			roleResponses.add(roleResp);
 		}
 
-		// 6️⃣ Build final group response
-		PermissionRolesResponseDto1 groupResponse = new PermissionRolesResponseDto1();
+		PermissionRolesResponse groupResponse = new PermissionRolesResponse();
 		groupResponse.setPermissionId(permission.getId());
 		groupResponse.setPermissionCode(permission.getPermissionCode());
 		groupResponse.setPermissionName(permission.getPermissionName());
@@ -364,13 +346,12 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		groupResponse.setActive(permission.getActive());
 		groupResponse.setRoles(roleResponses);
 
-		// 7️⃣ Return API response
 		return new ApiResponse<>(true, "Permission roles fetched successfully", HttpStatus.OK.name(),
 				HttpStatus.OK.value(), groupResponse);
 	}
 
 	@Override
-	public ApiResponse<List<RolePermissionsResponseDto1>> getAllRolePermissions() {
+	public ApiResponse<List<RolePermissionsResponse>> getAllRolePermissions() {
 
 		List<Role> roles = roleRepository.findByDeletedAtIsNullAndActiveTrue();
 		if (roles.isEmpty()) {
@@ -399,10 +380,10 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 			permissionMap.put(permission.getId(), permission);
 		}
 
-		List<RolePermissionsResponseDto1> response = new ArrayList<>();
+		List<RolePermissionsResponse> response = new ArrayList<>();
 
 		for (Role role : roles) {
-			RolePermissionsResponseDto1 rpgr = new RolePermissionsResponseDto1();
+			RolePermissionsResponse rpgr = new RolePermissionsResponse();
 			rpgr.setRoleId(role.getId());
 			rpgr.setRoleCode(role.getRoleCode());
 			rpgr.setRoleName(role.getRoleName());

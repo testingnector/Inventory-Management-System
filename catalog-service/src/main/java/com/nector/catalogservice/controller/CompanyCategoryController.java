@@ -18,8 +18,8 @@ import com.nector.catalogservice.dto.request.internal.BulkCompanyCategoryStatusR
 import com.nector.catalogservice.dto.request.internal.CompanyCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CompanyCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyCCsCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesCreationResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponse;
 import com.nector.catalogservice.dto.response.internal.Company_CategoryResponse;
 import com.nector.catalogservice.service.CompanyCategoryService;
 
@@ -34,10 +34,10 @@ public class CompanyCategoryController {
 	private final CompanyCategoryService companyCategoryService;
 
 	@PostMapping("/add")
-	public ResponseEntity<ApiResponse<CompanyCategoriesResponseDto1>> createCompanyCategory(
+	public ResponseEntity<ApiResponse<CompanyCategoriesCreationResponse>> createCompanyCategory(
 			@Valid @RequestBody CompanyCategoryCreateRequest request, @RequestHeader("X-USER-ID") UUID createdBy) {
 
-		ApiResponse<CompanyCategoriesResponseDto1> response = companyCategoryService.createCompanyCategories(request,
+		ApiResponse<CompanyCategoriesCreationResponse> response = companyCategoryService.createCompanyCategories(request,
 				createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -67,37 +67,37 @@ public class CompanyCategoryController {
 	}
 
 	@GetMapping("/company/{companyId}/active")
-	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> getAllActiveCompanyCategoriesByCompanyId(
+	public ResponseEntity<ApiResponse<CompanyCategoriesResponse>> getAllActiveCompanyCategoriesByCompanyId(
 			@PathVariable UUID companyId) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+		ApiResponse<CompanyCategoriesResponse> response = companyCategoryService
 				.getAllActiveCompanyCategoriesByCompanyId(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}/inactive")
-	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> getAllInactiveCompanyCategoriesByCompanyId(
+	public ResponseEntity<ApiResponse<CompanyCategoriesResponse>> getAllInactiveCompanyCategoriesByCompanyId(
 			@PathVariable UUID companyId) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+		ApiResponse<CompanyCategoriesResponse> response = companyCategoryService
 				.getAllInactiveCompanyCategoriesByCompanyId(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/company/{companyId}/bulk-activate")
-	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> bulkActivate(
+	public ResponseEntity<ApiResponse<CompanyCategoriesResponse>> bulkActivate(
 			@Valid @RequestBody BulkCompanyCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+		ApiResponse<CompanyCategoriesResponse> response = companyCategoryService
 				.bulkUpdateCompanyCategoryActiveStatus(request, true, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/company/{companyId}/bulk-deactivate")
-	public ResponseEntity<ApiResponse<CompanyCCsCategoriesResponseDto1>> bulkDeactivate(
+	public ResponseEntity<ApiResponse<CompanyCategoriesResponse>> bulkDeactivate(
 			@Valid @RequestBody BulkCompanyCategoryStatusRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<CompanyCCsCategoriesResponseDto1> response = companyCategoryService
+		ApiResponse<CompanyCategoriesResponse> response = companyCategoryService
 				.bulkUpdateCompanyCategoryActiveStatus(request, false, updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}

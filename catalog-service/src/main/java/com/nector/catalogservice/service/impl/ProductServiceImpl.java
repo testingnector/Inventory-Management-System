@@ -22,10 +22,10 @@ import com.nector.catalogservice.dto.request.internal.ProductUpdateRequest;
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
 import com.nector.catalogservice.dto.response.internal.CategoryResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyProductsDetailsResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyProductsDetailsResponseDto2;
+import com.nector.catalogservice.dto.response.internal.CompanyProductsResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.ProductAggregateResponse;
+import com.nector.catalogservice.dto.response.internal.ProductCategorySubCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.SubCategoryResponse;
 import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.entity.Product;
@@ -272,7 +272,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ApiResponse<CompanyProductsDetailsResponseDto1> getAllActiveProductsByCompanyId(UUID companyId) {
+	public ApiResponse<CompanyProductsResponse> getAllActiveProductsByCompanyId(UUID companyId) {
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -314,13 +314,13 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		CompanyProductsDetailsResponseDto1 cpdr = new CompanyProductsDetailsResponseDto1();
+		CompanyProductsResponse cpdr = new CompanyProductsResponse();
 		cpdr.setCompanyId(companyResponse.getCompanyId());
 		cpdr.setCompanyCode(companyResponse.getCompanyCode());
 		cpdr.setCompanyName(companyResponse.getCompanyName());
 		cpdr.setActive(companyResponse.getActive());
 
-		List<CompanyProductsDetailsResponseDto2> productResponses = new ArrayList<>();
+		List<ProductCategorySubCategoryResponse> productResponses = new ArrayList<>();
 
 		for (Product product : products) {
 
@@ -331,7 +331,7 @@ public class ProductServiceImpl implements ProductService {
 				subCategory = subCategoryMap.get(product.getSubCategoryId());
 			}
 
-			CompanyProductsDetailsResponseDto2 response = buildProductDetailsByCompanyResponse(product, category,
+			ProductCategorySubCategoryResponse response = buildProductDetailsByCompanyResponse(product, category,
 					subCategory);
 
 			productResponses.add(response);
@@ -347,7 +347,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ApiResponse<CompanyProductsDetailsResponseDto1> getAllInactiveProductsByCompanyId(UUID companyId) {
+	public ApiResponse<CompanyProductsResponse> getAllInactiveProductsByCompanyId(UUID companyId) {
 
 		CompanyResponseExternalDto companyResponse;
 		try {
@@ -389,13 +389,13 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		CompanyProductsDetailsResponseDto1 cpdr = new CompanyProductsDetailsResponseDto1();
+		CompanyProductsResponse cpdr = new CompanyProductsResponse();
 		cpdr.setCompanyId(companyResponse.getCompanyId());
 		cpdr.setCompanyCode(companyResponse.getCompanyCode());
 		cpdr.setCompanyName(companyResponse.getCompanyName());
 		cpdr.setActive(companyResponse.getActive());
 
-		List<CompanyProductsDetailsResponseDto2> productResponses = new ArrayList<>();
+		List<ProductCategorySubCategoryResponse> productResponses = new ArrayList<>();
 
 		for (Product product : products) {
 
@@ -406,7 +406,7 @@ public class ProductServiceImpl implements ProductService {
 				subCategory = subCategoryMap.get(product.getSubCategoryId());
 			}
 
-			CompanyProductsDetailsResponseDto2 response = buildProductDetailsByCompanyResponse(product, category,
+			ProductCategorySubCategoryResponse response = buildProductDetailsByCompanyResponse(product, category,
 					subCategory);
 
 			productResponses.add(response);
@@ -422,7 +422,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Transactional
 	@Override
-	public ApiResponse<CompanyProductsDetailsResponseDto1> bulkUpdateProductStatusByCompany(UUID companyId,
+	public ApiResponse<CompanyProductsResponse> bulkUpdateProductStatusByCompany(UUID companyId,
 			@Valid BulkProductStatusRequest request, boolean activeStatus, UUID updatedBy) {
 
 		CompanyResponseExternalDto companyResponse;
@@ -483,13 +483,13 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		CompanyProductsDetailsResponseDto1 cpdr = new CompanyProductsDetailsResponseDto1();
+		CompanyProductsResponse cpdr = new CompanyProductsResponse();
 		cpdr.setCompanyId(companyResponse.getCompanyId());
 		cpdr.setCompanyCode(companyResponse.getCompanyCode());
 		cpdr.setCompanyName(companyResponse.getCompanyName());
 		cpdr.setActive(companyResponse.getActive());
 
-		List<CompanyProductsDetailsResponseDto2> productResponses = new ArrayList<>();
+		List<ProductCategorySubCategoryResponse> productResponses = new ArrayList<>();
 
 		for (Product product : savedAllProducts) {
 
@@ -500,7 +500,7 @@ public class ProductServiceImpl implements ProductService {
 				subCategory = subCategoryMap.get(product.getSubCategoryId());
 			}
 
-			CompanyProductsDetailsResponseDto2 response = buildProductDetailsByCompanyResponse(product, category,
+			ProductCategorySubCategoryResponse response = buildProductDetailsByCompanyResponse(product, category,
 					subCategory);
 
 			productResponses.add(response);
@@ -674,10 +674,10 @@ public class ProductServiceImpl implements ProductService {
 		return response;
 	}
 
-	private CompanyProductsDetailsResponseDto2 buildProductDetailsByCompanyResponse(Product product, Category category,
+	private ProductCategorySubCategoryResponse buildProductDetailsByCompanyResponse(Product product, Category category,
 			SubCategory subCategory) {
 
-		CompanyProductsDetailsResponseDto2 response = new CompanyProductsDetailsResponseDto2();
+		ProductCategorySubCategoryResponse response = new ProductCategorySubCategoryResponse();
 		response.setProductId(product.getId());
 		response.setProductCode(product.getProductCode());
 		response.setProductName(product.getProductName());

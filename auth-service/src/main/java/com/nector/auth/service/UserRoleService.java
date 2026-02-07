@@ -9,26 +9,25 @@ import com.nector.auth.dto.request.internal.UserRoleAssignRequest;
 import com.nector.auth.dto.request.internal.UserRoleRevokeRequest;
 import com.nector.auth.dto.response.external.CompanyUsersResponseExternalDto;
 import com.nector.auth.dto.response.internal.ApiResponse;
-import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto1;
-import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto1;
-import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto1;
-import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto1;
+import com.nector.auth.dto.response.internal.RoleCompaniesResponse;
+import com.nector.auth.dto.response.internal.UserCompaniesResponse;
+import com.nector.auth.dto.response.internal.UserCompanyResponse;
 
 import jakarta.validation.Valid;
 
 public interface UserRoleService {
 
-	ApiResponse<UsersCompaniesRolesResponseDto1> assignRole(@Valid UserRoleAssignRequest request, Authentication authentication);
+	ApiResponse<UserCompaniesResponse> assignRole(@Valid UserRoleAssignRequest request, Authentication authentication);
 
-	ApiResponse<UsersCompaniesRolesResponseDto1> revokeRole(@Valid UserRoleRevokeRequest request, Authentication authentication);
+	ApiResponse<UserCompaniesResponse> revokeRole(@Valid UserRoleRevokeRequest request, Authentication authentication);
 
-	ApiResponse<List<UsersCompaniesRolesResponseDto1>> getAllUsersRoles();
+	ApiResponse<List<UserCompaniesResponse>> getAllUsersRoles();
 
-	ApiResponse<RoleCompaniesUsersResponseDto1> getUserRolesByRoleId(UUID roleId);
+	ApiResponse<RoleCompaniesResponse> getUserRolesByRoleId(UUID roleId);
 
-	ApiResponse<UserCompaniesRolesResponseDto1> getUserRolesByUserId(UUID userId);
+	ApiResponse<UserCompaniesResponse> getUserRolesByUserId(UUID userId);
 	
-	ApiResponse<UserCompanyRolesResponseDto1> getUserRolesByUserIdAndCompanyId(UUID userId, UUID companyId);
+	ApiResponse<UserCompanyResponse> getUserRolesByUserIdAndCompanyId(UUID userId, UUID companyId);
 
 	ApiResponse<List<CompanyUsersResponseExternalDto>> getAllUsersByCompanyId(UUID companyId);
 

@@ -7,7 +7,7 @@ import com.nector.catalogservice.dto.request.internal.BulkProductStatusRequest;
 import com.nector.catalogservice.dto.request.internal.ProductCreateRequest;
 import com.nector.catalogservice.dto.request.internal.ProductUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyProductsDetailsResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CompanyProductsResponse;
 import com.nector.catalogservice.dto.response.internal.ProductAggregateResponse;
 
 import jakarta.validation.Valid;
@@ -23,11 +23,11 @@ public interface ProductService {
 
 	ApiResponse<ProductAggregateResponse> getProductByProductId(UUID productId);
 
-	ApiResponse<CompanyProductsDetailsResponseDto1> getAllActiveProductsByCompanyId(UUID companyId);
+	ApiResponse<CompanyProductsResponse> getAllActiveProductsByCompanyId(UUID companyId);
 
-	ApiResponse<CompanyProductsDetailsResponseDto1> getAllInactiveProductsByCompanyId(UUID companyId);
+	ApiResponse<CompanyProductsResponse> getAllInactiveProductsByCompanyId(UUID companyId);
 
-	ApiResponse<CompanyProductsDetailsResponseDto1> bulkUpdateProductStatusByCompany(UUID companyId,
+	ApiResponse<CompanyProductsResponse> bulkUpdateProductStatusByCompany(UUID companyId,
 			@Valid BulkProductStatusRequest request, boolean b, UUID updatedBy);
 
 	ApiResponse<ProductAggregateResponse> getProductByProductCode(String productCode);

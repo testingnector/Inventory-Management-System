@@ -21,7 +21,7 @@ public class CompanyResponseDto {
     private String companyName;
     private Boolean active;
     
-    private List<UsersCompaniesRolesResponseDto3> roles = new ArrayList<>();
+    private List<RoleAndUserRoleResponse> roles = new ArrayList<>();
 
 }
 

@@ -17,12 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nector.auth.dto.request.internal.UserRoleAssignRequest;
 import com.nector.auth.dto.request.internal.UserRoleRevokeRequest;
-import com.nector.auth.dto.response.external.CompanyUsersResponseExternalDto;
 import com.nector.auth.dto.response.internal.ApiResponse;
-import com.nector.auth.dto.response.internal.RoleCompaniesUsersResponseDto1;
-import com.nector.auth.dto.response.internal.UserCompaniesRolesResponseDto1;
-import com.nector.auth.dto.response.internal.UserCompanyRolesResponseDto1;
-import com.nector.auth.dto.response.internal.UsersCompaniesRolesResponseDto1;
+import com.nector.auth.dto.response.internal.RoleCompaniesResponse;
+import com.nector.auth.dto.response.internal.UserCompaniesResponse;
+import com.nector.auth.dto.response.internal.UserCompanyResponse;
 import com.nector.auth.service.UserRoleService;
 
 import jakarta.validation.Valid;
@@ -38,52 +36,52 @@ public class UserRoleController {
 	// 🔹 ASSIGN ROLE
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@PostMapping("/assign")
-	public ResponseEntity<ApiResponse<UsersCompaniesRolesResponseDto1>> assignRole(
+	public ResponseEntity<ApiResponse<UserCompaniesResponse>> assignRole(
 			@Valid @RequestBody UserRoleAssignRequest request, Authentication authentication) {
 
-		ApiResponse<UsersCompaniesRolesResponseDto1> response = userRoleService.assignRole(request, authentication);
+		ApiResponse<UserCompaniesResponse> response = userRoleService.assignRole(request, authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	// 🔹 REVOKE ROLE
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@PutMapping("/revoke")
-	public ResponseEntity<ApiResponse<UsersCompaniesRolesResponseDto1>> revokeRole(
+	public ResponseEntity<ApiResponse<UserCompaniesResponse>> revokeRole(
 			@Valid @RequestBody UserRoleRevokeRequest request, Authentication authentication) {
 
-		ApiResponse<UsersCompaniesRolesResponseDto1> response = userRoleService.revokeRole(request, authentication);
+		ApiResponse<UserCompaniesResponse> response = userRoleService.revokeRole(request, authentication);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	// 🔹 Find All Users Roles
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<UsersCompaniesRolesResponseDto1>>> fetchAllUsersRoles() {
+	public ResponseEntity<ApiResponse<List<UserCompaniesResponse>>> fetchAllUsersRoles() {
 
-		ApiResponse<List<UsersCompaniesRolesResponseDto1>> response = userRoleService.getAllUsersRoles();
+		ApiResponse<List<UserCompaniesResponse>> response = userRoleService.getAllUsersRoles();
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@GetMapping("/roles/{roleId}")
-	public ResponseEntity<ApiResponse<RoleCompaniesUsersResponseDto1>> getUserRolesByRoleId(@PathVariable UUID roleId) {
-		ApiResponse<RoleCompaniesUsersResponseDto1> response = userRoleService.getUserRolesByRoleId(roleId);
+	public ResponseEntity<ApiResponse<RoleCompaniesResponse>> getUserRolesByRoleId(@PathVariable UUID roleId) {
+		ApiResponse<RoleCompaniesResponse> response = userRoleService.getUserRolesByRoleId(roleId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@GetMapping("/users/{userId}")
-	public ResponseEntity<ApiResponse<UserCompaniesRolesResponseDto1>> getUserRolesByUserId(@PathVariable UUID userId) {
-		ApiResponse<UserCompaniesRolesResponseDto1> response = userRoleService.getUserRolesByUserId(userId);
+	public ResponseEntity<ApiResponse<UserCompaniesResponse>> getUserRolesByUserId(@PathVariable UUID userId) {
+		ApiResponse<UserCompaniesResponse> response = userRoleService.getUserRolesByUserId(userId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 	@GetMapping("/users-companyid/{userId}")
-	public ResponseEntity<ApiResponse<UserCompanyRolesResponseDto1>> getUserRolesByUserIdAndCompanyId(
+	public ResponseEntity<ApiResponse<UserCompanyResponse>> getUserRolesByUserIdAndCompanyId(
 			@PathVariable UUID userId, @RequestParam UUID companyId) {
 
-		ApiResponse<UserCompanyRolesResponseDto1> response = userRoleService.getUserRolesByUserIdAndCompanyId(userId,
+		ApiResponse<UserCompanyResponse> response = userRoleService.getUserRolesByUserIdAndCompanyId(userId,
 				companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}

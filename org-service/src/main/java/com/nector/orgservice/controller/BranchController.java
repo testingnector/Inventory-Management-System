@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nector.orgservice.dto.request.internal.BranchCreateRequestDto;
 import com.nector.orgservice.dto.request.internal.BranchUpdateRequestDto;
 import com.nector.orgservice.dto.response.internal.ApiResponse;
-import com.nector.orgservice.dto.response.internal.BranchCompanyResponseDto1;
-import com.nector.orgservice.dto.response.internal.CompanyBranchResponseDto1;
-import com.nector.orgservice.dto.response.internal.CompanyBranchesResponseDto1;
+import com.nector.orgservice.dto.response.internal.BranchCompanyResponse;
+import com.nector.orgservice.dto.response.internal.CompanyBranchResponse;
+import com.nector.orgservice.dto.response.internal.CompanyBranchesResponse;
 import com.nector.orgservice.service.BranchService;
 
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public class BranchController {
 	private final BranchService branchService;
 
 	@PostMapping("/insert")
-	public ResponseEntity<ApiResponse<CompanyBranchResponseDto1>> createBranch(
+	public ResponseEntity<ApiResponse<CompanyBranchResponse>> createBranch(
 			@Valid @RequestBody BranchCreateRequestDto dto, @RequestHeader("X-USER-ID") UUID createdBy,
 			@RequestHeader("X-USER-ROLE") String role) {
 
@@ -42,24 +42,24 @@ public class BranchController {
 			throw new RuntimeException("Only SUPER_ADMIN can create company");
 		}
 
-		ApiResponse<CompanyBranchResponseDto1> response = branchService.createBranch(dto, createdBy);
+		ApiResponse<CompanyBranchResponse> response = branchService.createBranch(dto, createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<BranchCompanyResponseDto1>> getBranch(@PathVariable UUID id) {
-		ApiResponse<BranchCompanyResponseDto1> response = branchService.getBranchById(id);
+	public ResponseEntity<ApiResponse<BranchCompanyResponse>> getBranch(@PathVariable UUID id) {
+		ApiResponse<BranchCompanyResponse> response = branchService.getBranchById(id);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}")
-	public ResponseEntity<ApiResponse<CompanyBranchesResponseDto1>> getBranchesByCompany(@PathVariable UUID companyId) {
-		ApiResponse<CompanyBranchesResponseDto1> response = branchService.getBranchesByCompany(companyId);
+	public ResponseEntity<ApiResponse<CompanyBranchesResponse>> getBranchesByCompany(@PathVariable UUID companyId) {
+		ApiResponse<CompanyBranchesResponse> response = branchService.getBranchesByCompany(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<BranchCompanyResponseDto1>> updateBranch(@PathVariable UUID id,
+	public ResponseEntity<ApiResponse<BranchCompanyResponse>> updateBranch(@PathVariable UUID id,
 			@Valid @RequestBody BranchUpdateRequestDto dto, @RequestHeader("X-USER-ID") UUID updatedBy,
 			@RequestHeader("X-USER-ROLE") String role) {
 
@@ -67,7 +67,7 @@ public class BranchController {
 			throw new RuntimeException("Only SUPER_ADMIN can update branch");
 		}
 
-		ApiResponse<BranchCompanyResponseDto1> response = branchService.updateBranch(id, dto, updatedBy);
+		ApiResponse<BranchCompanyResponse> response = branchService.updateBranch(id, dto, updatedBy);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -85,16 +85,16 @@ public class BranchController {
 	}
 
 	@GetMapping("/code/{branchCode}")
-	public ResponseEntity<ApiResponse<BranchCompanyResponseDto1>> getBranchByCode(@PathVariable String branchCode) {
+	public ResponseEntity<ApiResponse<BranchCompanyResponse>> getBranchByCode(@PathVariable String branchCode) {
 
-		ApiResponse<BranchCompanyResponseDto1> response = branchService.getBranchByCode(branchCode);
+		ApiResponse<BranchCompanyResponse> response = branchService.getBranchByCode(branchCode);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@GetMapping("/company/{companyId}/head-office")
-	public ResponseEntity<ApiResponse<BranchCompanyResponseDto1>> getHeadOfficeByCompany(@PathVariable UUID companyId) {
+	public ResponseEntity<ApiResponse<BranchCompanyResponse>> getHeadOfficeByCompany(@PathVariable UUID companyId) {
 
-		ApiResponse<BranchCompanyResponseDto1> response = branchService.getHeadOfficeByCompanyId(companyId);
+		ApiResponse<BranchCompanyResponse> response = branchService.getHeadOfficeByCompanyId(companyId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 

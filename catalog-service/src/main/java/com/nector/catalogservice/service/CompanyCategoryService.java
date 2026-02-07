@@ -7,15 +7,15 @@ import com.nector.catalogservice.dto.request.internal.BulkCompanyCategoryStatusR
 import com.nector.catalogservice.dto.request.internal.CompanyCategoryCreateRequest;
 import com.nector.catalogservice.dto.request.internal.CompanyCategoryUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyCCsCategoriesResponseDto1;
-import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponseDto1;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesCreationResponse;
+import com.nector.catalogservice.dto.response.internal.CompanyCategoriesResponse;
 import com.nector.catalogservice.dto.response.internal.Company_CategoryResponse;
 
 import jakarta.validation.Valid;
 
 public interface CompanyCategoryService {
 
-    ApiResponse<CompanyCategoriesResponseDto1> createCompanyCategories(CompanyCategoryCreateRequest request, UUID createdBy);
+    ApiResponse<CompanyCategoriesCreationResponse> createCompanyCategories(CompanyCategoryCreateRequest request, UUID createdBy);
 
     ApiResponse<Company_CategoryResponse> updateCompanyCategory(UUID id, CompanyCategoryUpdateRequest request, UUID updatedBy);
 
@@ -23,11 +23,11 @@ public interface CompanyCategoryService {
 
     ApiResponse<Company_CategoryResponse> getCompanyCategoryById(UUID id);
 
-    ApiResponse<CompanyCCsCategoriesResponseDto1> getAllActiveCompanyCategoriesByCompanyId(UUID companyId);
+    ApiResponse<CompanyCategoriesResponse> getAllActiveCompanyCategoriesByCompanyId(UUID companyId);
 
-    ApiResponse<CompanyCCsCategoriesResponseDto1> getAllInactiveCompanyCategoriesByCompanyId(UUID companyId);
+    ApiResponse<CompanyCategoriesResponse> getAllInactiveCompanyCategoriesByCompanyId(UUID companyId);
 
-	ApiResponse<CompanyCCsCategoriesResponseDto1> bulkUpdateCompanyCategoryActiveStatus(
+	ApiResponse<CompanyCategoriesResponse> bulkUpdateCompanyCategoryActiveStatus(
 			@Valid BulkCompanyCategoryStatusRequest request, boolean b, UUID updatedBy);
 
 	ApiResponse<List<Object>> bulkDeleteCompanyCategoriesByCompanyId(UUID companyId,

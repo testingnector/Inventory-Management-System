@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 import com.nector.auth.dto.request.internal.UserPermissionAssignRequest;
 import com.nector.auth.dto.request.internal.UserPermissionRevokeRequest;
 import com.nector.auth.dto.response.internal.ApiResponse;
-import com.nector.auth.dto.response.internal.PermissionUsersResponseDto1;
-import com.nector.auth.dto.response.internal.PermissionUsersResponseDto2;
-import com.nector.auth.dto.response.internal.UserPermissionsResponseDto1;
-import com.nector.auth.dto.response.internal.UserPermissionsResponseDto2;
+import com.nector.auth.dto.response.internal.AssignedPermissionWithRolePermissionResponse;
+import com.nector.auth.dto.response.internal.AssignedUsersResponse;
+import com.nector.auth.dto.response.internal.PermissionUsersResponse;
+import com.nector.auth.dto.response.internal.UserPermissionsResponse;
 import com.nector.auth.entity.Permission;
 import com.nector.auth.entity.RolePermission;
 import com.nector.auth.entity.User;
@@ -58,7 +58,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UserPermissionsResponseDto1> assignOrUpdate(@Valid UserPermissionAssignRequest request,
+	public ApiResponse<UserPermissionsResponse> assignOrUpdate(@Valid UserPermissionAssignRequest request,
 			Authentication authentication) {
 
 		User user = userRepository.findByIdAndDeletedAtIsNull(request.getUserId())
@@ -99,7 +99,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
 	@Transactional
 	@Override
-	public ApiResponse<UserPermissionsResponseDto1> revokeUserPermission(@Valid UserPermissionRevokeRequest request,
+	public ApiResponse<UserPermissionsResponse> revokeUserPermission(@Valid UserPermissionRevokeRequest request,
 			Authentication authentication) {
 
 		User user = userRepository.findByIdAndDeletedAtIsNull(request.getUserId())
@@ -123,10 +123,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 				HttpStatus.OK.value(), mapToResponse(saved, user, permission));
 	}
 
-	private UserPermissionsResponseDto1 mapToResponse(UserPermission up, User user, Permission permission) {
+	private UserPermissionsResponse mapToResponse(UserPermission up, User user, Permission permission) {
 
 //		--------USER--------
-		UserPermissionsResponseDto1 upgr = new UserPermissionsResponseDto1();
+		UserPermissionsResponse upgr = new UserPermissionsResponse();
 		upgr.setUserId(user.getId());
 		upgr.setName(user.getName());
 		upgr.setEmail(user.getEmail());
@@ -134,7 +134,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		upgr.setActive(user.getActive());
 
 //		--------PERMISSION--------
-		UserPermissionsResponseDto2 upr = new UserPermissionsResponseDto2();
+		AssignedPermissionWithRolePermissionResponse upr = new AssignedPermissionWithRolePermissionResponse();
 		upr.setPermissionId(permission.getId());
 		upr.setPermissionCode(permission.getPermissionCode());
 		upr.setPermissionName(permission.getPermissionName());
@@ -146,7 +146,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		upr.setAssignedActive(up.getActive());
 		upr.setAssignedAt(up.getAssignedAt());
 
-		List<UserPermissionsResponseDto2> uprList = List.of(upr);
+		List<AssignedPermissionWithRolePermissionResponse> uprList = List.of(upr);
 		upgr.setPermissions(uprList);
 
 		return upgr;
@@ -155,7 +155,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 //	=================================================================================
 	@Override
 	@Transactional
-	public ApiResponse<UserPermissionsResponseDto1> getUserPermissionsByUserId(UUID userId) {
+	public ApiResponse<UserPermissionsResponse> getUserPermissionsByUserId(UUID userId) {
 
 		User user = userRepository.findByIdAndActiveTrueAndDeletedAtIsNull(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found for id " + userId));
@@ -178,7 +178,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			permissionMap.put(permission.getId(), permission);
 		}
 
-		Map<UUID, UserPermissionsResponseDto2> uprMap = new HashMap<>();
+		Map<UUID, AssignedPermissionWithRolePermissionResponse> uprMap = new HashMap<>();
 
 		for (RolePermission rp : rolePermissions) {
 			Permission permission = permissionMap.get(rp.getPermissionId());
@@ -186,7 +186,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 				continue;
 			}
 
-			UserPermissionsResponseDto2 upr = new UserPermissionsResponseDto2();
+			AssignedPermissionWithRolePermissionResponse upr = new AssignedPermissionWithRolePermissionResponse();
 
 			upr.setPermissionId(permission.getId());
 			upr.setPermissionCode(permission.getPermissionCode());
@@ -209,7 +209,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 				continue;
 			}
 
-			UserPermissionsResponseDto2 upr = new UserPermissionsResponseDto2();
+			AssignedPermissionWithRolePermissionResponse upr = new AssignedPermissionWithRolePermissionResponse();
 
 			upr.setPermissionId(permission.getId());
 			upr.setPermissionCode(permission.getPermissionCode());
@@ -225,7 +225,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			uprMap.put(permission.getId(), upr);
 		}
 
-		UserPermissionsResponseDto1 response = new UserPermissionsResponseDto1();
+		UserPermissionsResponse response = new UserPermissionsResponse();
 		response.setUserId(user.getId());
 		response.setName(user.getName());
 		response.setEmail(user.getEmail());
@@ -240,7 +240,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
 	@Override
 	@Transactional
-	public ApiResponse<PermissionUsersResponseDto1> getUserPermissionsByPermissionId(UUID permissionId) {
+	public ApiResponse<PermissionUsersResponse> getUserPermissionsByPermissionId(UUID permissionId) {
 
 		Permission permission = permissionRepository.findByIdAndDeletedAtIsNullAndActiveTrue(permissionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Permission not found for id " + permissionId));
@@ -266,7 +266,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		Map<UUID, User> userMap = userRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(userIds).stream()
 				.collect(Collectors.toMap(User::getId, u -> u));
 
-		Map<UUID, PermissionUsersResponseDto2> purMap = new HashMap<>();
+		Map<UUID, AssignedUsersResponse> purMap = new HashMap<>();
 
 		for (UserRole ur : userRoles) {
 
@@ -274,7 +274,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			if (user == null)
 				continue;
 
-			PermissionUsersResponseDto2 pur = new PermissionUsersResponseDto2();
+			AssignedUsersResponse pur = new AssignedUsersResponse();
 
 			pur.setUserId(user.getId());
 			pur.setName(user.getName());
@@ -282,7 +282,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			pur.setMobileNumber(user.getMobileNumber());
 			pur.setUserIsActive(user.getActive());
 
-			pur.setAllowed(true); // ROLE default
+			pur.setAllowed(true); 
 			pur.setAssignedActive(ur.getActive());
 			pur.setAssignedAt(ur.getAssignedAt());
 
@@ -295,7 +295,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			if (user == null)
 				continue;
 
-			PermissionUsersResponseDto2 pur = new PermissionUsersResponseDto2();
+			AssignedUsersResponse pur = new AssignedUsersResponse();
 
 			pur.setUserId(user.getId());
 			pur.setName(user.getName());
@@ -310,8 +310,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			purMap.put(user.getId(), pur);
 		}
 
-		// 9️⃣ FINAL RESPONSE
-		PermissionUsersResponseDto1 response = new PermissionUsersResponseDto1();
+		PermissionUsersResponse response = new PermissionUsersResponse();
 
 		response.setPermissionId(permission.getId());
 		response.setPermissionCode(permission.getPermissionCode());
@@ -327,15 +326,13 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
 	@Override
 	@Transactional
-	public ApiResponse<List<UserPermissionsResponseDto1>> getAllUserPermissions() {
+	public ApiResponse<List<UserPermissionsResponse>> getAllUserPermissions() {
 
-		// 1. Fetch users
 		List<User> users = userRepository.findByDeletedAtIsNull();
 		if (users.isEmpty()) {
 			throw new ResourceNotFoundException("No users found");
 		}
 
-		// 2. Fetch related data
 		List<UserPermission> userPermissions = userPermissionRepository.findByDeletedAtIsNull();
 
 		List<UserRole> userRoles = userRoleRepository.findByUserIdInAndActiveTrueAndDeletedAtIsNull(getUserIds(users));
@@ -346,30 +343,25 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		List<Permission> permissions = permissionRepository
 				.findByIdInAndDeletedAtIsNull(getPermissionIds(rolePermissions, userPermissions));
 
-		// 3. Permission lookup map
 		Map<UUID, Permission> permissionMap = new HashMap<UUID, Permission>();
 		for (Permission p : permissions) {
 			permissionMap.put(p.getId(), p);
 		}
 
-		/*
-		 * MAIN STRUCTURE UserId -> (PermissionId -> PermissionResponse)
-		 */
-		Map<UUID, Map<UUID, UserPermissionsResponseDto2>> userPermissionMap = new HashMap<UUID, Map<UUID, UserPermissionsResponseDto2>>();
 
-		// ======================================================
-		// 4. ROLE BASED PERMISSIONS (default allowed = true)
-		// ======================================================
+		Map<UUID, Map<UUID, AssignedPermissionWithRolePermissionResponse>> userPermissionMap = new HashMap<UUID, Map<UUID, AssignedPermissionWithRolePermissionResponse>>();
+
+
 		for (UserRole ur : userRoles) {
 
 			User user = findUserById(users, ur.getUserId());
 			if (user == null)
 				continue;
 
-			Map<UUID, UserPermissionsResponseDto2> permissionResponseMap = userPermissionMap.get(user.getId());
+			Map<UUID, AssignedPermissionWithRolePermissionResponse> permissionResponseMap = userPermissionMap.get(user.getId());
 
 			if (permissionResponseMap == null) {
-				permissionResponseMap = new HashMap<UUID, UserPermissionsResponseDto2>();
+				permissionResponseMap = new HashMap<UUID, AssignedPermissionWithRolePermissionResponse>();
 				userPermissionMap.put(user.getId(), permissionResponseMap);
 			}
 
@@ -386,7 +378,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 				if (permissionResponseMap.containsKey(perm.getId()))
 					continue;
 
-				UserPermissionsResponseDto2 upr = new UserPermissionsResponseDto2();
+				AssignedPermissionWithRolePermissionResponse upr = new AssignedPermissionWithRolePermissionResponse();
 				upr.setPermissionId(perm.getId());
 				upr.setPermissionCode(perm.getPermissionCode());
 				upr.setPermissionName(perm.getPermissionName());
@@ -415,14 +407,14 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			if (perm == null)
 				continue;
 
-			Map<UUID, UserPermissionsResponseDto2> permissionResponseMap = userPermissionMap.get(user.getId());
+			Map<UUID, AssignedPermissionWithRolePermissionResponse> permissionResponseMap = userPermissionMap.get(user.getId());
 
 			if (permissionResponseMap == null) {
-				permissionResponseMap = new HashMap<UUID, UserPermissionsResponseDto2>();
+				permissionResponseMap = new HashMap<UUID, AssignedPermissionWithRolePermissionResponse>();
 				userPermissionMap.put(user.getId(), permissionResponseMap);
 			}
 
-			UserPermissionsResponseDto2 upr = new UserPermissionsResponseDto2();
+			AssignedPermissionWithRolePermissionResponse upr = new AssignedPermissionWithRolePermissionResponse();
 			upr.setPermissionId(perm.getId());
 			upr.setPermissionCode(perm.getPermissionCode());
 			upr.setPermissionName(perm.getPermissionName());
@@ -441,7 +433,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		// ======================================================
 		// 6. GROUP BY USER (FINAL RESPONSE)
 		// ======================================================
-		List<UserPermissionsResponseDto1> response = new ArrayList<UserPermissionsResponseDto1>();
+		List<UserPermissionsResponse> response = new ArrayList<UserPermissionsResponse>();
 
 		for (UUID userId : userPermissionMap.keySet()) {
 
@@ -449,7 +441,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			if (user == null)
 				continue;
 
-			UserPermissionsResponseDto1 ugr = new UserPermissionsResponseDto1();
+			UserPermissionsResponse ugr = new UserPermissionsResponse();
 
 			ugr.setUserId(user.getId());
 			ugr.setName(user.getName());
@@ -457,7 +449,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 			ugr.setMobileNumber(user.getMobileNumber());
 			ugr.setActive(user.getActive());
 
-			List<UserPermissionsResponseDto2> permissionList = new ArrayList<UserPermissionsResponseDto2>(
+			List<AssignedPermissionWithRolePermissionResponse> permissionList = new ArrayList<AssignedPermissionWithRolePermissionResponse>(
 					userPermissionMap.get(userId).values());
 
 			ugr.setPermissions(permissionList);
@@ -467,7 +459,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 		// ======================================================
 		// 7. RETURN
 		// ======================================================
-		return new ApiResponse<List<UserPermissionsResponseDto1>>(true, "User Permission fetch successfully",
+		return new ApiResponse<List<UserPermissionsResponse>>(true, "User Permission fetch successfully",
 				HttpStatus.OK.name(), HttpStatus.OK.value(), response);
 	}
 

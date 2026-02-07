@@ -18,8 +18,8 @@ import com.nector.orgservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.orgservice.dto.response.external.CompanyUsersResponseExternalDto;
 import com.nector.orgservice.dto.response.internal.ApiResponse;
 import com.nector.orgservice.dto.response.internal.CompanyResponse;
-import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto1;
-import com.nector.orgservice.dto.response.internal.CompanyUsersResponseDto2;
+import com.nector.orgservice.dto.response.internal.CompanyUsersResponse;
+import com.nector.orgservice.dto.response.internal.UserResponse;
 import com.nector.orgservice.entity.Company;
 import com.nector.orgservice.exception.AuthServiceException;
 import com.nector.orgservice.exception.ResourceNotFoundException;
@@ -286,7 +286,7 @@ public class CompanyServiceImpl implements CompanyService {
 		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found or inactive!"));
 		
-		List<CompanyUsersResponseDto2> companyUsersResponseDto2s = new ArrayList<>();
+		List<UserResponse> companyUsersResponseDto2s = new ArrayList<>();
 		try {
 			List<CompanyUsersResponseExternalDto> companyUsersResponseExternalDtos = authServiceClient.getAllUsersByCompanyId(companyId).getBody().getData();
 			if (companyUsersResponseExternalDtos.isEmpty()) {
@@ -295,7 +295,7 @@ public class CompanyServiceImpl implements CompanyService {
 			}
 			for (CompanyUsersResponseExternalDto cured : companyUsersResponseExternalDtos) {
 				
-				CompanyUsersResponseDto2 curd = new CompanyUsersResponseDto2();
+				UserResponse curd = new UserResponse();
 				curd.setUserId(cured.getUserId());
 				curd.setName(cured.getName());
 				curd.setEmail(cured.getEmail());
@@ -312,7 +312,7 @@ public class CompanyServiceImpl implements CompanyService {
 			throw new AuthServiceException(message, status, e);
 		}
 		
-		CompanyUsersResponseDto1 curd = new CompanyUsersResponseDto1();
+		CompanyUsersResponse curd = new CompanyUsersResponse();
 		curd.setCompanyId(company.getId());
 		curd.setCompanyCode(company.getCompanyCode());
 		curd.setCompanyName(company.getCompanyName());
