@@ -3,6 +3,7 @@ package com.nector.catalogservice.repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -108,5 +109,7 @@ public interface CompanyTaxCategoryRepository extends JpaRepository<CompanyTaxCa
 			    ORDER BY c.effectiveFrom DESC
 			""")
 	List<CompanyTaxCategory> findHistoryByCompanyId(UUID companyId, LocalDate today);
+
+	List<CompanyTaxCategory> findByIdInAndDeletedAtIsNull(Set<UUID> companyTaxCategoryIds);
 
 }
