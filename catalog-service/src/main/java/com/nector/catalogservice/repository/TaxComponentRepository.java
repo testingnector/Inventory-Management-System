@@ -30,5 +30,7 @@ public interface TaxComponentRepository extends JpaRepository<TaxComponent, UUID
 
 	List<TaxComponent> findByActiveAndDeletedAtIsNull(boolean activeStatus);
 
+	List<TaxComponent> findByCompanyTaxCategoryIdInAndDeletedAtIsNull(List<UUID> companyTaxCategoryIds);
+
 
 }

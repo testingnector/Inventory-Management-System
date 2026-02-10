@@ -3,6 +3,8 @@ package com.nector.catalogservice.dto.request.internal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -23,8 +25,10 @@ public class CompanyTaxCategoryCreateRequest {
     private String hsnCode;
 
     @NotNull(message = "effectiveFrom date is required")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate effectiveFrom;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate effectiveTo;
 
 }

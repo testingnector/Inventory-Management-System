@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -111,5 +112,15 @@ public interface CompanyTaxCategoryRepository extends JpaRepository<CompanyTaxCa
 	List<CompanyTaxCategory> findHistoryByCompanyId(UUID companyId, LocalDate today);
 
 	List<CompanyTaxCategory> findByIdInAndDeletedAtIsNull(Set<UUID> companyTaxCategoryIds);
+
+	@Modifying
+	@Query("""
+			UPDATE CompanyTaxCategory c
+			SET c.active = false
+			WHERE c.active = true
+			AND c.effectiveTo IS NOT NULL
+			AND c.effectiveTo < :today
+			""")
+	void deactivateExpired(LocalDate today);
 
 }

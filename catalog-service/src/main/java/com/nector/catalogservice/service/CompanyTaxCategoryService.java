@@ -1,5 +1,6 @@
 package com.nector.catalogservice.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,5 +39,7 @@ public interface CompanyTaxCategoryService {
 	
 	ApiResponse<PagedResponse<CompanyWithTaxCategoriesResponse>> getAllTaxCategories(UUID companyId, Boolean active, int page,
 			int size, String sort);
+
+	void deactivateExpiredTaxCategories(LocalDate now);
 
 }

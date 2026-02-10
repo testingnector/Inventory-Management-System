@@ -2,10 +2,12 @@ package com.nector.catalogservice.exception;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,7 +17,7 @@ import com.nector.catalogservice.dto.response.internal.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<String>> handleAllException(Exception ex) {
 
@@ -78,47 +80,62 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
-	
+
 	@ExceptionHandler(DuplicateResourceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleDuplicateResourceException(DuplicateResourceException exception) {
-		
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.CONFLICT.name(), HttpStatus.CONFLICT.value(), exception.getData());
+
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.CONFLICT.name(),
+				HttpStatus.CONFLICT.value(), exception.getData());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
-	
+
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException exception) {
 
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(), exception.getData());
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(),
+				HttpStatus.NOT_FOUND.value(), exception.getData());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
-	
+
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(ResponseStatusException exception) {
-		
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(), HttpStatus.NOT_FOUND.value(), exception.getData());
+
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.NOT_FOUND.name(),
+				HttpStatus.NOT_FOUND.value(), exception.getData());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
-	
+
 	@ExceptionHandler(InactiveResourceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleInactiveResourceException(InactiveResourceException exception) {
 
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.FORBIDDEN.name(), HttpStatus.FORBIDDEN.value(), exception.getData());
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.FORBIDDEN.name(),
+				HttpStatus.FORBIDDEN.value(), exception.getData());
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@ExceptionHandler(ActiveResourceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleActiveResourceException(ActiveResourceException exception) {
-		
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.FORBIDDEN.name(), HttpStatus.FORBIDDEN.value(), exception.getData());
+
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), HttpStatus.FORBIDDEN.name(),
+				HttpStatus.FORBIDDEN.value(), exception.getData());
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
-	
+
 	@ExceptionHandler(OrgServiceException.class)
 	public ResponseEntity<ApiResponse<Object>> handleOrgServiceException(OrgServiceException exception) {
 
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), exception.getHttpStatus().name(), exception.getHttpStatus().value(), Collections.emptyList());
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(),
+				exception.getHttpStatus().name(), exception.getHttpStatus().value(), Collections.emptyList());
 		return ResponseEntity.status(exception.getHttpStatus()).body(response);
 	}
-	
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ApiResponse<?>> handleParseError(HttpMessageNotReadableException ex) {
+
+		ApiResponse<List<Object>> response = new ApiResponse<>(false, "Invalid date format. Expected yyyy-MM-dd",
+				HttpStatus.BAD_REQUEST.name(), HttpStatus.BAD_REQUEST.value(), Collections.emptyList());
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+
+	}
+
 }

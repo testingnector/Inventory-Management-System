@@ -1,12 +1,10 @@
 package com.nector.catalogservice.dto.request.internal;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
 import lombok.Data;
 
 @Data
@@ -17,6 +15,7 @@ public class CompanyTaxCategoryUpdateRequest {
 
     private String hsnCode;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate effectiveTo;
 
     private Boolean active;
