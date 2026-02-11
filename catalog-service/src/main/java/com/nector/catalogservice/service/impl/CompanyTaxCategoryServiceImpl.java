@@ -40,15 +40,14 @@ import com.nector.catalogservice.entity.CompanyTaxCategory;
 import com.nector.catalogservice.entity.TaxComponent;
 import com.nector.catalogservice.entity.TaxMaster;
 import com.nector.catalogservice.exception.DuplicateResourceException;
+import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
-import com.nector.catalogservice.exception.OrgServiceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
 import com.nector.catalogservice.repository.CompanyTaxCategoryRepository;
 import com.nector.catalogservice.repository.TaxComponentRepository;
 import com.nector.catalogservice.repository.TaxMasterRepository;
 import com.nector.catalogservice.service.CompanyTaxCategoryService;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -73,15 +72,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 					"Current tax already exists for this company and tax master. Close existing tax before adding a new one.");
 		}
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(request.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(request.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(request.getTaxMasterId())
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master data not found or deleted"));
@@ -167,13 +164,14 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(saved.getTaxMasterId())
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master data not found or deleted"));
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(entity.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Error while communicating with Organization Service", null, e);
-		}
+		var cResponse = orgServiceClient.getCompanyBasic(entity.getCompanyId());
 
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
+		
 		List<TaxComponent> components = taxComponentRepository
 				.findAllByCompanyTaxCategoryIdAndDeletedAtIsNull(saved.getId());
 
@@ -211,12 +209,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(entity.getTaxMasterId())
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master not found or deleted"));
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(entity.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Error while fetching company details", HttpStatus.resolve(e.status()), e);
+		var cResponse = orgServiceClient.getCompanyBasic(entity.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		List<TaxComponent> components = taxComponentRepository
 				.findAllByCompanyTaxCategoryIdAndDeletedAtIsNull(entity.getId());
@@ -233,12 +232,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 	public ApiResponse<CompanyTaxCategoryResponseWithTaxMasterAndCompany> getByCompanyAndTax(UUID companyId,
 			UUID taxMasterId) {
 
-		CompanyResponseExternalDto company;
-		try {
-			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(taxMasterId)
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master not found"));
@@ -274,10 +274,10 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		response.setTaxMaster(tmr);
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
-		crid.setCompanyId(company.getCompanyId());
-		crid.setCompanyCode(company.getCompanyCode());
-		crid.setCompanyName(company.getCompanyName());
-		crid.setActive(company.getActive());
+		crid.setCompanyId(companyResponse.getCompanyId());
+		crid.setCompanyCode(companyResponse.getCompanyCode());
+		crid.setCompanyName(companyResponse.getCompanyName());
+		crid.setActive(companyResponse.getActive());
 		response.setCompany(crid);
 
 		List<TaxComponentResponse> taxComponentResponses = components.stream().map(c -> {
@@ -301,12 +301,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 	public ApiResponse<CompanyTaxMasterCompanyTaxCategoryHistory> getHistoryByCompanyAndTax(UUID companyId,
 			UUID taxMasterId) {
 
-		CompanyResponseExternalDto company;
-		try {
-			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		TaxMaster taxMaster = taxMasterRepository.findByIdAndDeletedAtIsNull(taxMasterId)
 				.orElseThrow(() -> new ResourceNotFoundException("Tax master not found"));
@@ -319,10 +320,10 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		CompanyTaxMasterCompanyTaxCategoryHistory response = new CompanyTaxMasterCompanyTaxCategoryHistory();
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
-		crid.setCompanyId(company.getCompanyId());
-		crid.setCompanyCode(company.getCompanyCode());
-		crid.setCompanyName(company.getCompanyName());
-		crid.setActive(company.getActive());
+		crid.setCompanyId(companyResponse.getCompanyId());
+		crid.setCompanyCode(companyResponse.getCompanyCode());
+		crid.setCompanyName(companyResponse.getCompanyName());
+		crid.setActive(companyResponse.getActive());
 		response.setCompany(crid);
 
 		TaxMasterResponse tmr = new TaxMasterResponse();
@@ -387,12 +388,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 	@Override
 	public ApiResponse<CompanyCompanyTaxCategoryCurrentResponse> getAllCurrentByCompany(UUID companyId) {
 
-		CompanyResponseExternalDto company;
-		try {
-			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		LocalDate today = LocalDate.now();
 
@@ -459,10 +461,10 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		}
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
-		crid.setCompanyId(company.getCompanyId());
-		crid.setCompanyCode(company.getCompanyCode());
-		crid.setCompanyName(company.getCompanyName());
-		crid.setActive(company.getActive());
+		crid.setCompanyId(companyResponse.getCompanyId());
+		crid.setCompanyCode(companyResponse.getCompanyCode());
+		crid.setCompanyName(companyResponse.getCompanyName());
+		crid.setActive(companyResponse.getActive());
 
 		CompanyCompanyTaxCategoryCurrentResponse cccr = new CompanyCompanyTaxCategoryCurrentResponse();
 		cccr.setCompany(crid);
@@ -479,12 +481,13 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 	@Override
 	public ApiResponse<CompanyCompanyTaxCategoryHistoryResponse> getHistoryByCompany(UUID companyId) {
 
-		CompanyResponseExternalDto company;
-		try {
-			company = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Company not found", HttpStatus.NOT_FOUND, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		LocalDate today = LocalDate.now();
 
@@ -558,10 +561,10 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 		}
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
-		crid.setCompanyId(company.getCompanyId());
-		crid.setCompanyCode(company.getCompanyCode());
-		crid.setCompanyName(company.getCompanyName());
-		crid.setActive(company.getActive());
+		crid.setCompanyId(companyResponse.getCompanyId());
+		crid.setCompanyCode(companyResponse.getCompanyCode());
+		crid.setCompanyName(companyResponse.getCompanyName());
+		crid.setActive(companyResponse.getActive());
 
 		CompanyCompanyTaxCategoryHistoryResponse historyResponse = new CompanyCompanyTaxCategoryHistoryResponse();
 		historyResponse.setCompany(crid);
@@ -608,11 +611,14 @@ public class CompanyTaxCategoryServiceImpl implements CompanyTaxCategoryService 
 
 		Map<UUID, CompanyResponseExternalDto> companyMap = companyIds.stream()
 				.collect(Collectors.toMap(id -> id, id -> {
-					try {
-						return orgServiceClient.getCompanyBasic(id).getBody().getData();
-					} catch (FeignException e) {
-						throw new OrgServiceException("Error fetching company: " + id, HttpStatus.NOT_FOUND, e);
+					var cResponse = orgServiceClient.getCompanyBasic(id);
+
+					if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+						throw new ExternalServiceException("Invalid response from Organization Service",
+								HttpStatus.INTERNAL_SERVER_ERROR);
 					}
+					CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
+					return companyResponse;
 				}));
 
 		Set<UUID> companyTaxCategoryIds = categories.stream().map(CompanyTaxCategory::getId)

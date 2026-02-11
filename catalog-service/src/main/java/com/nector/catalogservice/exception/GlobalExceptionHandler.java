@@ -121,12 +121,13 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-	@ExceptionHandler(OrgServiceException.class)
-	public ResponseEntity<ApiResponse<Object>> handleOrgServiceException(OrgServiceException exception) {
+	@ExceptionHandler(ExternalServiceException.class)
+	public ResponseEntity<ApiResponse<Object>> handleExternalServiceException(ExternalServiceException exception) {
 
-		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(),
-				exception.getHttpStatus().name(), exception.getHttpStatus().value(), Collections.emptyList());
-		return ResponseEntity.status(exception.getHttpStatus()).body(response);
+		ApiResponse<Object> response = new ApiResponse<>(false, exception.getMessage(), exception.getStatus().name(),
+				exception.getStatus().value(), Collections.emptyList());
+
+		return ResponseEntity.status(exception.getStatus()).body(response);
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)

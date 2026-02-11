@@ -14,5 +14,13 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     Optional<ProductVariant> findBySkuCodeAndCompanyId(String skuCode, UUID companyId);
 
-    List<ProductVariant> findAllByProductIdAndCompanyIdAndIsActive(UUID productId, UUID companyId, Boolean active);
+    List<ProductVariant> findAllByProductIdAndCompanyIdAndActive(UUID productId, UUID companyId, Boolean active);
+
+	Optional<ProductVariant> findByIdAndDeletedAtIsNull(UUID variantId);
+
+	List<ProductVariant> findByProductIdAndDeletedAtIsNullAndActiveTrue(UUID productId);
+
+	Optional<ProductVariant> findBySkuCodeAndCompanyIdAndDeletedAtIsNull(String skuCode, UUID companyId);
+
+	List<ProductVariant> findAllByIdInAndDeletedAtIsNull(List<UUID> variantIds);
 }

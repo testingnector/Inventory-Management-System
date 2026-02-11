@@ -22,6 +22,7 @@ import com.nector.orgservice.dto.response.internal.CompanyUsersResponse;
 import com.nector.orgservice.dto.response.internal.UserResponse;
 import com.nector.orgservice.entity.Company;
 import com.nector.orgservice.exception.AuthServiceException;
+import com.nector.orgservice.exception.InactiveResourceException;
 import com.nector.orgservice.exception.ResourceNotFoundException;
 import com.nector.orgservice.repository.CompanyRepository;
 import com.nector.orgservice.service.CompanyService;
@@ -243,9 +244,13 @@ public class CompanyServiceImpl implements CompanyService {
 
 	@Override
 	public ApiResponse<CompanyResponseExternalDto> getCompanyBasicById(UUID companyId) {
-		Company company = companyRepository.findByIdAndDeletedAtIsNullAndActiveTrue(companyId)
+		Company company = companyRepository.findByIdAndDeletedAtIsNull(companyId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
+		if (!company.getActive()) {
+			throw new InactiveResourceException("Company is inactive");
+		}
+		
 		CompanyResponseExternalDto basicResponse = new CompanyResponseExternalDto();
 		basicResponse.setCompanyId(company.getId());
 		basicResponse.setCompanyCode(company.getCompanyCode());

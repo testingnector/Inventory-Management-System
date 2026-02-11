@@ -32,15 +32,14 @@ import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.SubCategory;
 import com.nector.catalogservice.exception.ActiveResourceException;
 import com.nector.catalogservice.exception.DuplicateResourceException;
+import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
-import com.nector.catalogservice.exception.OrgServiceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
 import com.nector.catalogservice.repository.CategoryRepository;
 import com.nector.catalogservice.repository.ProductRepository;
 import com.nector.catalogservice.repository.SubCategoryRepository;
 import com.nector.catalogservice.service.ProductService;
 
-import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -83,15 +82,13 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(request.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(request.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		validateProductBehaviour(request);
 
@@ -190,15 +187,13 @@ public class ProductServiceImpl implements ProductService {
 
 		Product saved = productRepository.save(product);
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(saved.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(saved.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = (CompanyResponseExternalDto) cResponse.getBody().getData();
 
 		if (category == null) {
 			category = categoryRepository.findById(saved.getCategoryId()).orElse(null);
@@ -243,15 +238,13 @@ public class ProductServiceImpl implements ProductService {
 			throw new InactiveResourceException("Product is inactive");
 		}
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(product.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(product.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(product.getCategoryId())
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -274,15 +267,13 @@ public class ProductServiceImpl implements ProductService {
 	@Transactional(readOnly = true)
 	public ApiResponse<CompanyProductsResponse> getAllActiveProductsByCompanyId(UUID companyId) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		List<Product> products = productRepository.findByCompanyIdAndDeletedAtIsNullAndActiveTrue(companyId);
 
@@ -349,15 +340,13 @@ public class ProductServiceImpl implements ProductService {
 	@Transactional(readOnly = true)
 	public ApiResponse<CompanyProductsResponse> getAllInactiveProductsByCompanyId(UUID companyId) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		List<Product> products = productRepository.findByCompanyIdAndDeletedAtIsNullAndActiveFalse(companyId);
 
@@ -425,15 +414,13 @@ public class ProductServiceImpl implements ProductService {
 	public ApiResponse<CompanyProductsResponse> bulkUpdateProductStatusByCompany(UUID companyId,
 			@Valid BulkProductStatusRequest request, boolean activeStatus, UUID updatedBy) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		List<Product> products = productRepository.findByIdInAndDeletedAtIsNull(request.getProductIds());
 
@@ -524,15 +511,13 @@ public class ProductServiceImpl implements ProductService {
 			throw new InactiveResourceException("Product is inactive");
 		}
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(product.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(product.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(product.getCategoryId())
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -554,15 +539,13 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ApiResponse<List<Object>> bulkDeletionOfProductsByCompanyId(UUID companyId, @Valid BulkProductStatusRequest request, UUID deletedBy) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 		
 		List<Product> products = productRepository.findByIdInAndCompanyIdAndDeletedAtIsNull(request.getProductIds(), companyId);
 

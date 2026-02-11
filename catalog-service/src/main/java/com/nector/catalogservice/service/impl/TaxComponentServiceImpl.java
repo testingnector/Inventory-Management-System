@@ -25,7 +25,6 @@ import com.nector.catalogservice.dto.response.internal.ApiResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryWithComponentsResponse;
-import com.nector.catalogservice.dto.response.internal.CompanyWithTaxCategoriesResponse;
 import com.nector.catalogservice.dto.response.internal.PagedResponse;
 import com.nector.catalogservice.dto.response.internal.TaxCalculationItem;
 import com.nector.catalogservice.dto.response.internal.TaxCalculationResponse;
@@ -36,15 +35,14 @@ import com.nector.catalogservice.entity.CompanyTaxCategory;
 import com.nector.catalogservice.entity.TaxComponent;
 import com.nector.catalogservice.entity.TaxMaster;
 import com.nector.catalogservice.exception.DuplicateResourceException;
+import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
-import com.nector.catalogservice.exception.OrgServiceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
 import com.nector.catalogservice.repository.CompanyTaxCategoryRepository;
 import com.nector.catalogservice.repository.TaxComponentRepository;
 import com.nector.catalogservice.repository.TaxMasterRepository;
 import com.nector.catalogservice.service.TaxComponentService;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -226,15 +224,13 @@ public class TaxComponentServiceImpl implements TaxComponentService {
 		tmr.setCreatedAt(taxMaster.getCreatedAt());
 		tmr.setUpdatedAt(taxMaster.getUpdatedAt());
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(category.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var cResponse = orgServiceClient.getCompanyBasic(category.getCompanyId());
+
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 		crid.setCompanyId(companyResponse.getCompanyId());

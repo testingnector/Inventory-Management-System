@@ -28,15 +28,14 @@ import com.nector.catalogservice.dto.response.internal.Company_CategoryResponse;
 import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.entity.CompanyCategory;
 import com.nector.catalogservice.exception.DuplicateResourceException;
+import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
-import com.nector.catalogservice.exception.OrgServiceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
 import com.nector.catalogservice.repository.CategoryRepository;
 import com.nector.catalogservice.repository.CompanyCategoryRepository;
 import com.nector.catalogservice.repository.SubCategoryRepository;
 import com.nector.catalogservice.service.CompanyCategoryService;
 
-import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -56,15 +55,13 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
 		CompanyCategoriesCreationResponse responseDto = new CompanyCategoriesCreationResponse();
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(request.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var response = orgServiceClient.getCompanyBasic(request.getCompanyId());
+
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
 
 		responseDto.setCompanyId(companyResponse.getCompanyId());
 		responseDto.setCompanyCode(companyResponse.getCompanyCode());
@@ -149,15 +146,13 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(cc.getCategoryId())
 				.orElseThrow(() -> new ResourceNotFoundException("Assigned Category not found or inactive"));
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(cc.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Assigned Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var response = orgServiceClient.getCompanyBasic(cc.getCompanyId());
+
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
 
 		if (request.getActive() != null) {
 			cc.setActive(request.getActive());
@@ -223,15 +218,13 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(cc.getCategoryId())
 				.orElseThrow(() -> new ResourceNotFoundException("Assigned Category not found"));
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(cc.getCompanyId()).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Assigned Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var response = orgServiceClient.getCompanyBasic(cc.getCompanyId());
+
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
 
 //		BUILD RESPONSE
 		CategoryResponse cr = new CategoryResponse();
@@ -264,15 +257,14 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 	@Override
 	public ApiResponse<CompanyCategoriesResponse> getAllActiveCompanyCategoriesByCompanyId(UUID companyId) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var response = orgServiceClient.getCompanyBasic(companyId);
+
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
+		
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 		crid.setCompanyId(companyResponse.getCompanyId());
 		crid.setCompanyCode(companyResponse.getCompanyCode());
@@ -333,15 +325,14 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 	@Override
 	public ApiResponse<CompanyCategoriesResponse> getAllInactiveCompanyCategoriesByCompanyId(UUID companyId) {
 
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-			throw new OrgServiceException(message, status, e);
+		var response = orgServiceClient.getCompanyBasic(companyId);
+
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
+		
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 		crid.setCompanyId(companyResponse.getCompanyId());
 		crid.setCompanyCode(companyResponse.getCompanyCode());
@@ -424,13 +415,14 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 		companyCategoryRepository.saveAll(companyCategories);
 
 		UUID companyId = companyCategories.get(0).getCompanyId();
-		CompanyResponseExternalDto companyResponse;
-		try {
-			companyResponse = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
-		} catch (FeignException e) {
-			throw new OrgServiceException("Error while fetching company details", HttpStatus.resolve(e.status()), e);
-		}
+		var cResponse = orgServiceClient.getCompanyBasic(companyId);
 
+		if (cResponse == null || cResponse.getBody() == null || cResponse.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		CompanyResponseExternalDto companyResponse = cResponse.getBody().getData();
+		
 		CompanyResponseInternalDto companyDto = new CompanyResponseInternalDto();
 		companyDto.setCompanyId(companyResponse.getCompanyId());
 		companyDto.setCompanyCode(companyResponse.getCompanyCode());

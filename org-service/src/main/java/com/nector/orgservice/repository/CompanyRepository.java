@@ -22,4 +22,6 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
 	List<Company> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> companyIds);
 
+	Optional<Company> findByIdAndDeletedAtIsNull(UUID companyId);
+
 }

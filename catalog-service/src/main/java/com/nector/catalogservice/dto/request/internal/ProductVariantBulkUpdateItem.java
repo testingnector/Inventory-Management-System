@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -17,19 +16,11 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductVariantCreateRequest {
+public class ProductVariantBulkUpdateItem {
 
-    @NotNull(message = "Product ID is required")
-    private UUID productId;
+    @NotNull(message = "Variant ID is required")
+    private UUID variantId;
 
-    @NotNull(message = "Company ID is required")
-    private UUID companyId;
-
-    @NotBlank(message = "SKU code is required")
-    @Size(max = 50, message = "SKU code must be at most 50 characters")
-    private String skuCode;
-
-    @NotBlank(message = "Variant name is required")
     @Size(max = 100, message = "Variant name must be at most 100 characters")
     private String variantName;
 
@@ -41,27 +32,17 @@ public class ProductVariantCreateRequest {
 
     private Map<String, Object> customAttributes;
 
-    @NotNull(message = "MRP is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "MRP cannot be negative")
     private BigDecimal mrp;
 
-    @NotNull(message = "Selling price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Selling price cannot be negative")
     private BigDecimal sellingPrice;
 
-    @NotNull(message = "Purchase price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Purchase price cannot be negative")
     private BigDecimal purchasePrice;
 
-    @NotNull(message = "UOM ID is required")
-    private UUID uomId;
-
-    @NotNull(message = "Conversion factor is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Conversion factor must be greater than 0")
-    private BigDecimal conversionFactor;
-
-    private Boolean serialized = false;
-    private Boolean batchTracked = false;
-    private Boolean expiryTracked = false;
-
+    private Boolean serialized;
+    private Boolean batchTracked;
+    private Boolean expiryTracked;
+    private Boolean active;
 }

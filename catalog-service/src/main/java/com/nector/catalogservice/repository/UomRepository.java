@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -28,4 +29,6 @@ public interface UomRepository extends JpaRepository<Uom, UUID> {
 	List<Uom> findByBaseUomIdIsNullAndDeletedAtIsNullAndActiveTrue();
 
 	List<Uom> findByBaseUomIdAndDeletedAtIsNullAndActiveTrue(UUID baseUomId);
+
+	List<Uom> findByIdInAndDeletedAtIsNull(Set<UUID> uomIds);
 }

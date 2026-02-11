@@ -10,18 +10,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @JsonPropertyOrder({ "skuCode", "variantName", "color", "size", "customAttributes", "mrp", "sellingPrice", "serialized",
-		"batchTracked", "expiryTracked", "active", "product", "company", "uom" })
+		"batchTracked", "expiryTracked", "active", "company", "uom" })
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductVariantResponse {
+public class ProductVariantResponseWithCompanyAndUom {
 
 	private String skuCode;
 	private String variantName;
 	private String color;
 	private String size;
-    private Map<String, Object> customAttributes;
+	private Map<String, Object> customAttributes;
 
 	private Double mrp;
 	private Double sellingPrice;
@@ -31,7 +31,6 @@ public class ProductVariantResponse {
 	private Boolean expiryTracked;
 	private Boolean active;
 
-	private ProductResponse product;
 	private CompanyResponseInternalDto company;
 	private UomResponse uom;
 }

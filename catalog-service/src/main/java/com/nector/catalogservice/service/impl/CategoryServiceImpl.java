@@ -22,8 +22,8 @@ import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDt
 import com.nector.catalogservice.entity.Category;
 import com.nector.catalogservice.exception.ActiveResourceException;
 import com.nector.catalogservice.exception.DuplicateResourceException;
+import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
-import com.nector.catalogservice.exception.OrgServiceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
 import com.nector.catalogservice.repository.CategoryRepository;
 import com.nector.catalogservice.service.CategoryService;
@@ -43,15 +43,13 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public ApiResponse<CategoryResponse> createCategory(CategoryCreateRequest request, UUID createdBy) {
 
-		Optional<Category> existingCategoryOpt = categoryRepository
-				.findByCategoryCode(request.getCategoryCode());
+		Optional<Category> existingCategoryOpt = categoryRepository.findByCategoryCode(request.getCategoryCode());
 
 		if (existingCategoryOpt.isPresent()) {
 			Category existing = existingCategoryOpt.get();
 			if (!existing.getActive() && existing.getDeletedAt() == null) {
 				throw new InactiveResourceException("Category already exists but is inactive");
-			} 
-			else {
+			} else {
 				throw new DuplicateResourceException("Category code already exists!");
 			}
 		}
@@ -75,15 +73,15 @@ public class CategoryServiceImpl implements CategoryService {
 		cr.setActive(savedCategory.getActive());
 		cr.setCreatedAt(savedCategory.getCreatedAt());
 
-		return new ApiResponse<>(true, "Category created successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
+		return new ApiResponse<>(true, "Category created successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				cr);
 
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<CategoryResponse> updateCategory(UUID categoryId,
-			@Valid CategoryUpdateRequest request, UUID updatedBy) {
+	public ApiResponse<CategoryResponse> updateCategory(UUID categoryId, @Valid CategoryUpdateRequest request,
+			UUID updatedBy) {
 
 		Category category = categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -107,8 +105,6 @@ public class CategoryServiceImpl implements CategoryService {
 		category.setUpdatedBy(updatedBy);
 		Category updatedCategory = categoryRepository.save(category);
 
-
-
 //	    BUID RESPONSE
 		CategoryResponse cr = new CategoryResponse();
 		cr.setCategoryId(updatedCategory.getId());
@@ -119,8 +115,8 @@ public class CategoryServiceImpl implements CategoryService {
 		cr.setActive(updatedCategory.getActive());
 		cr.setCreatedAt(updatedCategory.getCreatedAt());
 
-		return new ApiResponse<>(true, "Category updated successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
+		return new ApiResponse<>(true, "Category updated successfully...", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				cr);
 
 	}
 
@@ -147,7 +143,6 @@ public class CategoryServiceImpl implements CategoryService {
 		Category category = categoryRepository.findByIdAndDeletedAtIsNullAndActiveTrue(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
 
-
 //	    BUID RESPONSE
 		CategoryResponse cr = new CategoryResponse();
 		cr.setCategoryId(category.getId());
@@ -158,8 +153,8 @@ public class CategoryServiceImpl implements CategoryService {
 		cr.setActive(category.getActive());
 		cr.setCreatedAt(category.getCreatedAt());
 
-		return new ApiResponse<>(true, "Category details fetch successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
+		return new ApiResponse<>(true, "Category details fetch successfully...", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), cr);
 	}
 
 	@Transactional(readOnly = true)
@@ -179,8 +174,8 @@ public class CategoryServiceImpl implements CategoryService {
 		cr.setActive(category.getActive());
 		cr.setCreatedAt(category.getCreatedAt());
 
-		return new ApiResponse<>(true, "Category details fetch successfully...",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), cr);
+		return new ApiResponse<>(true, "Category details fetch successfully...", HttpStatus.OK.name(),
+				HttpStatus.OK.value(), cr);
 
 	}
 
@@ -279,14 +274,13 @@ public class CategoryServiceImpl implements CategoryService {
 
 			categoriesResponseDto2s.add(cr);
 		}
-		
+
 		return new ApiResponse<>(true, message, HttpStatus.OK.name(), HttpStatus.OK.value(), categoriesResponseDto2s);
 	}
 
 	@Transactional
 	@Override
-	public ApiResponse<List<Object>> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request,
-			UUID deletedBy) {
+	public ApiResponse<List<Object>> bulkDeleteCategories(@Valid BulkCategoryStatusRequest request, UUID deletedBy) {
 
 		List<Category> categories = categoryRepository.findByIdInAndDeletedAtIsNull(request.getCategoryIds());
 
@@ -312,32 +306,24 @@ public class CategoryServiceImpl implements CategoryService {
 				Collections.emptyList());
 	}
 
-	
-
-	
-	
-	
-	
 //	==============HELPER METHOD===============
 	private CompanyResponseInternalDto fetchCompany(UUID companyId) {
 
-		try {
-			CompanyResponseExternalDto external = orgServiceClient.getCompanyBasic(companyId).getBody().getData();
+		var response = orgServiceClient.getCompanyBasic(companyId);
 
-			CompanyResponseInternalDto company = new CompanyResponseInternalDto();
-			company.setCompanyId(external.getCompanyId());
-			company.setCompanyCode(external.getCompanyCode());
-			company.setCompanyName(external.getCompanyName());
-			company.setActive(external.getActive());
-
-			return company;
-
-		} catch (FeignException e) {
-			HttpStatus status = HttpStatus.resolve(e.status());
-			String message = (status == HttpStatus.NOT_FOUND) ? "Company not found!"
-					: "Error while communicating with Organization Service";
-
-			throw new OrgServiceException(message, status, e);
+		if (response == null || response.getBody() == null || response.getBody().getData() == null) {
+			throw new ExternalServiceException("Invalid response from Organization Service",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		CompanyResponseExternalDto companyResponse = response.getBody().getData();
+
+		CompanyResponseInternalDto company = new CompanyResponseInternalDto();
+		company.setCompanyId(companyResponse.getCompanyId());
+		company.setCompanyCode(companyResponse.getCompanyCode());
+		company.setCompanyName(companyResponse.getCompanyName());
+		company.setActive(companyResponse.getActive());
+
+		return company;
+
 	}
 }
