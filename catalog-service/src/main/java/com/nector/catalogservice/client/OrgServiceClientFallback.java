@@ -1,13 +1,17 @@
 package com.nector.catalogservice.client;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.nector.catalogservice.dto.request.external.CompanyIdsRequestDto;
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
+
+import jakarta.validation.Valid;
 
 @Component
 public class OrgServiceClientFallback implements OrgServiceClient {
@@ -32,6 +36,18 @@ public class OrgServiceClientFallback implements OrgServiceClient {
 		ApiResponse<CompanyResponseExternalDto> response = new ApiResponse<>(false,
 				"Org-Service is currently unavailable. Unable to fetch company details, fallback response",
 				HttpStatus.SERVICE_UNAVAILABLE.name(), HttpStatus.SERVICE_UNAVAILABLE.value(), defaultCompany);
+
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@Override
+	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(
+			@Valid CompanyIdsRequestDto request) {
+		
+		List<CompanyResponseExternalDto> dtos = List.of();
+		ApiResponse<List<CompanyResponseExternalDto>> response = new ApiResponse<>(false,
+				"Org-Service is currently unavailable. Unable to fetch company details, fallback response",
+				HttpStatus.SERVICE_UNAVAILABLE.name(), HttpStatus.SERVICE_UNAVAILABLE.value(), dtos);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}

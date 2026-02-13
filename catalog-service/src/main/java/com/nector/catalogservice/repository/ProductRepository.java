@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Repository;
 
 import com.nector.catalogservice.entity.Product;
@@ -25,5 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 	Optional<Product> findByProductCodeAndDeletedAtIsNull(String productCode);
 
 	List<Product> findByIdInAndCompanyIdAndDeletedAtIsNull(List<UUID> productIds, UUID companyId);
+
+	List<Product> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> productIds);
 
 }

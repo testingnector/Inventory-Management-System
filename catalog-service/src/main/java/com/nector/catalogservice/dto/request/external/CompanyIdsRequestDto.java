@@ -6,9 +6,13 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CompanyIdsRequestDto {
 
 	@NotEmpty(message = "Company id is mandatory")

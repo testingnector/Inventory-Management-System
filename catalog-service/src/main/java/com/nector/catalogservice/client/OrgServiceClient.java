@@ -26,7 +26,7 @@ public interface OrgServiceClient {
 	@GetMapping("/companies/detail/{id}")
 	public ResponseEntity<ApiResponse<CompanyResponseExternalDto>> getCompanyBasic(@PathVariable("id") UUID companyId);
 
-	@PostMapping("/details")
+	@PostMapping("/companies/details")
 	public ResponseEntity<ApiResponse<List<CompanyResponseExternalDto>>> getCompaniesDetailsByCompanyIds(
 			@Valid @RequestBody CompanyIdsRequestDto request);
 }

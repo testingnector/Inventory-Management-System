@@ -1,6 +1,8 @@
 package com.nector.catalogservice.dto.response.internal;
 
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -9,22 +11,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@JsonPropertyOrder({ "skuCode", "variantName", "color", "size", "customAttributes", "mrp", "sellingPrice", "serialized",
-		"batchTracked", "expiryTracked", "active", "product", "company", "uom" })
+@JsonPropertyOrder({ "productVariantId", "skuCode", "variantName", "color", "size", "customAttributes", "mrp",
+		"sellingPrice", "purchasePrice", "serialized", "batchTracked", "expiryTracked", "active", "product", "company",
+		"uom" })
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductVariantResponse {
 
+	private UUID productVariantId;
 	private String skuCode;
 	private String variantName;
 	private String color;
 	private String size;
-    private Map<String, Object> customAttributes;
+	private Map<String, Object> customAttributes;
 
-	private Double mrp;
-	private Double sellingPrice;
+	private BigDecimal mrp;
+	private BigDecimal sellingPrice;
+	private BigDecimal purchasePrice;
 
 	private Boolean serialized;
 	private Boolean batchTracked;
