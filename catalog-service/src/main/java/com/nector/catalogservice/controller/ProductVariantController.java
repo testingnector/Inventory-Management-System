@@ -26,7 +26,7 @@ import com.nector.catalogservice.dto.request.internal.ProductVariantPriceUpdateR
 import com.nector.catalogservice.dto.request.internal.ProductVariantUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyProductVariantsResponse;
-import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductCompanyUom;
 import com.nector.catalogservice.service.ProductVariantService;
 
 import jakarta.validation.Valid;
@@ -40,18 +40,18 @@ public class ProductVariantController {
 	private final ProductVariantService variantService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<ProductVariantResponse>> createVariant(
+	public ResponseEntity<ApiResponse<ProductVariantResponseWithProductCompanyUom>> createVariant(
 			@Valid @RequestBody ProductVariantCreateRequest request, @RequestHeader("X-USER-ID") UUID createdBy) {
 
-		ApiResponse<ProductVariantResponse> response = variantService.createProductVariant(request, createdBy);
+		ApiResponse<ProductVariantResponseWithProductCompanyUom> response = variantService.createProductVariant(request, createdBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
 	@PutMapping("/{variantId}")
-	public ResponseEntity<ApiResponse<ProductVariantResponse>> updateVariant(@PathVariable UUID variantId,
+	public ResponseEntity<ApiResponse<ProductVariantResponseWithProductCompanyUom>> updateVariant(@PathVariable UUID variantId,
 			@Valid @RequestBody ProductVariantUpdateRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<ProductVariantResponse> response = variantService.updateProductVariant(variantId, request,
+		ApiResponse<ProductVariantResponseWithProductCompanyUom> response = variantService.updateProductVariant(variantId, request,
 				updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -65,9 +65,9 @@ public class ProductVariantController {
 	}
 
 	@GetMapping("/{variantId}")
-	public ResponseEntity<ApiResponse<ProductVariantResponse>> getVariantByVariantId(@PathVariable UUID variantId) {
+	public ResponseEntity<ApiResponse<ProductVariantResponseWithProductCompanyUom>> getVariantByVariantId(@PathVariable UUID variantId) {
 
-		ApiResponse<ProductVariantResponse> response = variantService.getVariantByVariantId(variantId);
+		ApiResponse<ProductVariantResponseWithProductCompanyUom> response = variantService.getVariantByVariantId(variantId);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
@@ -87,10 +87,10 @@ public class ProductVariantController {
 	}
 
 	@PutMapping
-	public ResponseEntity<ApiResponse<List<ProductVariantResponse>>> bulkUpdateVariants(
+	public ResponseEntity<ApiResponse<List<ProductVariantResponseWithProductCompanyUom>>> bulkUpdateVariants(
 			@Valid @RequestBody ProductVariantBulkUpdateRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<List<ProductVariantResponse>> response = variantService.bulkUpdateProductVariants(request,
+		ApiResponse<List<ProductVariantResponseWithProductCompanyUom>> response = variantService.bulkUpdateProductVariants(request,
 				updatedBy);
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -104,10 +104,10 @@ public class ProductVariantController {
 	}
 
 	@GetMapping("/sku/{skuCode}")
-	public ResponseEntity<ApiResponse<ProductVariantResponse>> getVariantBySku(@PathVariable String skuCode,
+	public ResponseEntity<ApiResponse<ProductVariantResponseWithProductCompanyUom>> getVariantBySku(@PathVariable String skuCode,
 			@RequestParam UUID companyId) {
 
-		ApiResponse<ProductVariantResponse> response = variantService.getVariantBySkuAndCompanyId(skuCode, companyId);
+		ApiResponse<ProductVariantResponseWithProductCompanyUom> response = variantService.getVariantBySkuAndCompanyId(skuCode, companyId);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -119,10 +119,10 @@ public class ProductVariantController {
 	}
 
 	@PatchMapping("/{variantId}/price")
-	public ResponseEntity<ApiResponse<ProductVariantResponse>> updateVariantPrice(@PathVariable UUID variantId,
+	public ResponseEntity<ApiResponse<ProductVariantResponseWithProductCompanyUom>> updateVariantPrice(@PathVariable UUID variantId,
 			@Valid @RequestBody ProductVariantPriceUpdateRequest request, @RequestHeader("X-USER-ID") UUID updatedBy) {
 
-		ApiResponse<ProductVariantResponse> response = variantService.updateVariantPrice(variantId, request, updatedBy);
+		ApiResponse<ProductVariantResponseWithProductCompanyUom> response = variantService.updateVariantPrice(variantId, request, updatedBy);
 
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
@@ -137,7 +137,7 @@ public class ProductVariantController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<Page<ProductVariantResponse>>> getAllVariants(
+	public ResponseEntity<ApiResponse<Page<ProductVariantResponseWithProductCompanyUom>>> getAllVariants(
 			@RequestParam(required = false) UUID companyId, @RequestParam(required = false) UUID productId,
 			@RequestParam(required = false) Boolean active, @RequestParam(required = false) Boolean serialized,
 			@RequestParam(required = false) Boolean batchTracked, @RequestParam(required = false) String search,
@@ -149,7 +149,7 @@ public class ProductVariantController {
 			@RequestParam(defaultValue = "false") boolean includeInactiveProducts,
 			@RequestParam(defaultValue = "false") boolean includeInactiveUoms) {
 
-		ApiResponse<Page<ProductVariantResponse>> response = variantService.getAllVariants(companyId, productId, active,
+		ApiResponse<Page<ProductVariantResponseWithProductCompanyUom>> response = variantService.getAllVariants(companyId, productId, active,
 				serialized, batchTracked, search, minPrice, maxPrice, page, size, sortBy, sortDir,
 				includeInactiveCompanies, includeInactiveProducts, includeInactiveUoms);
 

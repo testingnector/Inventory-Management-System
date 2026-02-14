@@ -36,9 +36,9 @@ import com.nector.catalogservice.dto.response.internal.CompanyProductVariantsRes
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductResponseWithProductVariants;
-import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyAndUom;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductAndUom;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductCompanyUom;
 import com.nector.catalogservice.dto.response.internal.UomResponse;
 import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.ProductVariant;
@@ -69,7 +69,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional
 	@Override
-	public ApiResponse<ProductVariantResponse> createProductVariant(ProductVariantCreateRequest request,
+	public ApiResponse<ProductVariantResponseWithProductCompanyUom> createProductVariant(ProductVariantCreateRequest request,
 			UUID createdBy) {
 
 		if (request == null) {
@@ -127,7 +127,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponse productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant created successfully", HttpStatus.CREATED.name(),
@@ -136,7 +136,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional
 	@Override
-	public ApiResponse<ProductVariantResponse> updateProductVariant(UUID variantId,
+	public ApiResponse<ProductVariantResponseWithProductCompanyUom> updateProductVariant(UUID variantId,
 			@Valid ProductVariantUpdateRequest request, UUID updatedBy) {
 
 		if (request == null) {
@@ -226,7 +226,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponse productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant updated successfully", HttpStatus.OK.name(),
@@ -264,7 +264,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<ProductVariantResponse> getVariantByVariantId(UUID variantId) {
+	public ApiResponse<ProductVariantResponseWithProductCompanyUom> getVariantByVariantId(UUID variantId) {
 
 		if (variantId == null) {
 			throw new IllegalArgumentException("variantId cannot be null");
@@ -326,7 +326,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponse productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant fetched successfully", HttpStatus.OK.name(),
@@ -447,7 +447,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional
 	@Override
-	public ApiResponse<List<ProductVariantResponse>> bulkUpdateProductVariants(ProductVariantBulkUpdateRequest request,
+	public ApiResponse<List<ProductVariantResponseWithProductCompanyUom>> bulkUpdateProductVariants(ProductVariantBulkUpdateRequest request,
 			UUID updatedBy) {
 
 		if (request == null || request.getVariants() == null || request.getVariants().isEmpty()) {
@@ -455,7 +455,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					List.of());
 		}
 
-		List<ProductVariantResponse> updatedResponses = new ArrayList<>();
+		List<ProductVariantResponseWithProductCompanyUom> updatedResponses = new ArrayList<>();
 
 		for (var item : request.getVariants()) {
 			if (item == null || item.getVariantId() == null) {
@@ -543,7 +543,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 			UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 			ProductResponse productResponse = ProductVariantsMapping.mapToProductResponse(product);
 
-			ProductVariantResponse response = ProductVariantsMapping.mapToProductVariantResponse(saved, productResponse,
+			ProductVariantResponseWithProductCompanyUom response = ProductVariantsMapping.mapToProductVariantResponse(saved, productResponse,
 					company, uomResponse);
 
 			updatedResponses.add(response);
@@ -591,7 +591,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<ProductVariantResponse> getVariantBySkuAndCompanyId(String skuCode, UUID companyId) {
+	public ApiResponse<ProductVariantResponseWithProductCompanyUom> getVariantBySkuAndCompanyId(String skuCode, UUID companyId) {
 
 		if (skuCode == null || skuCode.isBlank()) {
 			throw new IllegalArgumentException("SKU code cannot be null or empty");
@@ -645,7 +645,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponse productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant fetched successfully", HttpStatus.OK.name(),
@@ -740,7 +740,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional
 	@Override
-	public ApiResponse<ProductVariantResponse> updateVariantPrice(UUID variantId,
+	public ApiResponse<ProductVariantResponseWithProductCompanyUom> updateVariantPrice(UUID variantId,
 			ProductVariantPriceUpdateRequest request, UUID updatedBy) {
 
 		if (variantId == null) {
@@ -815,7 +815,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public ApiResponse<Page<ProductVariantResponse>> getAllVariants(UUID companyId, UUID productId, Boolean active,
+	public ApiResponse<Page<ProductVariantResponseWithProductCompanyUom>> getAllVariants(UUID companyId, UUID productId, Boolean active,
 			Boolean serialized, Boolean batchTracked, String search, BigDecimal minPrice, BigDecimal maxPrice, int page,
 			int size, String sortBy, String sortDir, boolean includeInactiveCompanies, boolean includeInactiveProducts,
 			boolean includeInactiveUoms) {
@@ -878,7 +878,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				.filter(v -> v.getProductId() != null && productMap.containsKey(v.getProductId()))
 				.filter(v -> v.getUomId() != null && uomMap.containsKey(v.getUomId())).toList();
 
-		List<ProductVariantResponse> variantResponses = variants.stream().map(v -> {
+		List<ProductVariantResponseWithProductCompanyUom> variantResponses = variants.stream().map(v -> {
 			Product product = productMap.get(v.getProductId());
 			CompanyResponseInternalDto company = companyMap.get(v.getCompanyId());
 			Uom uom = uomMap.get(v.getUomId());
@@ -891,7 +891,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 			return ProductVariantsMapping.mapToProductVariantResponse(v, productResponse, company, uomResponse);
 		}).filter(Objects::nonNull).toList();
 
-		Page<ProductVariantResponse> responsePage = new PageImpl<>(variantResponses, pageable,
+		Page<ProductVariantResponseWithProductCompanyUom> responsePage = new PageImpl<>(variantResponses, pageable,
 				variantPage.getTotalElements());
 
 		return new ApiResponse<>(true, "Variants fetched successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),

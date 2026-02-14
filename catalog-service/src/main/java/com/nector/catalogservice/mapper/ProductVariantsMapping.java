@@ -12,9 +12,9 @@ import com.nector.catalogservice.dto.response.internal.CompanyProductVariantsRes
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductResponseWithProductVariants;
-import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyAndUom;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductAndUom;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductCompanyUom;
 import com.nector.catalogservice.dto.response.internal.UomResponse;
 import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.ProductVariant;
@@ -95,14 +95,14 @@ public class ProductVariantsMapping {
 		return uomResponse;
 	}
 
-	public static ProductVariantResponse mapToProductVariantResponse(ProductVariant variant,
+	public static ProductVariantResponseWithProductCompanyUom mapToProductVariantResponse(ProductVariant variant,
 			ProductResponse productResponse, CompanyResponseInternalDto companyResponse, UomResponse uomResponse) {
 
 		if (variant == null) {
 			return null;
 		}
 
-		ProductVariantResponse response = new ProductVariantResponse();
+		ProductVariantResponseWithProductCompanyUom response = new ProductVariantResponseWithProductCompanyUom();
 		response.setProductVariantId(variant.getId());
 		response.setSkuCode(variant.getSkuCode());
 		response.setVariantName(variant.getVariantName());

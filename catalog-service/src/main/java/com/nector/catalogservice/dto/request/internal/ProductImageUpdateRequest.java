@@ -1,27 +1,22 @@
 package com.nector.catalogservice.dto.request.internal;
 
-import java.util.UUID;
-
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductImageCreateRequest {
-
-    private UUID productId;
-
-    private UUID productVariantId;
+public class ProductImageUpdateRequest {
     
-    @NotNull(message = "Company is required")
-	private UUID companyId;
-
-    @NotNull(message = "Image file is required")
     private MultipartFile file;
     
     @Size(max = 50, message = "Image type must be at most 50 characters")
@@ -30,9 +25,10 @@ public class ProductImageCreateRequest {
     @Size(max = 255, message = "Alt text must be at most 255 characters")
     private String altText;
 
-    @NotNull(message = "Primary flag cannot be null")
     private Boolean primary = false;
 
     @Min(value = 0, message = "Display order cannot be negative")
     private Integer displayOrder;
+    
+    private Boolean active;
 }
