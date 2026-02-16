@@ -9,8 +9,11 @@ import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDt
 import com.nector.catalogservice.dto.response.internal.ProductImageResponse;
 import com.nector.catalogservice.dto.response.internal.ProductImageResponseWithCompanyProductProductVariant;
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
-import com.nector.catalogservice.dto.response.internal.ProductResponseWithCompanyImages;
+import com.nector.catalogservice.dto.response.internal.ProductResponseWithCompanyImagesVariants;
+import com.nector.catalogservice.dto.response.internal.ProductResponseWithCompanyPrimaryImageVariants;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyImagesProduct;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyPrimaryImageProduct;
 import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.ProductImage;
 import com.nector.catalogservice.entity.ProductVariant;
@@ -55,10 +58,10 @@ public class ProductImageMapping {
 
 		CompanyResponseInternalDto company = ProductVariantsMapping.mapToCompanyResponseInternalDto(companyResponse);
 		response.setCompany(company);
-		
+
 		ProductResponse productResponse = ProductVariantsMapping.mapToProductResponse(product);
 		response.setProduct(productResponse);
-		
+
 		if (productVariant != null) {
 			ProductVariantResponse variantDto = new ProductVariantResponse();
 			variantDto.setProductVariantId(productVariant.getId());
@@ -90,18 +93,21 @@ public class ProductImageMapping {
 		response.setPrimary(image.getPrimary());
 		response.setDisplayOrder(image.getDisplayOrder());
 		response.setActive(image.getActive());
-		
+
 		return response;
 	}
 
-	public static CompanyResponseInternalDto mapToCompanyResponseInternalDto(CompanyResponseExternalDto companyResponse) {
+	public static CompanyResponseInternalDto mapToCompanyResponseInternalDto(
+			CompanyResponseExternalDto companyResponse) {
 		CompanyResponseInternalDto company = ProductVariantsMapping.mapToCompanyResponseInternalDto(companyResponse);
 		return company;
 	}
 
-	public static ProductResponseWithCompanyImages mapToProductResponseWithCompanyImages(Product product, CompanyResponseInternalDto company, List<ProductImageResponse> productImages) {
-		
-		ProductResponseWithCompanyImages response = new ProductResponseWithCompanyImages();
+	public static ProductResponseWithCompanyImagesVariants mapToProductResponseWithCompanyImages(Product product,
+			List<ProductVariantResponse> variantResponses, CompanyResponseInternalDto company,
+			List<ProductImageResponse> productImages) {
+
+		ProductResponseWithCompanyImagesVariants response = new ProductResponseWithCompanyImagesVariants();
 		response.setProductId(product.getId());
 		response.setProductCode(product.getProductCode());
 		response.setProductName(product.getProductName());
@@ -114,14 +120,94 @@ public class ProductImageMapping {
 		response.setBatchTracked(product.getBatchTracked());
 		response.setExpiryTracked(product.getExpiryTracked());
 		response.setActive(product.getActive());
-		
-		response.setCompany(company);
+
 		response.setImages(productImages);
-		
+		response.setCompany(company);
+		response.setVariants(variantResponses);
+
 		return response;
+
+	}
+
+	public static ProductVariantResponseWithCompanyImagesProduct mapToProductVariantResponseWithCompanyImages(
+			ProductVariant variant, ProductResponse productResponse, CompanyResponseInternalDto company,
+			List<ProductImageResponse> productImageResponse) {
+
+		ProductVariantResponseWithCompanyImagesProduct response = new ProductVariantResponseWithCompanyImagesProduct();
+		response.setProductVariantId(variant.getId());
+		response.setSkuCode(variant.getSkuCode());
+		response.setVariantName(variant.getVariantName());
+		response.setColor(variant.getColor());
+		response.setSize(variant.getSize());
+		response.setCustomAttributes(variant.getCustomAttributes());
+
+		response.setMrp(variant.getMrp());
+		response.setSellingPrice(variant.getSellingPrice());
+		response.setPurchasePrice(variant.getPurchasePrice());
+
+		response.setSerialized(variant.getSerialized());
+		response.setBatchTracked(variant.getBatchTracked());
+		response.setExpiryTracked(variant.getExpiryTracked());
+		response.setActive(variant.getActive());
+
+		response.setProduct(productResponse);
+		response.setCompany(company);
+		response.setImages(productImageResponse);
+
+		return response;
+	}
+
+	public static ProductResponseWithCompanyPrimaryImageVariants mapToProductResponseWithCompanyPrimaryImageVariants(
+			Product product, List<ProductVariantResponse> variantResponses, CompanyResponseInternalDto company,
+			ProductImageResponse primaryImageResponse) {
 		
+		ProductResponseWithCompanyPrimaryImageVariants response = new ProductResponseWithCompanyPrimaryImageVariants();
+		response.setProductId(product.getId());
+		response.setProductCode(product.getProductCode());
+		response.setProductName(product.getProductName());
+		response.setDescription(product.getDescription());
+		response.setBrandName(product.getBrandName());
+		response.setModelNumber(product.getModelNumber());
+
+		response.setVariantBased(product.getVariantBased());
+		response.setSerialized(product.getSerialized());
+		response.setBatchTracked(product.getBatchTracked());
+		response.setExpiryTracked(product.getExpiryTracked());
+		response.setActive(product.getActive());
+
+		response.setPrimaryImage(primaryImageResponse);
+		response.setCompany(company);
+		response.setVariants(variantResponses);
+
+		return response;
+	}
+
+	public static ProductVariantResponseWithCompanyPrimaryImageProduct mapToProductVariantResponseWithCompanyPrimaryImageProduct(
+			ProductVariant variant, ProductResponse productResponse, CompanyResponseInternalDto company,
+			ProductImageResponse primaryProductImageResponse) {
 		
+		ProductVariantResponseWithCompanyPrimaryImageProduct response = new ProductVariantResponseWithCompanyPrimaryImageProduct();
+		response.setProductVariantId(variant.getId());
+		response.setSkuCode(variant.getSkuCode());
+		response.setVariantName(variant.getVariantName());
+		response.setColor(variant.getColor());
+		response.setSize(variant.getSize());
+		response.setCustomAttributes(variant.getCustomAttributes());
+
+		response.setMrp(variant.getMrp());
+		response.setSellingPrice(variant.getSellingPrice());
+		response.setPurchasePrice(variant.getPurchasePrice());
+
+		response.setSerialized(variant.getSerialized());
+		response.setBatchTracked(variant.getBatchTracked());
+		response.setExpiryTracked(variant.getExpiryTracked());
+		response.setActive(variant.getActive());
+
+		response.setPrimaryImage(primaryProductImageResponse);
+		response.setProduct(productResponse);
+		response.setCompany(company);
+
+		return response;
 	}
 
 }
-

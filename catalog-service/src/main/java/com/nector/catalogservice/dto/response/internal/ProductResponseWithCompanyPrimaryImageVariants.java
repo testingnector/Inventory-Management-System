@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @JsonPropertyOrder({ "productId", "productCode", "productName", "description", "brandName", "modelNumber",
-		"variantBased", "serialized", "batchTracked", "expiryTracked", "active", "company", "images" })
+		"variantBased", "serialized", "batchTracked", "expiryTracked", "active", "primaryImage", "company", "variants" })
 @Data
-public class ProductResponseWithCompanyImages {
+public class ProductResponseWithCompanyPrimaryImageVariants {
 
 	private UUID productId;
 	private String productCode;
@@ -24,8 +24,12 @@ public class ProductResponseWithCompanyImages {
 	private Boolean batchTracked;
 	private Boolean expiryTracked;
 	private Boolean active;
-	
+
 	private CompanyResponseInternalDto company;
+
+	private ProductImageResponse primaryImage;
 	
-	private List<ProductImageResponse> images;
+	private List<ProductVariantResponse> variants;
+	
+	
 }

@@ -30,4 +30,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
 	List<Product> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> productIds);
 
+	Optional<Product> findByIdAndDeletedAtIsNullAndActiveTrue(UUID productId);
+
 }

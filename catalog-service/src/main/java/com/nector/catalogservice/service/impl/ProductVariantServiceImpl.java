@@ -127,7 +127,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(saved,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant created successfully", HttpStatus.CREATED.name(),
@@ -226,7 +226,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(saved,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(saved,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant updated successfully", HttpStatus.OK.name(),
@@ -326,7 +326,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(variant,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant fetched successfully", HttpStatus.OK.name(),
@@ -543,7 +543,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 			UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 			ProductResponse productResponse = ProductVariantsMapping.mapToProductResponse(product);
 
-			ProductVariantResponseWithProductCompanyUom response = ProductVariantsMapping.mapToProductVariantResponse(saved, productResponse,
+			ProductVariantResponseWithProductCompanyUom response = ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(saved, productResponse,
 					company, uomResponse);
 
 			updatedResponses.add(response);
@@ -645,7 +645,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		UomResponse uomResponse = ProductVariantsMapping.mapToUomResponse(uom, baseUom);
 
-		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponse(variant,
+		ProductVariantResponseWithProductCompanyUom productVariantResponse = ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(variant,
 				productResponse, companyResponseInternalDto, uomResponse);
 
 		return new ApiResponse<>(true, "Product variant fetched successfully", HttpStatus.OK.name(),
@@ -888,7 +888,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					: null;
 			UomResponse uomResponse = uom != null ? ProductVariantsMapping.mapToUomResponse(uom, baseUom) : null;
 
-			return ProductVariantsMapping.mapToProductVariantResponse(v, productResponse, company, uomResponse);
+			return ProductVariantsMapping.mapToProductVariantResponseWithProductCompanyUom(v, productResponse, company, uomResponse);
 		}).filter(Objects::nonNull).toList();
 
 		Page<ProductVariantResponseWithProductCompanyUom> responsePage = new PageImpl<>(variantResponses, pageable,

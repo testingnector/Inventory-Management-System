@@ -12,6 +12,7 @@ import com.nector.catalogservice.dto.response.internal.CompanyProductVariantsRes
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductResponseWithProductVariants;
+import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyAndUom;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductAndUom;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithProductCompanyUom;
@@ -95,7 +96,7 @@ public class ProductVariantsMapping {
 		return uomResponse;
 	}
 
-	public static ProductVariantResponseWithProductCompanyUom mapToProductVariantResponse(ProductVariant variant,
+	public static ProductVariantResponseWithProductCompanyUom mapToProductVariantResponseWithProductCompanyUom(ProductVariant variant,
 			ProductResponse productResponse, CompanyResponseInternalDto companyResponse, UomResponse uomResponse) {
 
 		if (variant == null) {
@@ -286,6 +287,27 @@ public class ProductVariantsMapping {
 				variant.getMrp(), variant.getSellingPrice(), variant.getPurchasePrice(), variant.getSerialized(),
 				variant.getBatchTracked(), variant.getExpiryTracked(), variant.getActive(), productResponse,
 				uomResponse);
+	}
+
+	public static ProductVariantResponse mapToProductVariantResponse(ProductVariant variant) {
+		ProductVariantResponse response = new ProductVariantResponse();
+		response.setProductVariantId(variant.getId());
+		response.setSkuCode(variant.getSkuCode());
+		response.setVariantName(variant.getVariantName());
+		response.setColor(variant.getColor());
+		response.setSize(variant.getSize());
+		response.setCustomAttributes(variant.getCustomAttributes());
+
+		response.setMrp(variant.getMrp());
+		response.setSellingPrice(variant.getSellingPrice());
+		response.setPurchasePrice(variant.getPurchasePrice());
+
+		response.setSerialized(variant.getSerialized());
+		response.setBatchTracked(variant.getBatchTracked());
+		response.setExpiryTracked(variant.getExpiryTracked());
+		response.setActive(variant.getActive());
+		
+		return response;
 	}
 
 }
