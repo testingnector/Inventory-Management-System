@@ -36,12 +36,8 @@ public interface ProductImageService {
 
 	ApiResponse<?> getPrimaryImageByCompanyAndProductOrVariant(UUID companyId, UUID productId, UUID productVariantId);
 
-//	ApiResponse<Page<ProductImageResponseWithCompanyProductProductVariant>> searchProductImages(UUID companyId,
-//			UUID productId, UUID productVariantId, Boolean active, Boolean primary, String imageType, String altText,
-//			LocalDateTime createdAfter, LocalDateTime createdBefore, int page, int size, String sortBy, String sortDir);
-
 	ApiResponse<Page<ProductImageResponseWithCompanyProductProductVariant>> searchProductImages(UUID companyId,
-			UUID productId, UUID variantId, Boolean active, Boolean primary, boolean includeInactiveCompanies,
+			UUID productId, UUID variantId, Boolean active, Boolean primary, String imageType, String altText, boolean includeInactiveCompanies,
 			boolean includeInactiveProducts, boolean includeInactiveVariants, int page, int size, String sortBy,
 			String sortDir);
 

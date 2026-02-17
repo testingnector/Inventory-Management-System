@@ -153,9 +153,11 @@ public class ProductImageController {
 	        @RequestParam(required = false) UUID variantId,
 	        @RequestParam(required = false) Boolean active,
 	        @RequestParam(required = false) Boolean primary,
+	        @RequestParam(required = false) String imageType,
+	        @RequestParam(required = false) String altText,
 	        @RequestParam(defaultValue = "false") boolean includeInactiveCompanies,
 	        @RequestParam(defaultValue = "false") boolean includeInactiveProducts,
-	        @RequestParam(defaultValue = "false") boolean includeInactiveVariants,  // << this one
+	        @RequestParam(defaultValue = "false") boolean includeInactiveVariants,  
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
 	        @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -163,7 +165,7 @@ public class ProductImageController {
 
 	    ApiResponse<Page<ProductImageResponseWithCompanyProductProductVariant>> response =
 	        productImageService.searchProductImages(
-	            companyId, productId, variantId, active, primary,
+	            companyId, productId, variantId, active, primary, imageType, altText,
 	            includeInactiveCompanies, includeInactiveProducts, includeInactiveVariants,
 	            page, size, sortBy, sortDir
 	        );

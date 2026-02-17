@@ -129,6 +129,10 @@ public class ProductVariantsMapping {
 
 	public static CompanyResponseInternalDto mapToCompanyResponseInternalDto(
 			CompanyResponseExternalDto companyResponse) {
+		
+		if (companyResponse == null) {
+			return null;		
+		}
 
 		CompanyResponseInternalDto crid = new CompanyResponseInternalDto();
 		crid.setCompanyId(companyResponse.getCompanyId());
@@ -290,6 +294,10 @@ public class ProductVariantsMapping {
 	}
 
 	public static ProductVariantResponse mapToProductVariantResponse(ProductVariant variant) {
+		
+		if (variant == null) {
+			return null;
+		}
 		ProductVariantResponse response = new ProductVariantResponse();
 		response.setProductVariantId(variant.getId());
 		response.setSkuCode(variant.getSkuCode());

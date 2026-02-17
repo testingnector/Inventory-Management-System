@@ -55,4 +55,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
 	List<ProductVariant> findByCompanyIdAndDeletedAtIsNullAndActiveFalse(UUID companyId);
 
+	Optional<ProductVariant> findByIdAndDeletedAtIsNullAndActiveTrue(UUID productVariantId);
+
 }

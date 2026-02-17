@@ -14,8 +14,7 @@ import jakarta.persistence.criteria.Predicate;
 public class ProductImageSpecification {
 
 	public static Specification<ProductImage> filterProductImages(UUID companyId, UUID productId, UUID productVariantId,
-			Boolean active, Boolean primary, String imageType, String altText, LocalDateTime createdAfter,
-			LocalDateTime createdBefore) {
+			Boolean active, Boolean primary, String imageType, String altText) {
 		
 		return (root, query, cb) -> {
 
@@ -49,13 +48,6 @@ public class ProductImageSpecification {
 
 			if (altText != null && !altText.isBlank()) {
 				predicates.add(cb.like(cb.lower(root.get("altText")), "%" + altText.toLowerCase() + "%"));
-			}
-
-			if (createdAfter != null) {
-				predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), createdAfter));
-			}
-			if (createdBefore != null) {
-				predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), createdBefore));
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));

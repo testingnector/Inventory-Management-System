@@ -446,13 +446,13 @@ public class ProductImageServiceImpl implements ProductImageService {
 			throw new InactiveResourceException("Product is inactive");
 		}
 
-		List<ProductImage> images = Optional
-				.ofNullable(productImageRepository.findByProductIdAndDeletedAtIsNullAndActiveTrue(productId))
-				.orElse(Collections.emptyList());
-
 		List<ProductVariant> variants = Optional
 				.ofNullable(productVariantRepository.findByProductIdAndDeletedAtIsNullAndActiveTrue(productId))
 				.orElse(Collections.emptyList()).stream().filter(Objects::nonNull).toList();
+		
+		List<ProductImage> images = Optional
+				.ofNullable(productImageRepository.findByProductIdAndDeletedAtIsNullAndActiveTrue(productId))
+				.orElse(Collections.emptyList());
 
 		CompanyResponseInternalDto company = ProductImageMapping.mapToCompanyResponseInternalDto(companyResponse);
 
@@ -606,58 +606,21 @@ public class ProductImageServiceImpl implements ProductImageService {
 		}
 	}
 
-//	@Override
-//	@Transactional(readOnly = true)
-//	public ApiResponse<Page<ProductImageResponseWithCompanyProductProductVariant>> searchProductImages(UUID companyId,
-//			UUID productId, UUID productVariantId, Boolean active, Boolean primary, String imageType, String altText,
-//			LocalDateTime createdAfter, LocalDateTime createdBefore, int page, int size, String sortBy,
-//			String sortDir) {
-//
-//		Pageable pageable = PageRequest.of(page, size,
-//				sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
-//
-//		Specification<ProductImage> spec = ProductImageSpecification.filterProductImages(companyId, productId,
-//				productVariantId, active, primary, imageType, altText, createdAfter, createdBefore);
-//
-//		Page<ProductImage> images = productImageRepository.findAll(spec, pageable);
-//
-//		List<ProductImageResponseWithCompanyProductProductVariant> responses = images.stream().map(image -> {
-//			var companyResponse = orgServiceClient.getCompanyBasic(image.getCompanyId()).getBody().getData();
-//			Product product = image.getProductId() != null
-//					? productRepository.findById(image.getProductId()).orElse(null)
-//					: null;
-//			ProductVariant variant = image.getProductVariantId() != null
-//					? productVariantRepository.findById(image.getProductVariantId()).orElse(null)
-//					: null;
-//			return ProductImageMapping.mapToProductImageResponseWithCompanyProductProductVariant(image, companyResponse,
-//					product, variant);
-//		}).toList();
-//
-//		Page<ProductImageResponseWithCompanyProductProductVariant> pageResponse = new PageImpl<>(responses, pageable,
-//				images.getTotalElements());
-//
-//		return new ApiResponse<>(true, "Product images fetched successfully", HttpStatus.OK.name(),
-//				HttpStatus.OK.value(), pageResponse);
-//	}
-
 	@Transactional(readOnly = true)
 	@Override
 	public ApiResponse<Page<ProductImageResponseWithCompanyProductProductVariant>> searchProductImages(UUID companyId,
-			UUID productId, UUID variantId, Boolean active, Boolean primary, boolean includeInactiveCompanies,
-			boolean includeInactiveProducts, boolean includeInactiveVariants, int page, int size, String sortBy,
-			String sortDir) {
+			UUID productId, UUID variantId, Boolean active, Boolean primary, String imageType, String altText,
+			boolean includeInactiveCompanies, boolean includeInactiveProducts, boolean includeInactiveVariants,
+			int page, int size, String sortBy, String sortDir) {
 
-		// --- Sorting & Paging ---
 		String sortField = sortBy != null ? sortBy : "createdAt";
 		Sort sort = sortDir != null && sortDir.equalsIgnoreCase("desc") ? Sort.by(sortField).descending()
 				: Sort.by(sortField).ascending();
 		Pageable pageable = PageRequest.of(page, size, sort);
 
-		// --- Specification / Filter ---
-		Specification<ProductImage> spec = ProductImageSpecification.filterProductImages(companyId, productId, variantId,
-				active, primary);
+		Specification<ProductImage> spec = ProductImageSpecification.filterProductImages(companyId, productId,
+				variantId, active, primary, imageType, altText);
 
-		// --- Fetch images from DB ---
 		Page<ProductImage> imagePage = productImageRepository.findAll(spec, pageable);
 		List<ProductImage> images = imagePage.getContent();
 
@@ -666,7 +629,6 @@ public class ProductImageServiceImpl implements ProductImageService {
 					Page.empty());
 		}
 
-		// --- Collect company IDs & fetch companies ---
 		Set<UUID> companyIds = images.stream().map(ProductImage::getCompanyId).filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
@@ -679,7 +641,6 @@ public class ProductImageServiceImpl implements ProductImageService {
 				.filter(c -> includeInactiveCompanies || Boolean.TRUE.equals(c.getActive()))
 				.collect(Collectors.toMap(CompanyResponseExternalDto::getCompanyId, c -> c));
 
-		// --- Collect product IDs & fetch products ---
 		Set<UUID> productIds = images.stream().map(ProductImage::getProductId).filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
@@ -689,7 +650,6 @@ public class ProductImageServiceImpl implements ProductImageService {
 				.filter(p -> includeInactiveProducts || Boolean.TRUE.equals(p.getActive()))
 				.collect(Collectors.toMap(Product::getId, p -> p));
 
-		// --- Collect variant IDs & fetch variants ---
 		Set<UUID> variantIds = images.stream().map(ProductImage::getProductVariantId).filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
@@ -699,13 +659,11 @@ public class ProductImageServiceImpl implements ProductImageService {
 				.filter(v -> includeInactiveVariants || Boolean.TRUE.equals(v.getActive()))
 				.collect(Collectors.toMap(ProductVariant::getId, v -> v));
 
-		// --- Filter images based on active companies/products/variants ---
 		images = images.stream().filter(img -> img.getCompanyId() != null && companyMap.containsKey(img.getCompanyId()))
 				.filter(img -> img.getProductId() == null || productMap.containsKey(img.getProductId()))
 				.filter(img -> img.getProductVariantId() == null || variantMap.containsKey(img.getProductVariantId()))
 				.toList();
 
-		// --- Map to Response DTO ---
 		List<ProductImageResponseWithCompanyProductProductVariant> imageResponses = images.stream().map(img -> {
 			CompanyResponseExternalDto company = companyMap.get(img.getCompanyId());
 
