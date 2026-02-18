@@ -76,4 +76,12 @@ public class ProductTaxMappingController {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
+	@GetMapping("/company/{companyId}/tax-category/{taxCategoryId}")
+	public ResponseEntity<?> getByCompanyAndTaxCategory(@PathVariable UUID companyId,
+			@PathVariable UUID taxCategoryId) {
+
+		ApiResponse<?> response = productTaxMappingService.getByCompanyIdAndTaxCategoryId(companyId, taxCategoryId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
 }

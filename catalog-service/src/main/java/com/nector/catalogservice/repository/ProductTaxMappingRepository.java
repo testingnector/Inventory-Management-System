@@ -23,4 +23,9 @@ public interface ProductTaxMappingRepository extends JpaRepository<ProductTaxMap
 			UUID variantId, UUID taxCategoryId);
 
 	List<ProductTaxMapping> findAllByCompanyIdAndProductIdAndDeletedAtIsNull(UUID companyId, UUID productId);
+
+	List<ProductTaxMapping> findAllByCompanyIdAndProductVariantIdAndDeletedAtIsNull(UUID companyId, UUID variantId);
+
+	List<ProductTaxMapping> findAllByCompanyIdAndCompanyTaxCategoryIdAndDeletedAtIsNull(UUID companyId,
+			UUID taxCategoryId);
 }

@@ -22,5 +22,7 @@ public interface ProductTaxMappingService {
 
 	ApiResponse<?> getByCompanyIdAndVariantId(UUID companyId, UUID variantId);
 
+	ApiResponse<?> getByCompanyIdAndTaxCategoryId(UUID companyId, UUID taxCategoryId);
+
 
 }

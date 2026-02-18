@@ -1,5 +1,6 @@
 package com.nector.catalogservice.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.ProductVariant;
 
 @Repository
@@ -56,5 +58,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 	List<ProductVariant> findByCompanyIdAndDeletedAtIsNullAndActiveFalse(UUID companyId);
 
 	Optional<ProductVariant> findByIdAndDeletedAtIsNullAndActiveTrue(UUID productVariantId);
+
+	List<ProductVariant> findByIdInAndDeletedAtIsNullAndActiveTrue(List<UUID> variantIds);
 
 }
