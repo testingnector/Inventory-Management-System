@@ -4,11 +4,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingCreateRequest;
 import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDto;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryWithComponentsCompanyProductsVariants;
+<<<<<<< HEAD
+=======
+import com.nector.catalogservice.dto.response.internal.PageMeta;
+>>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
@@ -160,6 +166,18 @@ public class ProductTaxMappingMap {
 		resultDto.setVariants(variants);
 
 		return resultDto;
+<<<<<<< HEAD
+=======
+		
+	}
+
+	public static PageMeta mapToPageMeta(Page<ProductTaxMapping> mappingsPage) {
+		PageMeta emptyMeta = new PageMeta(mappingsPage.getNumber(), mappingsPage.getSize(),
+				mappingsPage.getTotalElements(), mappingsPage.getTotalPages(), mappingsPage.isLast(),
+				mappingsPage.isFirst(), mappingsPage.getSort().toString());
+		
+		return emptyMeta;
+>>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 		
 	}
 

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.nector.catalogservice.entity.ProductTaxMapping;
@@ -28,4 +30,16 @@ public interface ProductTaxMappingRepository extends JpaRepository<ProductTaxMap
 
 	List<ProductTaxMapping> findAllByCompanyIdAndCompanyTaxCategoryIdAndDeletedAtIsNull(UUID companyId,
 			UUID taxCategoryId);
+<<<<<<< HEAD
+=======
+
+	Page<ProductTaxMapping> findAllByCompanyIdAndDeletedAtIsNull(UUID companyId, Pageable pageable);
+
+	List<ProductTaxMapping> findAllByIdInAndDeletedAtIsNull(List<UUID> ids);
+
+	boolean existsByCompanyIdAndProductIdAndCompanyTaxCategoryId(UUID companyId, UUID productId, UUID taxCategoryId);
+
+	boolean existsByCompanyIdAndProductVariantIdAndCompanyTaxCategoryId(UUID companyId, UUID variantId,
+			UUID taxCategoryId);
+>>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 }

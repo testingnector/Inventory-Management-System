@@ -1,7 +1,9 @@
 package com.nector.catalogservice.controller;
 
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nector.catalogservice.dto.request.internal.ProductTaxMappingBulkCreateRequest;
+import com.nector.catalogservice.dto.request.internal.ProductTaxMappingBulkDeleteRequest;
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingCreateRequest;
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingUpdateRequest;
 import com.nector.catalogservice.dto.response.internal.ApiResponse;
-import com.nector.catalogservice.dto.response.internal.ProductResponseWithCompanyImagesVariants;
-import com.nector.catalogservice.dto.response.internal.ProductVariantResponseWithCompanyImagesProduct;
 import com.nector.catalogservice.service.ProductTaxMappingService;
 
 import jakarta.validation.Valid;
@@ -84,4 +86,39 @@ public class ProductTaxMappingController {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
+<<<<<<< HEAD
+=======
+	@GetMapping("/company/{companyId}")
+	public ResponseEntity<?> getAllByCompany(@PathVariable UUID companyId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+
+		ApiResponse<?> response = productTaxMappingService.getAllByCompanyId(companyId, page, size);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@PostMapping("/bulk")
+	public ResponseEntity<ApiResponse<List<Object>>> createBulk(
+			@Valid @RequestBody ProductTaxMappingBulkCreateRequest request, @RequestHeader("X-USER-ID") UUID userId) {
+		ApiResponse<List<Object>> response = productTaxMappingService.createBulk(request, userId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@DeleteMapping(path = "/bulk")
+	public ResponseEntity<ApiResponse<Void>> deleteBulk(@Valid @RequestBody ProductTaxMappingBulkDeleteRequest request,
+			@RequestHeader("X-USER-ID") UUID userId) {
+		ApiResponse<Void> response = productTaxMappingService.deleteBulk(request.getIds(), userId);
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
+
+	@GetMapping(path = "/exists")
+	public ResponseEntity<ApiResponse<Boolean>> existsProductTaxMapping(@RequestParam UUID companyId,
+			@RequestParam(required = false) UUID productId, @RequestParam(required = false) UUID variantId,
+			@RequestParam UUID taxCategoryId) {
+
+		ApiResponse<Boolean> response = productTaxMappingService.existsMapping(companyId, productId, variantId,
+				taxCategoryId);
+		return ResponseEntity.ok(response);
+	}
+
+>>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 }
