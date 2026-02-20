@@ -1,6 +1,5 @@
 package com.nector.catalogservice.mapper;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,10 +10,7 @@ import com.nector.catalogservice.dto.response.external.CompanyResponseExternalDt
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryWithComponentsCompanyProductsVariants;
-<<<<<<< HEAD
-=======
 import com.nector.catalogservice.dto.response.internal.PageMeta;
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
@@ -166,8 +162,6 @@ public class ProductTaxMappingMap {
 		resultDto.setVariants(variants);
 
 		return resultDto;
-<<<<<<< HEAD
-=======
 		
 	}
 
@@ -177,7 +171,6 @@ public class ProductTaxMappingMap {
 				mappingsPage.isFirst(), mappingsPage.getSort().toString());
 		
 		return emptyMeta;
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 		
 	}
 

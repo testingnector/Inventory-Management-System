@@ -28,12 +28,9 @@ import com.nector.catalogservice.dto.response.internal.ApiResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyResponseInternalDto;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryResponse;
 import com.nector.catalogservice.dto.response.internal.CompanyTaxCategoryWithComponentsCompanyProductsVariants;
-<<<<<<< HEAD
-=======
 import com.nector.catalogservice.dto.response.internal.CompanyTaxMappingsPageResponse;
 import com.nector.catalogservice.dto.response.internal.PageMeta;
 import com.nector.catalogservice.dto.response.internal.PaginatedResponse;
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 import com.nector.catalogservice.dto.response.internal.ProductResponse;
 import com.nector.catalogservice.dto.response.internal.ProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory;
 import com.nector.catalogservice.dto.response.internal.ProductVariantResponse;
@@ -45,7 +42,6 @@ import com.nector.catalogservice.entity.Product;
 import com.nector.catalogservice.entity.ProductTaxMapping;
 import com.nector.catalogservice.entity.ProductVariant;
 import com.nector.catalogservice.entity.TaxComponent;
-import com.nector.catalogservice.enums.TaxComponentType;
 import com.nector.catalogservice.exception.ExternalServiceException;
 import com.nector.catalogservice.exception.InactiveResourceException;
 import com.nector.catalogservice.exception.ResourceNotFoundException;
@@ -606,18 +602,13 @@ public class ProductTaxMappingServiceImpl implements ProductTaxMappingService {
 				: productVariantRepository.findByIdInAndDeletedAtIsNullAndActiveTrue(new ArrayList<>(variantIds))
 						.stream().map(ProductVariantsMapping::mapToProductVariantResponse).toList();
 
-<<<<<<< HEAD
-		CompanyTaxCategoryWithComponentsCompanyProductsVariants resultDto = ProductTaxMappingMap.mapToCompanyTaxCategoryWithComponentsCompanyProductsVariants(taxCategory, taxComponentResponses, companyDto, products, variants);
-
-		return new ApiResponse<>(true, "Tax category with associated products & variants fetched successfully",
-				HttpStatus.OK.name(), HttpStatus.OK.value(), resultDto);
-=======
 		CompanyTaxCategoryWithComponentsCompanyProductsVariants resultDto = ProductTaxMappingMap
 				.mapToCompanyTaxCategoryWithComponentsCompanyProductsVariants(taxCategory, taxComponentResponses,
 						companyDto, products, variants);
 
 		return new ApiResponse<>(true, "Tax category with associated products & variants fetched successfully",
 				HttpStatus.OK.name(), HttpStatus.OK.value(), resultDto);
+		
 	}
 
 	@Override
@@ -789,9 +780,8 @@ public class ProductTaxMappingServiceImpl implements ProductTaxMappingService {
 					variantId, taxCategoryId);
 		}
 
-		return new ApiResponse<>(true, "Existence check completed", HttpStatus.OK.name(),
-				HttpStatus.OK.value(), exists);
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
+		return new ApiResponse<>(true, "Existence check completed", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				exists);
 	}
 
 }

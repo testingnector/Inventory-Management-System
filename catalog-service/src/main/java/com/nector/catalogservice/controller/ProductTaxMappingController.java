@@ -86,8 +86,6 @@ public class ProductTaxMappingController {
 		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
 	}
 
-<<<<<<< HEAD
-=======
 	@GetMapping("/company/{companyId}")
 	public ResponseEntity<?> getAllByCompany(@PathVariable UUID companyId, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
@@ -119,6 +117,7 @@ public class ProductTaxMappingController {
 				taxCategoryId);
 		return ResponseEntity.ok(response);
 	}
+	
+	
 
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 }

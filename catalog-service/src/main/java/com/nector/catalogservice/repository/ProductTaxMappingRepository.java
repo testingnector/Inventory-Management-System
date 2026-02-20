@@ -30,8 +30,6 @@ public interface ProductTaxMappingRepository extends JpaRepository<ProductTaxMap
 
 	List<ProductTaxMapping> findAllByCompanyIdAndCompanyTaxCategoryIdAndDeletedAtIsNull(UUID companyId,
 			UUID taxCategoryId);
-<<<<<<< HEAD
-=======
 
 	Page<ProductTaxMapping> findAllByCompanyIdAndDeletedAtIsNull(UUID companyId, Pageable pageable);
 
@@ -41,5 +39,4 @@ public interface ProductTaxMappingRepository extends JpaRepository<ProductTaxMap
 
 	boolean existsByCompanyIdAndProductVariantIdAndCompanyTaxCategoryId(UUID companyId, UUID variantId,
 			UUID taxCategoryId);
->>>>>>> ff263b1 (implement the rest api of productTaxMapping entity)
 }
