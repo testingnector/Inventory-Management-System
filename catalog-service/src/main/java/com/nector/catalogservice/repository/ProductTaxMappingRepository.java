@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.nector.catalogservice.entity.ProductTaxMapping;
@@ -39,4 +40,6 @@ public interface ProductTaxMappingRepository extends JpaRepository<ProductTaxMap
 
 	boolean existsByCompanyIdAndProductVariantIdAndCompanyTaxCategoryId(UUID companyId, UUID variantId,
 			UUID taxCategoryId);
+
+	Page<ProductTaxMapping> findAll(Specification<ProductTaxMapping> spec, Pageable pageable);
 }

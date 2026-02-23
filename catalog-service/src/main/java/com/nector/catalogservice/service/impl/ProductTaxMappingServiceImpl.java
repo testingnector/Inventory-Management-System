@@ -15,11 +15,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nector.catalogservice.client.OrgServiceClient;
+import com.nector.catalogservice.dto.request.external.CompanyIdsRequestDto;
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingBulkCreateRequest;
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingCreateRequest;
 import com.nector.catalogservice.dto.request.internal.ProductTaxMappingUpdateRequest;
@@ -54,6 +56,7 @@ import com.nector.catalogservice.repository.ProductTaxMappingRepository;
 import com.nector.catalogservice.repository.ProductVariantRepository;
 import com.nector.catalogservice.repository.TaxComponentRepository;
 import com.nector.catalogservice.service.ProductTaxMappingService;
+import com.nector.catalogservice.specification.ProductTaxMappingSpecification;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -608,7 +611,7 @@ public class ProductTaxMappingServiceImpl implements ProductTaxMappingService {
 
 		return new ApiResponse<>(true, "Tax category with associated products & variants fetched successfully",
 				HttpStatus.OK.name(), HttpStatus.OK.value(), resultDto);
-		
+
 	}
 
 	@Override
@@ -782,6 +785,137 @@ public class ProductTaxMappingServiceImpl implements ProductTaxMappingService {
 
 		return new ApiResponse<>(true, "Existence check completed", HttpStatus.OK.name(), HttpStatus.OK.value(),
 				exists);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ApiResponse<?> searchProductTaxMappings(UUID companyId, UUID productId, UUID variantId, UUID taxCategoryId,
+			boolean includeInactiveCompanies, boolean includeInactiveProducts, boolean includeInactiveVariants,
+			boolean includeInactiveCompanyTaxCategories, int page, int size, String sortBy, String sortDir) {
+
+		if (productId != null && variantId != null)
+			throw new IllegalArgumentException("Cannot filter by both productId and variantId");
+
+		CompanyResponseExternalDto companyResponse = null;
+		if (companyId != null) {
+			var response = orgServiceClient.getCompanyBasic(companyId);
+			companyResponse = response.getBody().getData();
+
+			if (!includeInactiveCompanies && Boolean.FALSE.equals(companyResponse.getActive())) {
+				throw new InactiveResourceException("Company inactive");
+			}
+		}
+
+		Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+		Pageable pageable = PageRequest.of(page, size, sort);
+
+		Specification<ProductTaxMapping> spec = ProductTaxMappingSpecification.search(companyId, productId, variantId,
+				taxCategoryId);
+
+		Page<ProductTaxMapping> pageResult = productTaxMappingRepository.findAll(spec, pageable);
+
+		List<ProductTaxMapping> mappings = pageResult.getContent();
+
+		if (mappings.isEmpty()) {
+			return new ApiResponse<>(true, "No data found", HttpStatus.OK.name(), HttpStatus.OK.value(), pageResult);
+		}
+
+		Set<UUID> companyIds = mappings.stream().map(ProductTaxMapping::getCompanyId).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		List<CompanyResponseExternalDto> companiesExternal = Optional
+				.ofNullable(orgServiceClient
+						.getCompaniesDetailsByCompanyIds(new CompanyIdsRequestDto(new ArrayList<>(companyIds))))
+				.map(r -> r.getBody()).map(ApiResponse::getData).orElse(Collections.emptyList());
+
+		Map<UUID, CompanyResponseExternalDto> companyMap = companiesExternal.stream().filter(Objects::nonNull)
+				.filter(c -> includeInactiveCompanies || Boolean.TRUE.equals(c.getActive()))
+				.collect(Collectors.toMap(CompanyResponseExternalDto::getCompanyId, c -> c));
+
+		Set<UUID> productIds = mappings.stream().map(ProductTaxMapping::getProductId).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		Map<UUID, Product> productMap = Optional
+				.ofNullable(productRepository.findByIdInAndDeletedAtIsNull(new ArrayList<>(productIds)))
+				.orElse(Collections.emptyList()).stream()
+				.filter(p -> includeInactiveProducts || Boolean.TRUE.equals(p.getActive()))
+				.collect(Collectors.toMap(Product::getId, p -> p));
+
+		Set<UUID> variantIds = mappings.stream().map(ProductTaxMapping::getProductVariantId).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		Map<UUID, ProductVariant> variantMap = Optional
+				.ofNullable(productVariantRepository.findByIdInAndDeletedAtIsNull(new ArrayList<>(variantIds)))
+				.orElse(Collections.emptyList()).stream()
+				.filter(v -> includeInactiveVariants || Boolean.TRUE.equals(v.getActive()))
+				.collect(Collectors.toMap(ProductVariant::getId, v -> v));
+
+		Set<UUID> taxIds = mappings.stream().map(ProductTaxMapping::getCompanyTaxCategoryId)
+				.collect(Collectors.toSet());
+
+		Map<UUID, CompanyTaxCategory> taxCategoryMap = Optional
+				.ofNullable(companyTaxCategoryRepository.findByIdInAndDeletedAtIsNull(taxIds))
+				.orElse(Collections.emptyList()).stream()
+				.filter(c -> includeInactiveCompanyTaxCategories || Boolean.TRUE.equals(c.getActive()))
+				.collect(Collectors.toMap(CompanyTaxCategory::getId, c -> c));
+
+		mappings = mappings.stream()
+			    .filter(m -> m.getCompanyId() == null || companyMap.containsKey(m.getCompanyId()))
+			    .filter(m -> m.getProductId() == null || productMap.containsKey(m.getProductId()))
+			    .filter(m -> m.getProductVariantId() == null || variantMap.containsKey(m.getProductVariantId()))
+			    .filter(m -> m.getCompanyTaxCategoryId() == null
+			            || taxCategoryMap.containsKey(m.getCompanyTaxCategoryId()))
+			    .toList();
+		
+		Map<UUID, List<TaxComponent>> taxComponentMap = taxComponentRepository
+				.findByCompanyTaxCategoryIdInAndDeletedAtIsNull(new ArrayList<>(taxIds)).stream()
+				.collect(Collectors.groupingBy(TaxComponent::getCompanyTaxCategoryId));
+
+		List<ProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory> finalResponse = mappings
+				.stream().map(m -> {
+
+					CompanyResponseExternalDto companyDto = companyMap.get(m.getCompanyId());
+					Product product = productMap.get(m.getProductId());
+					ProductVariant productVariant = variantMap.get(m.getProductVariantId());
+					CompanyTaxCategory taxCategory = taxCategoryMap.get(m.getCompanyTaxCategoryId());
+					List<TaxComponent> components = taxCategory != null
+							? taxComponentMap.getOrDefault(taxCategory.getId(), List.of())
+							: List.of();
+					CompanyResponseInternalDto companyResponseInternalDto = companyDto != null
+							? ProductTaxMappingMap.mapToCompanyResponseInternalDto(companyDto)
+							: null;
+					
+					ProductResponse productResponse = product != null ? ProductTaxMappingMap.mapToProductResponse(product) : null;
+					
+					ProductVariantResponse productVariantResponse = productVariant != null ? ProductVariantsMapping.mapToProductVariantResponse(productVariant) : null;
+					
+					List<TaxComponentResponse> taxComponentResponses = components != null
+							? components.stream().map(c -> {
+								TaxComponentResponse r = new TaxComponentResponse();
+								r.setTaxComponentId(c.getId());
+								r.setComponentType(c.getComponentType());
+								r.setComponentRate(c.getComponentRate());
+								r.setActive(c.getActive());
+								return r;
+							}).toList()
+							: null;
+
+					CompanyTaxCategoryResponse taxCategoryResponse = taxCategory != null
+							? CompanyTaxCategoryMapping.mapToCompanyTaxCategoryResponse(taxCategory,
+									taxComponentResponses)
+							: null;
+					
+					return ProductTaxMappingMap.mapToProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory(m, companyResponseInternalDto, productResponse, productVariantResponse, taxCategoryResponse);
+				}).toList();
+
+		PageMeta pageMeta = ProductTaxMappingMap.mapToPageMeta(pageResult);
+
+		PaginatedResponse<ProductTaxMappingResponseWithCompanyProductProductVariantCompanyTaxCategory> paginated = new PaginatedResponse<>(
+				finalResponse, pageMeta);
+		
+		return new ApiResponse<>(true, "Search completed successfully", HttpStatus.OK.name(), HttpStatus.OK.value(),
+				paginated);
 	}
 
 }

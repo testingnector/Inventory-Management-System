@@ -35,4 +35,8 @@ public interface ProductTaxMappingService {
 
 	ApiResponse<Boolean> existsMapping(UUID companyId, UUID productId, UUID variantId, UUID taxCategoryId);
 
+	ApiResponse<?> searchProductTaxMappings(UUID companyId, UUID productId, UUID variantId, UUID taxCategoryId,
+			boolean includeInactiveCompanies, boolean includeInactiveProducts, boolean includeInactiveVariants,
+			boolean includeInactiveCompanyTaxCategories, int page, int size, String sortBy, String sortDir);
+
 }

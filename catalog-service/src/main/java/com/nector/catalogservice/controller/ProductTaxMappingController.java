@@ -117,7 +117,29 @@ public class ProductTaxMappingController {
 				taxCategoryId);
 		return ResponseEntity.ok(response);
 	}
-	
-	
+
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<?>> searchProductTaxMappings(
+			@RequestParam(required = false) UUID companyId,
+			@RequestParam(required = false) UUID productId, 
+			@RequestParam(required = false) UUID variantId,
+			@RequestParam(required = false) UUID taxCategoryId,
+
+			@RequestParam(defaultValue = "false") boolean includeInactiveCompanies,
+			@RequestParam(defaultValue = "false") boolean includeInactiveProducts,
+			@RequestParam(defaultValue = "false") boolean includeInactiveVariants,
+			@RequestParam(defaultValue = "false") boolean includeInactiveCompanyTaxCategories,
+
+			@RequestParam(defaultValue = "0") int page, 
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
+
+		ApiResponse<?> response = productTaxMappingService.searchProductTaxMappings(companyId, productId, variantId,
+				taxCategoryId, includeInactiveCompanies, includeInactiveProducts, includeInactiveVariants,
+				includeInactiveCompanyTaxCategories, page, size, sortBy, sortDir);
+
+		return ResponseEntity.status(response.getHttpStatusCode()).body(response);
+	}
 
 }
